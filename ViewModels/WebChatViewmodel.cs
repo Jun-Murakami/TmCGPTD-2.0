@@ -31,7 +31,7 @@ namespace TmCGPTD.ViewModels
 
                 string script = @"const mainTag = document.querySelector('main');
                         const formTag = mainTag.querySelector('form');
-                        const textarea = formTag.querySelector('textarea');"+
+                        const textarea = formTag.querySelector('textarea');" +
                         $"textarea.value = {escapedString};";
                 await _browser.EvaluateJavaScript<string>(script);
 
@@ -47,7 +47,7 @@ namespace TmCGPTD.ViewModels
                         button.click();";
                 await _browser.EvaluateJavaScript<string>(script);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 var dialog = new ContentDialog() { Title = "Error : " + ex.Message, PrimaryButtonText = "OK" };
                 await ContentDialogShowAsync(dialog);
@@ -86,7 +86,7 @@ namespace TmCGPTD.ViewModels
                 function getScrollParent(element) {
                   while (element && element !== document.body) {
                     // Elementå^Ç≈Ç»ÇØÇÍÇŒÅAêeóvëfÇ…à⁄ìÆ
-                    if (!(element instanceof Element)) {
+                    if (!(element instanceof Element) || element.tagName.toLowerCase() === 'pre') {
                       element = element.parentElement;
                       continue;
                     }
@@ -104,6 +104,7 @@ namespace TmCGPTD.ViewModels
 
                   return document.scrollingElement || document.documentElement;
                 }
+
 
 
                 if (!document.getElementById('searchDisplay')) {

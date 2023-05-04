@@ -16,7 +16,9 @@
 	</Application.Styles>
 	<Application.Resources>
 		<Color x:Key="SystemAccentColor">rgb(155, 138, 255)</Color>
+		<Color x:Key="AccentFillColorDefaultBrush">rgb(155, 138, 255)</Color>
 		<Color x:Key="SystemAccentColorDark1">rgb(155, 138, 255)</Color>
+		<Color x:Key="SystemAccentColorLight2">rgb(155, 138, 255)</Color>
 		<Color x:Key="SystemAltMediumLowColor">rgb(52, 53, 65)</Color>
 		<Color x:Key="ApplicationPageBackgroundThemeBrush">rgb(52, 53, 65)</Color>
 		<Color x:Key="ControlStrokeColorDefaultBrush">rgb(94, 95, 109)</Color>

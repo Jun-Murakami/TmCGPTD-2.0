@@ -12,7 +12,7 @@
         Title="TmCGPTD">
 	<dialogHost:DialogHost IsOpen="{Binding	ApiSettingIsOpened}"
 						   DialogMargin="16"
-							DisableOpeningAnimation="True"
+						   DisableOpeningAnimation="True"
 						   dialogHost:DialogHostStyle.CornerRadius="8"
 						   Background="rgb(52, 53, 65)">
 		<dialogHost:DialogHost.DialogContent>

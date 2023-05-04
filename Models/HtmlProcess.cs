@@ -231,7 +231,7 @@ namespace TmCGPTD.Models
                         content = contentBuilder.ToString();
                         content = content.Trim();
 
-                        if(!string.IsNullOrWhiteSpace(content))
+                        if (!string.IsNullOrWhiteSpace(content))
                         {
                             webConversationHistory.Add(new Dictionary<string, object>
                             {
@@ -247,8 +247,18 @@ namespace TmCGPTD.Models
 
                         string htmlString = div.InnerHtml;
 
+                        // 正規表現パターンに基づいて置換・削除
+                        string pattern = "<title.*>.*</title>";
+                        htmlString = Regex.Replace(htmlString, pattern, "");
+
+                        pattern = "<text.*>.*</text>";
+                        htmlString = Regex.Replace(htmlString, pattern, "");
+
+                        pattern = "<span class=.*>[0-9]+ / [0-9]+</span>";
+                        htmlString = Regex.Replace(htmlString, pattern, "");
+
                         // 置換処理
-                        htmlString = htmlString.Replace("<pre>", $"{br}{br}```")
+                        htmlString = htmlString.Replace("<pre class=\"\">", $"{br}{br}```")
                                                .Replace("</pre>", $"{br}```{br}{br}")
                                                .Replace("Copy code", $"{br}")
                                                .Replace("<ol>", $"{br}")
@@ -257,10 +267,6 @@ namespace TmCGPTD.Models
                                                .Replace("</ul>", $"{br}")
                                                .Replace("<li>", $"{br}- ")
                                                .Replace("</li>", $"{br}");
-
-                        // 正規表現パターンに基づいて削除
-                        string pattern = "<span class=.*>[0-9]+ / [0-9]+</span>";
-                        htmlString = Regex.Replace(htmlString, pattern, "");
 
                         // 置換処理が完了した後、再度HTMLドキュメントに戻す
                         var modifiedHtmlDoc = new HtmlAgilityPack.HtmlDocument();
@@ -627,7 +633,7 @@ namespace TmCGPTD.Models
         }
 
         // 表示用チャットログHTML変換--------------------------------------------------------------
-        public async Task<string> ConvertAddLogToHtml(string plainTextChatLog,DateTime resDate)
+        public async Task<string> ConvertAddLogToHtml(string plainTextChatLog, DateTime resDate)
         {
             plainTextChatLog = Regex.Replace(plainTextChatLog, @"\r\n|\r|\n", Environment.NewLine);
             var codeSnippetRegex = new Regex(@"^```(?:([\w-+#.]+)\s+)?([\s\S]*?)(^```)", RegexOptions.Multiline);

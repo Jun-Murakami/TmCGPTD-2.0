@@ -101,13 +101,7 @@ namespace TmCGPTD.ViewModels
         public string SelectedLeftPane
         {
             get => _selectedLeftPane;
-            set
-            {
-                if (SetProperty(ref _selectedLeftPane, value))
-                {
-                    UpdateSelectedLeftView();
-                }
-            }
+            set => SetProperty(ref _selectedLeftPane, value);
         }
 
         public List<string> LeftPanes { get; } = new List<string>
@@ -116,31 +110,6 @@ namespace TmCGPTD.ViewModels
             "WebChat"
         };
 
-        public ChatView _chatView;
-        public WebChatView _webChatView;
-        public void UpdateSelectedLeftView()
-        {
-            switch (_selectedLeftPane)
-            {
-                case "Chat":
-                    if (_chatView == null)
-                    {
-                        _chatView = new ChatView();
-                    }
-                    SelectedLeftView = _chatView;
-                    break;
-                case "WebChat":
-                    if (_webChatView == null)
-                    {
-                        _webChatView = new WebChatView();
-                    }
-                    SelectedLeftView = _webChatView;
-                    break;
-                default:
-                    SelectedLeftView = null;
-                    break;
-            }
-        }
 
         private UserControl _selectedRightView;
         public UserControl SelectedRightView
@@ -153,13 +122,7 @@ namespace TmCGPTD.ViewModels
         public string SelectedRightPane
         {
             get => _selectedRightPane;
-            set
-            {
-                if (SetProperty(ref _selectedRightPane, value))
-                {
-                    UpdateSelectedRightView();
-                }
-            }
+            set => SetProperty(ref _selectedRightPane, value);
         }
 
         public List<string> RightPanes { get; } = new List<string>
@@ -167,32 +130,6 @@ namespace TmCGPTD.ViewModels
             "Editor",
             "Preview"
         };
-
-        private EditorView _editorView;
-        private PreviewView _previewView;
-        public void UpdateSelectedRightView()
-        {
-            switch (_selectedRightPane)
-            {
-                case "Editor":
-                    if (_editorView == null)
-                    {
-                        _editorView = new EditorView();
-                    }
-                    SelectedRightView = _editorView;
-                    break;
-                case "Preview":
-                    if (_previewView == null)
-                    {
-                        _previewView = new PreviewView();
-                    }
-                    SelectedRightView = _previewView;
-                    break;
-                default:
-                    SelectedRightView = null;
-                    break;
-            }
-        }
 
         public List<string> LogPanes { get; } = new List<string>
         {
@@ -265,20 +202,22 @@ namespace TmCGPTD.ViewModels
 
         private async Task ImportChatLogAsync()
         {
-            var dialog = new FilePickerOpenOptions
+            OpenFileDialog openFileDialog = new OpenFileDialog
             {
                 AllowMultiple = false,
-                Title = "Select CSV file",
-                FileTypeFilter = new List<FilePickerFileType>
-                    {new("CSV files (*.csv)") { Patterns = new[] { "*.csv" } },
-                    new("All files (*.*)") { Patterns = new[] { "*" } }}
+                Title = "Select a .csv file",
+                Filters = new List<FileDialogFilter>
+                    {
+                        new FileDialogFilter { Name = "CSV Files", Extensions = new List<string> { "csv" } },
+                        new FileDialogFilter { Name = "All Files", Extensions = new List<string> { "*" } }
+                    }
             };
 
-            var result = await (Application.Current.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime).MainWindow.StorageProvider.OpenFilePickerAsync(dialog);
+            string[] result = await openFileDialog.ShowAsync((Application.Current.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime).MainWindow);
 
-            if (result.Count > 0)
+            if (result != null && result.Length > 0)
             {
-                var selectedFilePath = result[0].ToString();
+                var selectedFilePath = result[0];
                 try
                 {
                     var msg = await _dbProcess.ImportCsvToTableAsync(selectedFilePath);
@@ -296,25 +235,22 @@ namespace TmCGPTD.ViewModels
 
         private async Task ExportChatLogAsync()
         {
-            var dialog = new FilePickerSaveOptions
+            SaveFileDialog saveFileDialog = new SaveFileDialog
             {
-                Title = "Export CSV file",
-                FileTypeChoices = new List<FilePickerFileType>
-                    {new("CSV files (*.csv)") { Patterns = new[] { "*.csv" } },
-                    new("All files (*.*)") { Patterns = new[] { "*" } }}
+                Title = "Save CSV File",
+                Filters = new List<FileDialogFilter>
+                {
+                    new FileDialogFilter { Name = "CSV Files", Extensions = new List<string> { "csv" } },
+                    new FileDialogFilter { Name = "All Files", Extensions = new List<string> { "*" } }
+                },
+                DefaultExtension = "csv"
             };
 
-            var result = await (Application.Current.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime).MainWindow.StorageProvider.SaveFilePickerAsync(dialog);
+            string result = await saveFileDialog.ShowAsync((Application.Current.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime).MainWindow);
 
-            if (result != null)
+            if (!string.IsNullOrEmpty(result))
             {
-                string selectedFilePath = result.ToString();
-                string extension = Path.GetExtension(selectedFilePath);
-
-                if (string.IsNullOrEmpty(extension))
-                {
-                    selectedFilePath += ".csv";
-                }
+                var selectedFilePath = result;
 
                 try
                 {
@@ -516,21 +452,24 @@ namespace TmCGPTD.ViewModels
 
         private async Task ImportPhrasesAsync()
         {
-            var dialog = new FilePickerOpenOptions
+            OpenFileDialog openFileDialog = new OpenFileDialog
             {
                 AllowMultiple = false,
-                Title = "Select TXT file",
-                FileTypeFilter = new List<FilePickerFileType>
-                    {new("TXT files (*.txt)") { Patterns = new[] { "*.txt" } },
-                    new("All files (*.*)") { Patterns = new[] { "*" } }}
+                Title = "Select a .txt file",
+                Filters = new List<FileDialogFilter>
+                    {
+                        new FileDialogFilter { Name = "TXT Files", Extensions = new List<string> { "txt" } },
+                        new FileDialogFilter { Name = "All Files", Extensions = new List<string> { "*" } }
+                    }
             };
-            var result = await (Application.Current.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime).MainWindow.StorageProvider.OpenFilePickerAsync(dialog);
 
-            if (result.Count > 0)
+            string[] result = await openFileDialog.ShowAsync((Application.Current.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime).MainWindow);
+
+            if (result != null && result.Length > 0)
             {
                 try
-                { 
-                    var selectedFilePath = result[0].ToString();
+                {
+                    var selectedFilePath = result[0];
                     var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(selectedFilePath);
 
                     var importedPhrases = await _dbProcess.ImportPhrasesFromTxtAsync(selectedFilePath);
@@ -556,24 +495,22 @@ namespace TmCGPTD.ViewModels
                 return;
             }
 
-            var dialog = new FilePickerSaveOptions
+            SaveFileDialog saveFileDialog = new SaveFileDialog
             {
-                Title = "Export TXT file",
-                FileTypeChoices = new List<FilePickerFileType>
-                    {new("TXT files (*.txt)") { Patterns = new[] { "*.txt" } },
-                    new("All files (*.*)") { Patterns = new[] { "*" } }}
+                Title = "Save txt File",
+                Filters = new List<FileDialogFilter>
+                {
+                    new FileDialogFilter { Name = "TXT Files", Extensions = new List<string> { "txt" } },
+                    new FileDialogFilter { Name = "All Files", Extensions = new List<string> { "*" } }
+                },
+                DefaultExtension = "txt"
             };
 
-            var result = await (Application.Current.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime).MainWindow.StorageProvider.SaveFilePickerAsync(dialog);
+            string result = await saveFileDialog.ShowAsync((Application.Current.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime).MainWindow);
 
-            if (result != null)
+            if (!string.IsNullOrEmpty(result))
             {
-                var selectedFilePath = result.ToString();
-                string extension = Path.GetExtension(selectedFilePath);
-                if (string.IsNullOrEmpty(extension))
-                {
-                    selectedFilePath += ".txt";
-                }
+                var selectedFilePath = result;
 
                 var phrasesText = string.Join(Environment.NewLine, VMLocator.PhrasePresetsViewModel.Phrases);
                 try

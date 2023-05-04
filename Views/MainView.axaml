@@ -120,7 +120,10 @@
 									<RowDefinition Height="*"/>
 								</Grid.RowDefinitions>
 								<Grid Grid.Row="0">
-									<ListBox Grid.Column="0" Items="{Binding LeftPanes}" SelectedItem="{Binding SelectedLeftPane}">
+									<ListBox Name="LeftPaneList"
+											 Grid.Column="0"
+											 Items="{Binding LeftPanes}"
+											 SelectedItem="{Binding SelectedLeftPane}">
 										<ListBox.ItemsPanel>
 											<ItemsPanelTemplate>
 												<WrapPanel />
@@ -129,12 +132,10 @@
 									</ListBox>
 								</Grid>
 								<Grid Grid.Row="1">
-									<Border Grid.Column="0" BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}" BorderThickness="0">
-										<TransitioningContentControl Content="{Binding SelectedLeftView}">
-											<TransitioningContentControl.PageTransition>
-												<CrossFade Duration="0:00:00.110" />
-											</TransitioningContentControl.PageTransition>
-										</TransitioningContentControl>
+									<Border Grid.Column="0"
+											BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
+											BorderThickness="0">
+										<ui:Frame Name="LeftFrame" />
 									</Border>
 								</Grid>
 							</Grid>
@@ -148,7 +149,10 @@
 									<RowDefinition Height="50"/>
 								</Grid.RowDefinitions>
 								<Grid Grid.Row="0">
-									<ListBox Grid.Column="0" Items="{Binding RightPanes}" SelectedItem="{Binding SelectedRightPane}">
+									<ListBox Name="RightPaneList"
+											 Grid.Column="0"
+											 Items="{Binding RightPanes}"
+											 SelectedItem="{Binding SelectedRightPane}">
 										<ListBox.ItemsPanel>
 											<ItemsPanelTemplate>
 												<WrapPanel />
@@ -167,11 +171,7 @@
 								</Grid>
 								<Grid Grid.Row="1">
 									<Border Grid.Column="0" BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}" BorderThickness="1,1,1,0">
-										<TransitioningContentControl Content="{Binding SelectedRightView}">
-											<TransitioningContentControl.PageTransition>
-													<CrossFade Duration="0:00:00.110" />
-											</TransitioningContentControl.PageTransition>
-										</TransitioningContentControl>
+										<ui:Frame Name="RightFrame" />
 									</Border>
 								</Grid>
 								<Grid Grid.Row="2">

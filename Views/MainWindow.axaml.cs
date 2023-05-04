@@ -65,11 +65,6 @@ namespace TmCGPTD.Views
 
             VMLocator.MainViewModel.SelectedLogPain = "Chat List";
 
-            VMLocator.MainViewModel.SelectedLeftPane = "Chat";
-            VMLocator.MainViewModel.UpdateSelectedLeftView();
-
-            VMLocator.MainViewModel.SelectedRightPane = "Editor";
-            VMLocator.MainViewModel.UpdateSelectedRightView();
 
             await _dbProcess.GetEditorLogDatabaseAsync();
 

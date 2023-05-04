@@ -64,7 +64,7 @@
     <PackageReference Include="CefGlue.Avalonia" Version="106.5249.7-avalonia11fork-2" />
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.0-preview2" />
     <PackageReference Include="CsvHelper" Version="30.0.1" />
-    <PackageReference Include="DialogHost.Avalonia" Version="0.7.0-preview3" />
+    <PackageReference Include="DialogHost.Avalonia" Version="0.7.0-preview3fork" />
     <PackageReference Include="FluentAvaloniaUI" Version="2.0.0-preview4fork" />
     <PackageReference Include="HtmlAgilityPack" Version="1.11.46" />
     <PackageReference Include="System.Data.SQLite" Version="1.0.117" />
