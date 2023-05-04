@@ -1,0 +1,161 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+		xmlns:views="clr-namespace:TmCGPTD.Views"
+		xmlns:behaviors="clr-namespace:TmCGPTD.Behaviors;assembly=TmCGPTD"
+        x:Class="TmCGPTD.Views.ChatView">
+	<Grid VerticalAlignment="Stretch" >
+		<Grid.RowDefinitions>
+			<RowDefinition Height="50" />
+			<RowDefinition Height="*" />
+			<RowDefinition Height="50"/>
+		</Grid.RowDefinitions>
+		<Border Grid.Row="0" BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}" BorderThickness="1,1,1,0">
+			<Grid>
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition Width="Auto" />
+					<ColumnDefinition Width="*" />
+					<ColumnDefinition Width="Auto" />
+					<ColumnDefinition Width="Auto" />
+					<ColumnDefinition Width="Auto" />
+					<ColumnDefinition Width="Auto" />
+				</Grid.ColumnDefinitions>
+				<Grid Grid.Column="0" VerticalAlignment="Center" Margin="5,0,0,0">
+					<ToggleButton Classes="ImageButton"
+								  VerticalAlignment="Center"
+								  IsChecked="{Binding LogPainIsOpened}"
+								  IsVisible="{Binding LogPainButtonIsVisible}">
+						<Image Classes="ButtonIcon"
+							   Source="/Assets/iconArrow.png"
+							   VerticalAlignment="Center"
+							   Height="24"
+							   Width="24"
+							   Margin="0,0,0,4"/>
+					</ToggleButton>
+					<Image Source="/Assets/iconChat.png"
+						   VerticalAlignment="Center"
+						   Height="24"
+						   Width="24"
+						   IsHitTestVisible="False"
+						   Margin="4" />
+				</Grid>
+				<TextBox Grid.Column="1"
+						 Classes="NormalInput"
+						 Classes.clearButton="True"
+						 Text="{Binding	ChatTitle, Mode=TwoWay}"/>
+				<Button Grid.Column="2"
+						Name="ButtonWrite"
+						Classes="ImageButton"
+						VerticalAlignment="Center"
+						Margin="0,0,6,0"
+						Command="{Binding TitleUpdateCommand}">
+					<Grid>
+						<Image Name="ButtonWriteImage"
+							   Classes="ButtonIcon"
+							   Source="/Assets/iconWrite.png"
+							   VerticalAlignment="Center"
+							   IsHitTestVisible="False"
+							   Height="18"
+							   Width="18"/>
+						<Image Name="ButtonAnime1"
+							   Source="/Assets/iconLoading.png"
+							   VerticalAlignment="Center"
+							   IsHitTestVisible="False"
+							   Height="18"
+							   Width="18"
+							   Opacity="0"/>
+						<Image Name="ButtonAnime2"
+							   Source="/Assets/iconOk.png"
+							   VerticalAlignment="Center"
+							   IsHitTestVisible="False"
+							   Height="18"
+							   Width="18"
+							   Opacity="0"/>
+					</Grid>
+				</Button>
+				<Grid Grid.Column="3">
+					<TextBox Name="SearchBox"
+							 Classes="NormalInput"
+							 Width="170"
+							 Classes.clearButton="True"
+							 Padding="30,7,0,7"
+							 Text="{Binding	SearchKeyword, Mode=TwoWay}"/>
+					<Image Source="/Assets/iconSearch.png"
+						   HorizontalAlignment="Left"
+						   VerticalAlignment="Center"
+						   Height="18"
+						   Width="18"
+						   Margin="10,0"
+						   Opacity="0.7"/>
+					<Button IsVisible="False"
+							Click="FocusSearchBox"
+							HotKey="Ctrl+F"/>
+				</Grid>
+				<Button Grid.Column="4"
+						Classes="ImageButton"
+						VerticalAlignment="Center"
+						Padding="0"
+						Margin="0,0,2,0"
+						Command="{Binding SearchPrev}">
+					<Image Classes="ButtonIcon"
+						   Source="/Assets/iconUp.png"
+						   VerticalAlignment="Center" />
+				</Button>
+				<Button Grid.Column="5"
+						Classes="ImageButton"
+						VerticalAlignment="Center"
+						Padding="0"
+						Margin="0,0,5,0"
+						Command="{Binding SearchNext}">
+					<Image Classes="ButtonIcon"
+						   Source="/Assets/iconDown.png"
+						   VerticalAlignment="Center" />
+				</Button>
+			</Grid>
+		</Border>
+		<Border Name="ChatBorder" Grid.Row="1" BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}" BorderThickness="1,1,1,0">
+			<Decorator x:Name="ChatBrowserWrapper" IsVisible="{Binding ChatViewIsVisible}" Focusable="False"/>
+		</Border>
+		<Border Grid.Row="2" BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}" BorderThickness="1">
+			<Grid>
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition Width="Auto" />
+					<ColumnDefinition Width="*" />
+					<ColumnDefinition Width="Auto" />
+				</Grid.ColumnDefinitions>
+				<Grid Grid.Column="0" VerticalAlignment="Center" Margin="10,0,0,0">
+					<Button Content="API Settings"
+							VerticalAlignment="Center"
+							Width="150"
+							Command="{Binding OpenApiSettingsCommand}"/>
+					<Image Source="/Assets/iconSetting.png"
+						   VerticalAlignment="Center"
+						   HorizontalAlignment="Left"
+						   IsHitTestVisible="False"
+						   Height="16"
+						   Width="16"
+						   Margin="10,0,0,0"/>
+				</Grid>
+				<Grid Grid.Column="1"/>
+				<Grid Grid.Column="2" >
+					<Button Content="New Chat"
+							Height="38"
+							Width="136"
+							Margin="0,0,10,0"
+							VerticalAlignment="Center"
+							HorizontalAlignment="Center"
+							Command="{Binding InitializeChatCommand}"/>
+					<Image Source="/Assets/iconChat.png"
+						   VerticalAlignment="Center"
+						   HorizontalAlignment="Left"
+						   IsHitTestVisible="False"
+						   Height="16"
+						   Width="16"
+						   Margin="10,0,0,0" />
+				</Grid>
+			</Grid>
+		</Border>
+	</Grid>
+</UserControl>

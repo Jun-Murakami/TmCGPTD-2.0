@@ -1,0 +1,170 @@
+body {
+  background: #343541;
+  color: #dcdcdc;
+  margin: 10px 10px 50px 0px;
+  font-size: 11pt;
+  line-height: 1.8em;
+  font-family: Menlo, Hiragino Sans, "BIZ UDゴシック", "Migu 1M", Noto Mono, Osaka, Consolas, Lucida Console, sans-serif;
+}
+
+::selection {
+  background-color: #6e64af;
+}
+
+::-webkit-scrollbar {
+  width: 9px;
+  height: 9px;
+  background-color: transparent;
+}
+
+::-webkit-scrollbar:hover {
+  background-color: #292929;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #7c7d87;
+  opacity: 0.5;
+  border-radius: 4px;
+}
+
+span.userHeader {
+  color: #9b8aff;
+  line-height: 4em;
+}
+
+span.assistantHeader {
+  color: #ff8a9b;
+  line-height: 4em;
+}
+
+span.thinkingHeader {
+  color: #ff8a9b;
+  line-height: 4em;
+  animation: opacity-cycle 3s linear infinite;
+}
+
+@keyframes opacity-cycle {
+  0% { opacity: 0; }
+  50% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+div.user {
+  margin: 0 0 0 15px;
+  padding: 5px 15px 40px 15px;
+  overflow-wrap: break-word;
+}
+
+div.assistant {
+  margin: 0;
+  padding: 5px 20px 40px 30px;
+  border-radius: 0 6px 6px 0;
+  background: #444654;
+  overflow-wrap: break-word;
+}
+
+code {
+  border-radius: 6px 6px 6px 6px;
+}
+
+code#headerOn {
+  border-radius: 0px 0px 6px 6px;
+}
+
+pre {
+  margin: 1.8em 0px 2.5em 0px
+}
+
+pre#headerOn {
+  margin: 0px 0px 2.5em 0px
+}
+
+div.codeHeader {
+  display: flex;
+  justify-content: space-between;
+  background: #343541;
+  font-size: 0.8em;
+  border-radius: 6px 6px 0px 0px;
+  margin: 1.8em 0px 0px 0px;
+  padding: 0px 0px 0px 1em
+}
+
+div.usage {
+  color: #aeaeae;
+  margin: 1.8em 0px 0px 0px;
+  font-size: 0.8em
+}
+
+#scrollToBottomBtn {
+  position: fixed;
+  width: 37px;
+  height: 37px;
+  bottom: 15px;
+  right: 8px;
+  background: none;
+  opacity: 0.3;
+  display: none;
+  border: none;
+  cursor: pointer;
+  outline: none;
+}
+
+#searchDisplay {
+  position: fixed;
+  width: 139px;
+  top: 7px;
+  right: 48px;
+  background: #3a3b47;
+  border-radius: 6px;
+  border-width: 1px;
+  border: #545563 solid;
+  padding:0px 15px 0px 15px;
+  display: none;
+  outline: none;
+  transition: opacity 0.6s;
+  font-size: 0.9em;
+}
+
+
+span.lang {
+  text-align: left;
+}
+
+span.codeCopy::before {
+  content: "";
+  width:16px;
+  height:16px;
+  vertical-align: middle;
+  text-align: right;
+  background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxNS45MyAxOS41NiIgZmlsbD0iI2RjZGNkYyI+PHJlY3QgeD0iMy42NyIgeT0iNi45OCIgd2lkdGg9IjguNjEiIGhlaWdodD0iMSIvPjxyZWN0IHg9IjMuNjciIHk9IjkuNDQiIHdpZHRoPSI4LjYxIiBoZWlnaHQ9IjEiLz48cmVjdCB4PSIzLjY2IiB5PSIxMS45IiB3aWR0aD0iOC42MSIgaGVpZ2h0PSIxIi8+PHJlY3QgeD0iMy42NyIgeT0iMTQuMzUiIHdpZHRoPSI4LjYxIiBoZWlnaHQ9IjEiLz48cGF0aCBkPSJtMTIuMjcsMi4yNnYtLjkxaC0yLjE2Yy0uMzgtLjgxLTEuMi0xLjM1LTIuMTQtMS4zNXMtMS43Ni41NC0yLjE0LDEuMzVoLTIuMTZ2LjkxYy0yLjA1LjE3LTMuNjcsMS44Ny0zLjY3LDMuOTZ2OS4zNGMwLDIuMiwxLjc5LDMuOTksMy45OSwzLjk5aDcuOTVjMi4yLDAsMy45OS0xLjc5LDMuOTktMy45OVY2LjIyYzAtMi4wOS0xLjYyLTMuNzktMy42Ny0zLjk2Wk03Ljk3LC45M2MuNjksMCwxLjI0LjU2LDEuMjQsMS4yNHMtLjU2LDEuMjQtMS4yNCwxLjI0LTEuMjQtLjU2LTEuMjQtMS4yNC41Ni0xLjI0LDEuMjQtMS4yNFptNi40NywxNC42NGMwLDEuMzctMS4xMiwyLjQ5LTIuNDksMi40OUgzLjk5Yy0xLjM3LDAtMi40OS0xLjEyLTIuNDktMi40OVY2LjIyYzAtMS4yNi45NS0yLjMxLDIuMTctMi40N3YxLjM1aDguNnYtMS4zNWMxLjIyLjE2LDIuMTcsMS4yMSwyLjE3LDIuNDd2OS4zNFoiLz48L3N2Zz4K');
+  background-repeat: no-repeat;
+  background-position: left;
+  display: inline-block;
+  padding: 0 3px 0 0;
+}
+
+button {
+  border: 0;
+  color: #dcdcdc;
+  padding: 0 1em 0 0;
+  background: transparent;
+  font-size: 0.9em;
+  font-family: Menlo, Hiragino Sans, "BIZ UDゴシック", "Migu 1M", Noto Mono, Osaka, Consolas, Lucida Console, sans-serif;
+  cursor: pointer;
+}
+
+
+#floatingCopyButton {
+  position: absolute;
+  display: none;
+  background: #343541;
+  border-width: 1px;
+  border: #545563 solid;
+  cursor: pointer;
+  padding: 10px;
+  border-radius: 6px;
+}
+
+#floatingCopyButton:hover {
+  background: #444654;
+}
