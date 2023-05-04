@@ -25,8 +25,6 @@
 						<ColumnDefinition Width="*"/>
 						<ColumnDefinition Width="Auto"/>
 						<ColumnDefinition Width="Auto"/>
-						<ColumnDefinition Width="Auto"/>
-						<ColumnDefinition Width="Auto"/>
 					</Grid.ColumnDefinitions>
 					<TextBlock Text="Log :" VerticalAlignment="Center" Margin="10,0,0,0" Grid.Column="0" />
 					<ComboBox VerticalAlignment="Center"
@@ -62,24 +60,6 @@
 							   Source="/Assets/iconDown.png"
 							   VerticalAlignment="Center" />
 					</Button>
-					<ComboBox Grid.Column="4"
-							  PlaceholderText="Syntax Highlithing"
-							  Items="{Binding Languages}"
-							  SelectedIndex="{Binding SelectedLangIndex, Mode=TwoWay}"
-							  SelectedItem="{Binding SelectedLang, Mode=TwoWay}"
-							  VerticalAlignment="Center"
-							  Width="186">
-						<ComboBox.ItemTemplate>
-							<DataTemplate>
-								<TextBlock Text="{Binding Aliases[0]}" />
-							</DataTemplate>
-						</ComboBox.ItemTemplate>
-					</ComboBox>
-					<ToggleSwitch Grid.Column="5"
-								  IsChecked="{Binding EditorModeIsChecked}"
-								  OnContent="Code"
-								  OffContent="Text"
-								  VerticalAlignment="Center"/>
 				</Grid>
 			</Border>
 			<TextBox Grid.Row="1"
@@ -88,12 +68,11 @@
 					 Text="{Binding Editor1Text, Mode=TwoWay}"
 					 FontSize="{Binding EditorCommonFontSize}" />
 			<GridSplitter Grid.Row="2" Height="2" Background="rgb(52, 53, 65)" Focusable="False"/>
-			<TransitioningContentControl Grid.Row="3"
-										 Content="{Binding SelectedEditor2View}">
-				<TransitioningContentControl.PageTransition>
-					<PageSlide Duration="0:00:00.050" Orientation="Horizontal"/>
-				</TransitioningContentControl.PageTransition>
-			</TransitioningContentControl>
+			<TextBox Grid.Row="3"
+					 Name="Editor2"
+					 AcceptsReturn="True"
+					 Text="{Binding Editor2Text, Mode=TwoWay}"
+					 FontSize="{Binding EditorCommonFontSize}" />
 			<GridSplitter Grid.Row="4" Height="2" Background="rgb(52, 53, 65)" Focusable="False"/>
 			<TextBox Grid.Row="5"
 					 Name="Editor3"
@@ -101,12 +80,11 @@
 					 Text="{Binding Editor3Text, Mode=TwoWay}"
 					 FontSize="{Binding EditorCommonFontSize}" />
 			<GridSplitter Grid.Row="6" Height="2" Background="rgb(52, 53, 65)" Focusable="False" />
-			<TransitioningContentControl Grid.Row="7"
-										 Content="{Binding SelectedEditor4View}">
-				<TransitioningContentControl.PageTransition>
-					<PageSlide Duration="0:00:00.050" Orientation="Horizontal"/>
-				</TransitioningContentControl.PageTransition>
-			</TransitioningContentControl>
+			<TextBox Grid.Row="7"
+					 Name="Editor4"
+					 AcceptsReturn="True"
+					 Text="{Binding Editor4Text, Mode=TwoWay}"
+					 FontSize="{Binding EditorCommonFontSize}" />
 			<GridSplitter Grid.Row="8" Height="2" Background="rgb(52, 53, 65)" Focusable="False" />
 			<TextBox Grid.Row="9"
 					 Name="Editor5"

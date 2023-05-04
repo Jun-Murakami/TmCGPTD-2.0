@@ -14,7 +14,6 @@
 						   DialogMargin="16"
 							DisableOpeningAnimation="True"
 						   dialogHost:DialogHostStyle.CornerRadius="8"
-						   dialogHost:DialogHostStyle.BorderBrush="rgb(52, 53, 65)"
 						   Background="rgb(52, 53, 65)">
 		<dialogHost:DialogHost.DialogContent>
 			<local:ApiSettingsView />

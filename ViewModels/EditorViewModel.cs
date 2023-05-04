@@ -2,8 +2,6 @@ using Avalonia.Controls;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using TextMateSharp.Grammars;
-using TmCGPTD.Views;
 using TmCGPTD.Models;
 using System.Windows.Input;
 using CommunityToolkit.Mvvm.Input;
@@ -87,87 +85,6 @@ namespace TmCGPTD.ViewModels
             else
             { 
                 SelectedEditorLogIndex++;
-            }
-        }
-
-        private ObservableCollection<Language> _languages;
-        public ObservableCollection<Language> Languages
-        {
-            get => _languages;
-            set => SetProperty(ref _languages, value);
-        }
-        private Language _selectedLang;
-        public Language SelectedLang
-        {
-            get => _selectedLang;
-            set => SetProperty(ref _selectedLang, value);
-        }
-
-        private int _selectedLangIndex;
-        public int SelectedLangIndex
-        {
-            get => _selectedLangIndex;
-            set => SetProperty(ref _selectedLangIndex, value);
-        }
-
-        private UserControl _selectedEditor2View;
-        public UserControl SelectedEditor2View
-        {
-            get => _selectedEditor2View;
-            set => SetProperty(ref _selectedEditor2View, value);
-        }
-
-        private UserControl _selectedEditor4View;
-        public UserControl SelectedEditor4View
-        {
-            get => _selectedEditor4View;
-            set => SetProperty(ref _selectedEditor4View, value);
-        }
-
-        private bool _editorModeIsChecked;
-        public bool EditorModeIsChecked
-        {
-            get => _editorModeIsChecked;
-            set
-            {
-                if (SetProperty(ref _editorModeIsChecked, value))
-                {
-                    UpdateSelectedEditorView();
-                }
-            }
-        }
-
-        private Editor2AvalonEditView _editor2AvalonEditView;
-        private Editor2TextBoxView _editor2TextBoxView;
-        private Editor4AvalonEditView _editor4AvalonEditView;
-        private Editor4TextBoxView _editor4TextBoxView;
-        private void UpdateSelectedEditorView()
-        {
-            if (_editorModeIsChecked)
-            {
-                if (_editor2AvalonEditView == null)
-                {
-                    _editor2AvalonEditView = new Editor2AvalonEditView();
-                }
-                if (_editor4AvalonEditView == null)
-                {
-                    _editor4AvalonEditView = new Editor4AvalonEditView();
-                }
-                SelectedEditor2View = _editor2AvalonEditView;
-                SelectedEditor4View = _editor4AvalonEditView;
-            }
-            else
-            {
-                if (_editor2TextBoxView == null)
-                {
-                    _editor2TextBoxView = new Editor2TextBoxView();
-                }
-                if (_editor4TextBoxView == null)
-                {
-                    _editor4TextBoxView = new Editor4TextBoxView();
-                }
-                SelectedEditor2View = _editor2TextBoxView;
-                SelectedEditor4View = _editor4TextBoxView;
             }
         }
 

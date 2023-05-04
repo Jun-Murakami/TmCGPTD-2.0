@@ -76,8 +76,6 @@ namespace TmCGPTD.Views
 
             VMLocator.EditorViewModel.EditorCommonFontSize = settings.EditorFontSize > 0 ? settings.EditorFontSize : 1;
             VMLocator.MainViewModel.SelectedPhraseItem = settings.PhrasePreset;
-            VMLocator.EditorViewModel.EditorModeIsChecked = true;
-            VMLocator.EditorViewModel.EditorModeIsChecked = settings.EditorMode;
 
             VMLocator.MainWindowViewModel.ApiMaxTokens = settings.ApiMaxTokens;
             VMLocator.MainWindowViewModel.ApiTemperature = settings.ApiTemperature;
@@ -117,7 +115,6 @@ namespace TmCGPTD.Views
             _previousWidth = ClientSize.Width;
 
             VMLocator.DataGridViewModel.ChatList = await _dbProcess.SearchChatDatabaseAsync();
-            VMLocator.EditorViewModel.SelectedLangIndex = settings.SyntaxHighlighting;
 
             await _dbProcess.CleanUpEditorLogDatabaseAsync();
 
@@ -177,10 +174,8 @@ namespace TmCGPTD.Views
             settings.X = this.Position.X;
             settings.Y = this.Position.Y;
 
-            settings.EditorMode = VMLocator.EditorViewModel.EditorModeIsChecked;
             settings.EditorFontSize = VMLocator.EditorViewModel.EditorCommonFontSize;
             settings.PhrasePreset = VMLocator.MainViewModel.SelectedPhraseItem;
-            settings.SyntaxHighlighting = VMLocator.EditorViewModel.SelectedLangIndex;
 
             SaveAppSettings(settings);
         }

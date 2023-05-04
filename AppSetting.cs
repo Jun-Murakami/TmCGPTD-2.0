@@ -28,7 +28,6 @@ namespace TmCGPTD
         public int Y { get; set; }
         public bool EditorMode { get; set; }
         public double EditorFontSize { get; set; }
-        public int SyntaxHighlighting { get; set; }
         public string PhrasePreset { get; set; }
 
         // ChatGPT API接続設定
@@ -65,7 +64,6 @@ namespace TmCGPTD
         {
             EditorMode = true;
             EditorFontSize = 15;
-            SyntaxHighlighting = 0;
             PhrasePreset = "";
 
             AppDataPath = GetAppDataDirectory();

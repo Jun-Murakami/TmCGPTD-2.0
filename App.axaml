@@ -4,17 +4,15 @@
 			 xmlns:sty="using:FluentAvalonia.Styling"
 			 xmlns:ui="using:FluentAvalonia.UI.Controls"
 			 xmlns:dialogHostAvalonia="clr-namespace:DialogHostAvalonia;assembly=DialogHost.Avalonia"
-			 RequestedThemeVariant="Dark"
              x:Class="TmCGPTD.App">
     <Application.DataTemplates>
         <local:ViewLocator/>
     </Application.DataTemplates>
 
 	<Application.Styles>
-		<sty:FluentAvaloniaTheme  PreferUserAccentColor="False" PreferSystemTheme="False"/>
-		<StyleInclude Source="avares://AvaloniaEdit/Themes/Fluent/AvaloniaEdit.xaml" />
+		<sty:FluentAvaloniaTheme  PreferUserAccentColor="False" PreferSystemTheme="False" RequestedTheme="Dark"/>
 		<StyleInclude Source="avares://TmCGPTD/Assets/Styles.axaml" />
-		<dialogHostAvalonia:DialogHostStyles />
+		<StyleInclude Source="avares://DialogHost.Avalonia/Styles.xaml"/>
 	</Application.Styles>
 	<Application.Resources>
 		<Color x:Key="SystemAccentColor">rgb(155, 138, 255)</Color>

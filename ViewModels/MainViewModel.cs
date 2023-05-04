@@ -278,7 +278,7 @@ namespace TmCGPTD.ViewModels
 
             if (result.Count > 0)
             {
-                var selectedFilePath = result[0].Path.LocalPath;
+                var selectedFilePath = result[0].ToString();
                 try
                 {
                     var msg = await _dbProcess.ImportCsvToTableAsync(selectedFilePath);
@@ -308,7 +308,7 @@ namespace TmCGPTD.ViewModels
 
             if (result != null)
             {
-                var selectedFilePath = result.Path.LocalPath;
+                string selectedFilePath = result.ToString();
                 string extension = Path.GetExtension(selectedFilePath);
 
                 if (string.IsNullOrEmpty(extension))
@@ -530,7 +530,7 @@ namespace TmCGPTD.ViewModels
             {
                 try
                 { 
-                    var selectedFilePath = result[0].Path.LocalPath;
+                    var selectedFilePath = result[0].ToString();
                     var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(selectedFilePath);
 
                     var importedPhrases = await _dbProcess.ImportPhrasesFromTxtAsync(selectedFilePath);
@@ -568,7 +568,7 @@ namespace TmCGPTD.ViewModels
 
             if (result != null)
             {
-                var selectedFilePath = result.Path.LocalPath;
+                var selectedFilePath = result.ToString();
                 string extension = Path.GetExtension(selectedFilePath);
                 if (string.IsNullOrEmpty(extension))
                 {
