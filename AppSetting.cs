@@ -58,7 +58,6 @@ namespace TmCGPTD
         public bool ApiLogitBiasIsEnable { get; set; }
         public bool MaxContentLengthIsEnable { get; set; }
 
-
         // DefaultSetting
         public AppSettings()
         {
@@ -67,7 +66,7 @@ namespace TmCGPTD
             PhrasePreset = "";
 
             AppDataPath = GetAppDataDirectory();
-            DbPath = Path.Combine(AppDataPath, "log.db");
+            DbPath = Path.Combine(AppDataPath, "log_database.db");
 
             ApiMaxTokens = 2048;
             ApiTemperature = 1;

@@ -38,7 +38,6 @@ namespace TmCGPTD
                           CachePath = AppSettings.Instance.AppDataPath,
                           //RemoteDebuggingPort = 9222,
                           //BackgroundColor = new CefColor(255, 52, 53, 65),
-
 #if WINDOWLESS
                           WindowlessRenderingEnabled = true
 #else

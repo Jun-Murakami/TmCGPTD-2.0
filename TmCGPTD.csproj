@@ -46,10 +46,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="TmCGPTD.ico" />
-  </ItemGroup>
-
-  <ItemGroup>
     <TrimmerRootDescriptor Include="Roots.xml" />
   </ItemGroup>
 

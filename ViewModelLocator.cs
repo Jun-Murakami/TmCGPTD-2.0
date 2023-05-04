@@ -59,5 +59,6 @@ namespace TmCGPTD
             get => _phrasePresetsViewModel ??= new PhrasePresetsViewModel();
             set => _phrasePresetsViewModel = value;
         }
+
     }
 }

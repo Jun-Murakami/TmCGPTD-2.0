@@ -20,8 +20,6 @@
 	<string>NSApplication</string>
 	<key>CFBundleIconFile</key>
 	<string>TmCGPTD.icns</string>
-	<key>CFBundleIdentifier</key>
-	<string>com.yourcompany.TmCGPTD</string>
 	<key>CFBundleExecutable</key>
 	<string>TmCGPTD</string>
 	<key>CFBundleDisplayName</key>
@@ -30,5 +28,7 @@
 	<string>TmCGPT Debugger</string>
 	<key>CFBundleShortVersionString</key>
 	<string>2.0</string>
+	<key>CFBundleIdentifier</key>
+	<string>com.junmurakami.TmCGPTD</string>
 </dict>
 </plist>
