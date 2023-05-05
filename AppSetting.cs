@@ -98,7 +98,7 @@ namespace TmCGPTD
 
         private string GetAppDataDirectory()
         {
-            string appDataPath = Path.Combine( Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "TmCGPTD-avalonia" );
+            string appDataPath = Path.Combine( Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "TmCGPTD" );
             if (!Directory.Exists(appDataPath))
             {
                 Directory.CreateDirectory(appDataPath);
