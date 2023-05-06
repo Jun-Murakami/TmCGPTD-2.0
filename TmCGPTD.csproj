@@ -1,12 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
 	  <TargetFramework>net6.0</TargetFramework>
-	  <OutputType>Exe</OutputType>
-	  <PublishSingleFile>true</PublishSingleFile>
+	  <OutputType>WinExe</OutputType>
 	  <SelfContained>true</SelfContained>
-	  <RuntimeIdentifiers>win-x64;osx-x64;linux-x64</RuntimeIdentifiers>
+	  <RuntimeIdentifier>win-x64</RuntimeIdentifier>
 	  <Nullable>enable</Nullable>
 	  <UseAppHost>true</UseAppHost>
+	  <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
 	  <ApplicationManifest>app.manifest</ApplicationManifest>
 	  <ApplicationIcon>TmCGPTD.ico</ApplicationIcon>
 	  

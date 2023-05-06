@@ -98,7 +98,7 @@ namespace TmCGPTD
 
         private string GetAppDataDirectory()
         {
-            string appDataPath = Path.Combine( Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "TmCGPTD" );
+            string appDataPath = Path.Combine( Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "TmCGPTD" );
             if (!Directory.Exists(appDataPath))
             {
                 Directory.CreateDirectory(appDataPath);
