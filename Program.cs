@@ -37,7 +37,7 @@ namespace TmCGPTD
                       {
                           CachePath = AppSettings.Instance.AppDataPath,
                           LogSeverity = CefLogSeverity.Warning,
-                          LogFile = AppSettings.Instance.AppDataPath + "cef.log",
+                          LogFile = AppSettings.Instance.AppDataPath + "\\cef.log",
                           //RemoteDebuggingPort = 9222,
                           //BackgroundColor = new CefColor(255, 52, 53, 65),
 #if WINDOWLESS

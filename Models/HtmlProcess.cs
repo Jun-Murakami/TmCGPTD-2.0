@@ -190,7 +190,7 @@ namespace TmCGPTD.Models
                 // divタグをフィルタリング
                 foreach (var div in divTags)
                 {
-                    if (div.ChildNodes.Count == 0 || div.InnerText.Contains("Model:"))
+                    if (div.ChildNodes.Count == 0 || div.InnerText.Contains("Model:") || div.InnerText.Contains("Regenerate response"))
                     {
                         continue;
                     }

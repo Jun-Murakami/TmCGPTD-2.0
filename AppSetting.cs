@@ -26,7 +26,6 @@ namespace TmCGPTD
         public double Height { get; set; }
         public int X { get; set; }
         public int Y { get; set; }
-        public bool EditorMode { get; set; }
         public double EditorFontSize { get; set; }
         public string PhrasePreset { get; set; }
 
@@ -61,7 +60,6 @@ namespace TmCGPTD
         // DefaultSetting
         public AppSettings()
         {
-            EditorMode = true;
             EditorFontSize = 15;
             PhrasePreset = "";
 
