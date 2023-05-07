@@ -29,6 +29,7 @@ namespace TmCGPTD.Views
 
             var browserWrapper = this.FindControl<Decorator>("ChatBrowserWrapper");
             _browser = new AvaloniaCefBrowser();
+            _browser.ContextMenuHandler = new CustomContextMenuHandler();
             browserWrapper.Child = _browser;
 
             _browser.LoadEnd += Browser_LoadEnd;
