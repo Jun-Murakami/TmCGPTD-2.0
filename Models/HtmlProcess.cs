@@ -254,11 +254,15 @@ namespace TmCGPTD.Models
                         pattern = "<text.*>.*</text>";
                         htmlString = Regex.Replace(htmlString, pattern, "");
 
+                        pattern = "<div>Finished browsing</div>";
+                        htmlString = Regex.Replace(htmlString, pattern, "");
+
                         pattern = "<span class=.*>[0-9]+ / [0-9]+</span>";
                         htmlString = Regex.Replace(htmlString, pattern, "");
 
                         // 置換処理
                         htmlString = htmlString.Replace("<pre class=\"\">", $"{br}{br}```")
+                                               .Replace("<pre>", $"{br}{br}```")
                                                .Replace("</pre>", $"{br}```{br}{br}")
                                                .Replace("Copy code", $"{br}")
                                                .Replace("<ol>", $"{br}")

@@ -15,9 +15,9 @@ Automatically saves up to 200 entries of sent text history for reuse and tweakin
 - **API option settings**  
 All API options for the Chat model can be adjusted via the GUI.
 
-<img width="1260" alt="�X�N���[���V���b�g 2023-05-07 03 42 18" src="https://user-images.githubusercontent.com/126404131/236644730-ddc7a693-cefb-47d2-9740-157c42a8b997.png">
+<img width="1260" alt="スクリーンショット 2023-05-07 03 42 18" src="https://user-images.githubusercontent.com/126404131/236644730-ddc7a693-cefb-47d2-9740-157c42a8b997.png">
 <img width="1260" src="https://user-images.githubusercontent.com/126404131/236693431-4da2e7bc-f9da-4048-829a-9f21d290a335.png">
-<img width="1260" alt="�X�N���[���V���b�g 2023-05-07 04 33 07" src="https://user-images.githubusercontent.com/126404131/236644742-c991c12d-50af-47d2-ab03-66646700c927.png">
+<img width="1260" alt="スクリーンショット 2023-05-07 04 33 07" src="https://user-images.githubusercontent.com/126404131/236644742-c991c12d-50af-47d2-ab03-66646700c927.png">
 
 I only have an old Mac, so I haven't been able to test it on newer Macs, like the Silicon Mac. I would appreciate it if you could let me know if there are any issues.
 
