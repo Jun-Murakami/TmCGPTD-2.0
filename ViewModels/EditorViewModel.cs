@@ -2,6 +2,7 @@ using Avalonia.Controls;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using TmCGPTD.Views;
 using TmCGPTD.Models;
 using System.Windows.Input;
 using CommunityToolkit.Mvvm.Input;
@@ -87,6 +88,8 @@ namespace TmCGPTD.ViewModels
                 SelectedEditorLogIndex++;
             }
         }
+
+
 
         public void TextInput_TextChanged()
         {

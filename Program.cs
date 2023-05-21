@@ -1,6 +1,7 @@
 ﻿using Avalonia;
 using System;
 using System.Diagnostics;
+using System.Runtime;
 using Xilium.CefGlue;
 using Xilium.CefGlue.Common;
 using Xilium.CefGlue.Common.Shared;
@@ -36,10 +37,11 @@ namespace TmCGPTD
                       .AfterSetup(_ => CefRuntimeLoader.Initialize(new CefSettings()
                       {
                           CachePath = AppSettings.Instance.AppDataPath,
-                          LogSeverity = CefLogSeverity.Warning,
-                          LogFile = AppSettings.Instance.AppDataPath + "\\cef.log",
                           //RemoteDebuggingPort = 9222,
+                          LogSeverity = CefLogSeverity.Error,
+                          LogFile = AppSettings.Instance.AppDataPath + "\\cef_" + ".log",
                           //BackgroundColor = new CefColor(255, 52, 53, 65),
+
 #if WINDOWLESS
                           WindowlessRenderingEnabled = true
 #else

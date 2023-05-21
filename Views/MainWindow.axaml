@@ -5,6 +5,7 @@
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="TmCGPTD.Views.MainWindow"
 		xmlns:dialogHost="clr-namespace:DialogHostAvalonia;assembly=DialogHost.Avalonia"
+		RenderOptions.BitmapInterpolationMode="HighQuality"
 		xmlns:sty="using:FluentAvalonia.Styling"
 		xmlns:ui="using:FluentAvalonia.UI.Controls"
 		xmlns:local="using:TmCGPTD.Views"
@@ -12,7 +13,7 @@
         Title="TmCGPTD">
 	<dialogHost:DialogHost IsOpen="{Binding	ApiSettingIsOpened}"
 						   DialogMargin="16"
-						   DisableOpeningAnimation="True"
+							DisableOpeningAnimation="True"
 						   dialogHost:DialogHostStyle.CornerRadius="8"
 						   Background="rgb(52, 53, 65)">
 		<dialogHost:DialogHost.DialogContent>

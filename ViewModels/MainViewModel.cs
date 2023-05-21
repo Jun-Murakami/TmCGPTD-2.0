@@ -164,6 +164,14 @@ namespace TmCGPTD.ViewModels
             }
         }
 
+        private bool _isCopyButtonClicked;
+        public bool IsCopyButtonClicked
+        {
+            get => _isCopyButtonClicked;
+            set => SetProperty(ref _isCopyButtonClicked, value);
+        }
+
+
 
         private async Task PostAsync()
         {
@@ -202,22 +210,20 @@ namespace TmCGPTD.ViewModels
 
         private async Task ImportChatLogAsync()
         {
-            OpenFileDialog openFileDialog = new OpenFileDialog
+            var dialog = new FilePickerOpenOptions
             {
                 AllowMultiple = false,
-                Title = "Select a .csv file",
-                Filters = new List<FileDialogFilter>
-                    {
-                        new FileDialogFilter { Name = "CSV Files", Extensions = new List<string> { "csv" } },
-                        new FileDialogFilter { Name = "All Files", Extensions = new List<string> { "*" } }
-                    }
+                Title = "Select CSV file",
+                FileTypeFilter = new List<FilePickerFileType>
+                    {new("CSV files (*.csv)") { Patterns = new[] { "*.csv" } },
+                    new("All files (*.*)") { Patterns = new[] { "*" } }}
             };
 
-            string[] result = await openFileDialog.ShowAsync((Application.Current.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime).MainWindow);
+            var result = await (Application.Current.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime).MainWindow.StorageProvider.OpenFilePickerAsync(dialog);
 
-            if (result != null && result.Length > 0)
+            if (result.Count > 0)
             {
-                var selectedFilePath = result[0];
+                var selectedFilePath = result[0].Path.LocalPath;
                 try
                 {
                     var msg = await _dbProcess.ImportCsvToTableAsync(selectedFilePath);
@@ -235,22 +241,25 @@ namespace TmCGPTD.ViewModels
 
         private async Task ExportChatLogAsync()
         {
-            SaveFileDialog saveFileDialog = new SaveFileDialog
+            var dialog = new FilePickerSaveOptions
             {
-                Title = "Save CSV File",
-                Filters = new List<FileDialogFilter>
-                {
-                    new FileDialogFilter { Name = "CSV Files", Extensions = new List<string> { "csv" } },
-                    new FileDialogFilter { Name = "All Files", Extensions = new List<string> { "*" } }
-                },
-                DefaultExtension = "csv"
+                Title = "Export CSV file",
+                FileTypeChoices = new List<FilePickerFileType>
+                    {new("CSV files (*.csv)") { Patterns = new[] { "*.csv" } },
+                    new("All files (*.*)") { Patterns = new[] { "*" } }}
             };
 
-            string result = await saveFileDialog.ShowAsync((Application.Current.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime).MainWindow);
+            var result = await (Application.Current.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime).MainWindow.StorageProvider.SaveFilePickerAsync(dialog);
 
-            if (!string.IsNullOrEmpty(result))
+            if (result != null)
             {
-                var selectedFilePath = result;
+                var selectedFilePath = result.Path.LocalPath;
+                string extension = Path.GetExtension(selectedFilePath);
+
+                if (string.IsNullOrEmpty(extension))
+                {
+                    selectedFilePath += ".csv";
+                }
 
                 try
                 {
@@ -452,24 +461,21 @@ namespace TmCGPTD.ViewModels
 
         private async Task ImportPhrasesAsync()
         {
-            OpenFileDialog openFileDialog = new OpenFileDialog
+            var dialog = new FilePickerOpenOptions
             {
                 AllowMultiple = false,
-                Title = "Select a .txt file",
-                Filters = new List<FileDialogFilter>
-                    {
-                        new FileDialogFilter { Name = "TXT Files", Extensions = new List<string> { "txt" } },
-                        new FileDialogFilter { Name = "All Files", Extensions = new List<string> { "*" } }
-                    }
+                Title = "Select TXT file",
+                FileTypeFilter = new List<FilePickerFileType>
+                    {new("TXT files (*.txt)") { Patterns = new[] { "*.txt" } },
+                    new("All files (*.*)") { Patterns = new[] { "*" } }}
             };
+            var result = await (Application.Current.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime).MainWindow.StorageProvider.OpenFilePickerAsync(dialog);
 
-            string[] result = await openFileDialog.ShowAsync((Application.Current.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime).MainWindow);
-
-            if (result != null && result.Length > 0)
+            if (result.Count > 0)
             {
                 try
-                {
-                    var selectedFilePath = result[0];
+                { 
+                    var selectedFilePath = result[0].Path.LocalPath;
                     var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(selectedFilePath);
 
                     var importedPhrases = await _dbProcess.ImportPhrasesFromTxtAsync(selectedFilePath);
@@ -495,22 +501,24 @@ namespace TmCGPTD.ViewModels
                 return;
             }
 
-            SaveFileDialog saveFileDialog = new SaveFileDialog
+            var dialog = new FilePickerSaveOptions
             {
-                Title = "Save txt File",
-                Filters = new List<FileDialogFilter>
-                {
-                    new FileDialogFilter { Name = "TXT Files", Extensions = new List<string> { "txt" } },
-                    new FileDialogFilter { Name = "All Files", Extensions = new List<string> { "*" } }
-                },
-                DefaultExtension = "txt"
+                Title = "Export TXT file",
+                FileTypeChoices = new List<FilePickerFileType>
+                    {new("TXT files (*.txt)") { Patterns = new[] { "*.txt" } },
+                    new("All files (*.*)") { Patterns = new[] { "*" } }}
             };
 
-            string result = await saveFileDialog.ShowAsync((Application.Current.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime).MainWindow);
+            var result = await (Application.Current.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime).MainWindow.StorageProvider.SaveFilePickerAsync(dialog);
 
-            if (!string.IsNullOrEmpty(result))
+            if (result != null)
             {
-                var selectedFilePath = result;
+                var selectedFilePath = result.Path.LocalPath;
+                string extension = Path.GetExtension(selectedFilePath);
+                if (string.IsNullOrEmpty(extension))
+                {
+                    selectedFilePath += ".txt";
+                }
 
                 var phrasesText = string.Join(Environment.NewLine, VMLocator.PhrasePresetsViewModel.Phrases);
                 try
@@ -577,12 +585,15 @@ namespace TmCGPTD.ViewModels
 
         private async Task CopyToClipboard()
         {
-            if(Avalonia.Application.Current.Clipboard != null)
+            IsCopyButtonClicked = true;
+            if (ApplicationExtensions.GetTopLevel(Avalonia.Application.Current).Clipboard != null)
             {
-                await Avalonia.Application.Current.Clipboard.SetTextAsync(VMLocator.EditorViewModel.RecentText);
-                var dialog = new ContentDialog() { Title = $"Copied to clipboard.", PrimaryButtonText = "OK" };
-                await ContentDialogShowAsync(dialog);
+                await ApplicationExtensions.GetTopLevel(Avalonia.Application.Current).Clipboard.SetTextAsync(VMLocator.EditorViewModel.RecentText);
+                //var dialog = new ContentDialog() { Title = $"Copied to clipboard.", PrimaryButtonText = "OK" };
+                //await ContentDialogShowAsync(dialog);
             }
+            await Task.Delay(500);
+            IsCopyButtonClicked = false;
         }
 
         private async Task HotKeyDisplayAsync()

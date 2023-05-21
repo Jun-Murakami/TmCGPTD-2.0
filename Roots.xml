@@ -2,5 +2,4 @@
   <!-- Can be removed if CompiledBinding and no reflection are used -->
   <assembly fullname="TmCGPTD" preserve="All" />
 	<!-- <assembly fullname="Avalonia.Themes.Fluent" preserve="All" /> -->
-	
 </linker>

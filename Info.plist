@@ -8,6 +8,8 @@
 	<string>6.0</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
+	<key>CFBundleShortVersionString</key>
+	<string>1.0</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>CFBundleVersion</key>
@@ -18,17 +20,15 @@
 	<true/>
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
-	<key>CFBundleIconFile</key>
-	<string>TmCGPTD.icns</string>
-	<key>CFBundleExecutable</key>
-	<string>TmCGPTD</string>
 	<key>CFBundleDisplayName</key>
 	<string>TmCGPT Debugger</string>
 	<key>CFBundleName</key>
 	<string>TmCGPT Debugger</string>
-	<key>CFBundleShortVersionString</key>
-	<string>2.0</string>
+	<key>CFBundleExecutable</key>
+	<string>TmCGPTD</string>
+	<key>CFBundleIconFile</key>
+	<string>TmCGPTD.icns</string>
 	<key>CFBundleIdentifier</key>
-	<string>com.junmurakami.TmCGPTD</string>
+	<string>com.yourcompany.TmCGPTD</string>
 </dict>
 </plist>

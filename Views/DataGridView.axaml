@@ -10,7 +10,7 @@
 	</UserControl.Resources>
   <Grid>
 	  <DataGrid Name="ChatListDataGrid"
-				Items="{Binding ChatList}"
+				ItemsSource="{Binding ChatList}"
 				AutoGenerateColumns="False"
 				HeadersVisibility="None"
 				SelectionMode="Single"

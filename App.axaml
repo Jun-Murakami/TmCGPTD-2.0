@@ -4,21 +4,20 @@
 			 xmlns:sty="using:FluentAvalonia.Styling"
 			 xmlns:ui="using:FluentAvalonia.UI.Controls"
 			 xmlns:dialogHostAvalonia="clr-namespace:DialogHostAvalonia;assembly=DialogHost.Avalonia"
+			 RequestedThemeVariant="Dark"
              x:Class="TmCGPTD.App">
     <Application.DataTemplates>
         <local:ViewLocator/>
     </Application.DataTemplates>
 
 	<Application.Styles>
-		<sty:FluentAvaloniaTheme  PreferUserAccentColor="False" PreferSystemTheme="False" RequestedTheme="Dark"/>
+		<sty:FluentAvaloniaTheme  PreferUserAccentColor="False" PreferSystemTheme="False"/>
 		<StyleInclude Source="avares://TmCGPTD/Assets/Styles.axaml" />
-		<StyleInclude Source="avares://DialogHost.Avalonia/Styles.xaml"/>
+		<dialogHostAvalonia:DialogHostStyles />
 	</Application.Styles>
 	<Application.Resources>
 		<Color x:Key="SystemAccentColor">rgb(155, 138, 255)</Color>
-		<Color x:Key="AccentFillColorDefaultBrush">rgb(155, 138, 255)</Color>
 		<Color x:Key="SystemAccentColorDark1">rgb(155, 138, 255)</Color>
-		<Color x:Key="SystemAccentColorLight2">rgb(155, 138, 255)</Color>
 		<Color x:Key="SystemAltMediumLowColor">rgb(52, 53, 65)</Color>
 		<Color x:Key="ApplicationPageBackgroundThemeBrush">rgb(52, 53, 65)</Color>
 		<Color x:Key="ControlStrokeColorDefaultBrush">rgb(94, 95, 109)</Color>
@@ -31,6 +30,10 @@
 		<Color x:Key="ToggleButtonBackgroundPointerOver">rgb(84, 85, 99)</Color>
 		<Color x:Key="ToggleButtonBackgroundChecked">rgb(52, 53, 65)</Color>
 		<Color x:Key="ToggleButtonBackgroundCheckedPointerOver">rgb(84, 85, 99)</Color>
+		<!--<Color x:Key="TextControlBackground">rgb(42, 43, 55)</Color>-->
+		<!--<Color x:Key="TextControlBackgroundFocused">rgb(42, 43, 55)</Color>-->
+		<!--<Color x:Key="TextControlBackgroundPointerOver">rgb(47, 48, 60)</Color>-->
+		<!--<Color x:Key="TextControlBorderBrushFocused">rgb(42, 43, 55)</Color>-->
 		<Color x:Key="DividerStrokeColorDefaultBrush">rgb(52, 53, 65)</Color>
 		<Color x:Key="MenuFlyoutPresenterBackground">rgb(52, 53, 65)</Color>
 		<Color x:Key="MenuFlyoutItemBackgroundPointerOver">rgb(74, 75, 89)</Color>

@@ -31,7 +31,7 @@ namespace TmCGPTD.ViewModels
 
                 string script = @"const mainTag = document.querySelector('main');
                         const formTag = mainTag.querySelector('form');
-                        const textarea = formTag.querySelector('textarea');" +
+                        const textarea = formTag.querySelector('textarea');"+
                         $"textarea.value = {escapedString};";
                 await _browser.EvaluateJavaScript<string>(script);
 
@@ -47,7 +47,7 @@ namespace TmCGPTD.ViewModels
                         button.click();";
                 await _browser.EvaluateJavaScript<string>(script);
             }
-            catch (Exception ex)
+            catch(Exception ex)
             {
                 var dialog = new ContentDialog() { Title = "Error : " + ex.Message, PrimaryButtonText = "OK" };
                 await ContentDialogShowAsync(dialog);

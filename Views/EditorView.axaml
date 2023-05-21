@@ -31,7 +31,7 @@
 							  Margin="5"
 							  Grid.Column="1"
 							  HorizontalAlignment="Stretch"
-							  Items="{Binding EditorLogLists}"
+							  ItemsSource="{Binding EditorLogLists}"
 							  SelectedIndex="{Binding SelectedEditorLogIndex}"
 							  SelectedItem="{Binding SelectedEditorLog}">
 						<ComboBox.ItemTemplate>
@@ -66,35 +66,30 @@
 					 Name="Editor1"
 					 AcceptsReturn="True"
 					 Text="{Binding Editor1Text, Mode=TwoWay}"
-					 FontSize="{Binding EditorCommonFontSize}"
-					 InputMethod.IsInputMethodEnabled="True"/>
+					 FontSize="{Binding EditorCommonFontSize}" />
 			<GridSplitter Grid.Row="2" Height="2" Background="rgb(52, 53, 65)" Focusable="False"/>
 			<TextBox Grid.Row="3"
 					 Name="Editor2"
 					 AcceptsReturn="True"
 					 Text="{Binding Editor2Text, Mode=TwoWay}"
-					 FontSize="{Binding EditorCommonFontSize}"
-					 InputMethod.IsInputMethodEnabled="True"/>
+					 FontSize="{Binding EditorCommonFontSize}" />
 			<GridSplitter Grid.Row="4" Height="2" Background="rgb(52, 53, 65)" Focusable="False"/>
 			<TextBox Grid.Row="5"
 					 Name="Editor3"
 					 AcceptsReturn="True"
 					 Text="{Binding Editor3Text, Mode=TwoWay}"
-					 FontSize="{Binding EditorCommonFontSize}"
-					 InputMethod.IsInputMethodEnabled="True"/>
+					 FontSize="{Binding EditorCommonFontSize}" />
 			<GridSplitter Grid.Row="6" Height="2" Background="rgb(52, 53, 65)" Focusable="False" />
 			<TextBox Grid.Row="7"
 					 Name="Editor4"
 					 AcceptsReturn="True"
 					 Text="{Binding Editor4Text, Mode=TwoWay}"
-					 FontSize="{Binding EditorCommonFontSize}"
-					 InputMethod.IsInputMethodEnabled="True"/>
+					 FontSize="{Binding EditorCommonFontSize}" />
 			<GridSplitter Grid.Row="8" Height="2" Background="rgb(52, 53, 65)" Focusable="False" />
 			<TextBox Grid.Row="9"
 					 Name="Editor5"
 					 AcceptsReturn="True"
 					 Text="{Binding Editor5Text, Mode=TwoWay}"
-					 FontSize="{Binding EditorCommonFontSize}"
-					 InputMethod.IsInputMethodEnabled="True"/>
+					 FontSize="{Binding EditorCommonFontSize}"/>
 		</Grid>
 </UserControl>

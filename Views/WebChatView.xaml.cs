@@ -23,7 +23,6 @@ namespace TmCGPTD.Views
 
             browser = new AvaloniaCefBrowser();
             browser.Address = "https://chat.openai.com/";
-            browser.ContextMenuHandler = new CustomContextMenuHandler();
             browserWrapper.Child = browser;
             WebChatViewModel.SetBrowser(browser);
             browser.Focusable = false;

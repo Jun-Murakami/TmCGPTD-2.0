@@ -1,7 +1,9 @@
 ﻿<Styles xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-		 xmlns:ui="using:FluentAvalonia.UI.Controls"
-		 xmlns:uip="using:FluentAvalonia.UI.Controls.Primitives">
+		xmlns:ui="using:FluentAvalonia.UI.Controls"
+		xmlns:uip="using:FluentAvalonia.UI.Controls.Primitives"
+		xmlns:AvalonEdit="clr-namespace:AvaloniaEdit;assembly=AvaloniaEdit"
+		xmlns:dialogHost="clr-namespace:DialogHostAvalonia;assembly=DialogHost.Avalonia">
     <Design.PreviewWith>
         <Border Padding="20">
             <!-- Add Controls for Previewer Here -->
@@ -18,7 +20,6 @@
 		</Style>
 		<Style Selector="TextBlock">
 			<Setter Property="FontFamily" Value="avares://TmCGPTD/Assets/Lato-Regular.ttf#Lato" />
-			<Setter Property="FontWeight" Value="Normal" />
 			<Setter Property="Foreground" Value="rgb(220, 220, 220)" />
 		</Style>
 		<Style Selector="TextBlock#Title">
@@ -39,6 +40,10 @@
 			<Setter Property="CornerRadius" Value="6"/>
 			<Setter Property="Margin" Value="0" />
 			<Setter Property="FontFamily" Value="avares://TmCGPTD/Assets/Lato-Regular.ttf#Lato" />
+			<!--<Setter Property="FontFamily" Value="avares://TmCGPTD/Assets/Lato-Light.ttf#Lato" />-->
+			<!--<Setter Property="FontFamily" Value="avares://TmCGPTD/Assets/Roboto-Regular.ttf#Roboto" />-->
+			<!--<Setter Property="FontFamily" Value="avares://TmCGPTD/Assets/Roboto-Light.ttf#Roboto" />-->
+			<!--<Setter Property="FontFamily" Value="avares://TmCGPTD/Assets/SourceSansPro-Regular.ttf#Source Sans Pro" />-->
 			<Setter Property="Transitions">
 				<Transitions>
 					<BrushTransition Property="Background" Duration="0:0:0.2"/>
@@ -295,12 +300,12 @@
 			<Setter Property="Margin" Value="10,0,0,0" />
 			<Setter Property="Height" Value="20" />
 		</Style>
-		
+
 		<Style Selector="Window">
 			<Setter Property="Padding" Value="10,0,10,10" />
 			<Setter Property="MinWidth" Value="930"/>
 			<Setter Property="MinHeight" Value="600"/>
-			<Setter Property="RenderOptions.BitmapInterpolationMode" Value="HighQuality" />
+			<!--<Setter Property="RenderOptions.BitmapInterpolationMode" Value="HighQuality" />-->
 			<Setter Property="ExtendClientAreaToDecorationsHint" Value="True" />
 			<Setter Property="ExtendClientAreaChromeHints" Value="PreferSystemChrome" />
 		</Style>

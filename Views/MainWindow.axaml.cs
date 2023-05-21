@@ -65,7 +65,6 @@ namespace TmCGPTD.Views
 
             VMLocator.MainViewModel.SelectedLogPain = "Chat List";
 
-
             await _dbProcess.GetEditorLogDatabaseAsync();
 
 

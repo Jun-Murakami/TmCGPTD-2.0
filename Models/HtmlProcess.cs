@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using System.Text.RegularExpressions;
 using System.Net.Http;
 using TiktokenSharp;
+using Avalonia;
 
 namespace TmCGPTD.Models
 {
@@ -19,11 +20,10 @@ namespace TmCGPTD.Models
         // 表示用HTML初期化--------------------------------------------------------------
         public async Task<string> InitializeChatLogToHtml()
         {
-            var assetLoader = new AssetLoader();
+            using var streamReader = new StreamReader(AvaloniaLocator.Current.GetService<IAssetLoader>().Open(new Uri("avares://TmCGPTD/Assets/ChatTemplete.html")));
+            using var chatCssStreamReader = new StreamReader(AvaloniaLocator.Current.GetService<IAssetLoader>().Open(new Uri("avares://TmCGPTD/Assets/ChatStyles.css")));
+            using var cssStreamReader = new StreamReader(AvaloniaLocator.Current.GetService<IAssetLoader>().Open(new Uri("avares://TmCGPTD/Assets/vs2015.min.css")));
 
-            using var streamReader = new StreamReader(assetLoader.Open(new Uri("avares://TmCGPTD/Assets/ChatTemplete.html")));
-            using var chatCssStreamReader = new StreamReader(assetLoader.Open(new Uri("avares://TmCGPTD/Assets/ChatStyles.css")));
-            using var cssStreamReader = new StreamReader(assetLoader.Open(new Uri("avares://TmCGPTD/Assets/vs2015.min.css")));
 
             string chatCssContent = await chatCssStreamReader.ReadToEndAsync();
             string cssContent = await cssStreamReader.ReadToEndAsync();
@@ -46,11 +46,10 @@ namespace TmCGPTD.Models
         public async Task<string> ConvertChatLogToHtml(string plainTextChatLog)
         {
             plainTextChatLog = Regex.Replace(plainTextChatLog, @"\r\n|\r|\n", Environment.NewLine);
-            var assetLoader = new AssetLoader();
+            using var streamReader = new StreamReader(AvaloniaLocator.Current.GetService<IAssetLoader>().Open(new Uri("avares://TmCGPTD/Assets/ChatTemplete.html")));
+            using var chatCssStreamReader = new StreamReader(AvaloniaLocator.Current.GetService<IAssetLoader>().Open(new Uri("avares://TmCGPTD/Assets/ChatStyles.css")));
+            using var cssStreamReader = new StreamReader(AvaloniaLocator.Current.GetService<IAssetLoader>().Open(new Uri("avares://TmCGPTD/Assets/vs2015.min.css")));
 
-            using var streamReader = new StreamReader(assetLoader.Open(new Uri("avares://TmCGPTD/Assets/ChatTemplete.html")));
-            using var chatCssStreamReader = new StreamReader(assetLoader.Open(new Uri("avares://TmCGPTD/Assets/ChatStyles.css")));
-            using var cssStreamReader = new StreamReader(assetLoader.Open(new Uri("avares://TmCGPTD/Assets/vs2015.min.css")));
 
             string chatCssContent = await chatCssStreamReader.ReadToEndAsync();
             string cssContent = await cssStreamReader.ReadToEndAsync();
@@ -159,7 +158,7 @@ namespace TmCGPTD.Models
                 if (titleNode != null)
                 {
                     string titleText = titleNode.InnerText;
-                    if (titleText == "New chat")
+                    if (titleText == "New chat"|| titleText == "")
                     {
                         return "Please display chat screen.";
                     }
@@ -637,7 +636,7 @@ namespace TmCGPTD.Models
         }
 
         // 表示用チャットログHTML変換--------------------------------------------------------------
-        public async Task<string> ConvertAddLogToHtml(string plainTextChatLog, DateTime resDate)
+        public async Task<string> ConvertAddLogToHtml(string plainTextChatLog,DateTime resDate)
         {
             plainTextChatLog = Regex.Replace(plainTextChatLog, @"\r\n|\r|\n", Environment.NewLine);
             var codeSnippetRegex = new Regex(@"^```(?:([\w-+#.]+)\s+)?([\s\S]*?)(^```)", RegexOptions.Multiline);

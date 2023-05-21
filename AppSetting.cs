@@ -57,6 +57,7 @@ namespace TmCGPTD
         public bool ApiLogitBiasIsEnable { get; set; }
         public bool MaxContentLengthIsEnable { get; set; }
 
+
         // DefaultSetting
         public AppSettings()
         {

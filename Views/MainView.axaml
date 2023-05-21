@@ -44,7 +44,7 @@
 									<RowDefinition Height="50"/>
 									<RowDefinition Height="*"/>
 								</Grid.RowDefinitions>
-								<ListBox Grid.Row="0" Items="{Binding LogPanes}" SelectedItem="{Binding	SelectedLogPain}">
+								<ListBox Grid.Row="0" ItemsSource="{Binding LogPanes}" SelectedItem="{Binding	SelectedLogPain}">
 									<ListBox.ItemsPanel>
 										<ItemsPanelTemplate>
 											<WrapPanel />
@@ -122,7 +122,7 @@
 								<Grid Grid.Row="0">
 									<ListBox Name="LeftPaneList"
 											 Grid.Column="0"
-											 Items="{Binding LeftPanes}"
+											 ItemsSource="{Binding LeftPanes}"
 											 SelectedItem="{Binding SelectedLeftPane}">
 										<ListBox.ItemsPanel>
 											<ItemsPanelTemplate>
@@ -151,7 +151,7 @@
 								<Grid Grid.Row="0">
 									<ListBox Name="RightPaneList"
 											 Grid.Column="0"
-											 Items="{Binding RightPanes}"
+											 ItemsSource="{Binding RightPanes}"
 											 SelectedItem="{Binding SelectedRightPane}">
 										<ListBox.ItemsPanel>
 											<ItemsPanelTemplate>
@@ -195,6 +195,14 @@
 													<Button Command="{Binding CopyToClipboardCommand}"
 															ToolTip.Tip="Copy to clipboard (Ctrl + S)"
 															HotKey="Ctrl+S" >
+														<Button.Styles>
+															<Style Selector="Button[IsEnabled=True][Tag=True]">
+																<Setter Property="Background" Value="rgb(94, 95, 109)"/>
+															</Style>
+														</Button.Styles>
+														<Button.Tag>
+															<Binding Path="IsCopyButtonClicked"/>
+														</Button.Tag>
 														<Image Source="/Assets/iconClip.png"
 															   VerticalAlignment="Center"
 															   Name="CopyToClipboard" />
@@ -234,7 +242,7 @@
 							</Expander>
 							<StackPanel Orientation="Horizontal">
 								<Button Content="Phrase Presets" Flyout="{StaticResource PhraseMenuFlyout}" VerticalAlignment="Bottom" Margin="10,8,8,8"/>
-								<ComboBox Items="{Binding PhrasePresetsItems}" SelectedItem="{Binding SelectedPhraseItem}" Width="200" VerticalAlignment="Bottom" Margin="0,8,8,8"/>
+								<ComboBox ItemsSource="{Binding PhrasePresetsItems}" SelectedItem="{Binding SelectedPhraseItem}" Width="200" VerticalAlignment="Bottom" Margin="0,8,8,8"/>
 							</StackPanel>
 						</Grid>
 					</Grid>
