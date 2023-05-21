@@ -2,6 +2,7 @@
   <PropertyGroup>
 	  <TargetFramework>net6.0</TargetFramework>
 	  <OutputType>WinExe</OutputType>
+	  <SelfContained>true</SelfContained>
 	  <RuntimeIdentifiers>win-x64;osx-x64;linux-x64</RuntimeIdentifiers>
 	  <Nullable>enable</Nullable>
 	  <UseAppHost>true</UseAppHost>
