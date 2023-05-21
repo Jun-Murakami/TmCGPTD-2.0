@@ -1,9 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
 	  <TargetFramework>net6.0</TargetFramework>
-	  <OutputType>Exe</OutputType>
-	  <PublishSingleFile>true</PublishSingleFile>
-	  <SelfContained>true</SelfContained>
+	  <OutputType>WinExe</OutputType>
 	  <RuntimeIdentifiers>win-x64;osx-x64;linux-x64</RuntimeIdentifiers>
 	  <Nullable>enable</Nullable>
 	  <UseAppHost>true</UseAppHost>
