@@ -345,7 +345,7 @@ namespace TmCGPTD.Models
                 {
 
                     httpClientStr.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", VMLocator.MainWindowViewModel.ApiKey);
-                    httpClientStr.Timeout = TimeSpan.FromSeconds(200d);
+                    httpClientStr.Timeout = TimeSpan.FromSeconds(300d);
 
                     // 過去の会話履歴と現在の入力を結合する前に、過去の会話履歴に含まれるcontent文字列のトークン数を取得
                     int historyContentTokenCount = conversationHistory.Sum(d => tokenizer.Encode(d["content"].ToString()).Count);
