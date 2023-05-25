@@ -70,7 +70,7 @@ namespace TmCGPTD
             ApiMaxTokens = 2048;
             ApiTemperature = 1;
             ApiTopP = 1.0;
-            ApiN = 20;
+            ApiN = 1;
             ApiLogprobs = 1;
             ApiPresencePenalty = 0.0;
             ApiFrequencyPenalty = 0.0;

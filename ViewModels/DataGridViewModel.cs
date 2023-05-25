@@ -32,24 +32,20 @@ namespace TmCGPTD.ViewModels
                 {
                     OnPropertyChanged(nameof(SelectedItemId));
 
-                    if (_selectedItem != null)
+                    if (_selectedItem != default)
                     {
                         VMLocator.ChatViewModel.LastId = _selectedItem.Id;
                         ShowChatLogAsync(_selectedItem.Id);
                     }
                     else
                     {
-                        VMLocator.ChatViewModel.LastId = -1;
-                        //var _chatViewModel = VMLocator.ChatViewModel;
-                        //_chatViewModel.ChatTitle = "";
-                        //_chatViewModel.ConversationHistory.Clear();
-                        //_chatViewModel.HtmlContent = "";
+                        //VMLocator.ChatViewModel.LastId = -1;
                     }
                 }
             }
         }
 
-        public long SelectedItemId => _selectedItem?.Id ?? -1;
+        public long SelectedItemId => _selectedItem?.Id ?? default;
 
         DatabaseProcess _dbProcess = new DatabaseProcess();
         HtmlProcess _htmlProcess = new HtmlProcess();

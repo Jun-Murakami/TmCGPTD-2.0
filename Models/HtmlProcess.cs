@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using System.Text.RegularExpressions;
 using System.Net.Http;
 using TiktokenSharp;
+using System.Diagnostics;
 using Avalonia;
 
 namespace TmCGPTD.Models
@@ -352,10 +353,12 @@ namespace TmCGPTD.Models
 
                     // 要約前のトークン数を記録
                     int preSummarizedHistoryTokenCount = historyContentTokenCount;
-                    // 履歴を逆順にする。
+
+                    // 履歴を逆順にする
                     List<Dictionary<string, object>> reversedHistoryList = conversationHistory;
                     reversedHistoryList.Reverse();
 
+                    // 入力文字列のトークン数が制限トークン数「MAX_CONTENT_LENGTH」を超えた場合
                     if (tokenizer.Encode(chatTextPost).Count > MAX_CONTENT_LENGTH)
                     {
                         throw new Exception($"The input text ({tokenizer.Encode(chatTextPost).Count}) exceeds the maximum token limit ({MAX_CONTENT_LENGTH}). Please remove {tokenizer.Encode(chatTextPost).Count - MAX_CONTENT_LENGTH} tokens.{Environment.NewLine}");
@@ -392,16 +395,11 @@ namespace TmCGPTD.Models
                         foreach (var dict in reversedHistoryList)
                         {
                             string dictString = string.Join(", ", dict.Select(pair => $"{pair.Key}: {pair.Value}"));
-                            //Debug.WriteLine("{" + dictString + "}");
                         }
-
-                        //Debug.WriteLine(messageStart);
-                        //Debug.WriteLine(messagesToSelect);
-                        //Debug.WriteLine(reversedHistoryList.Count);
 
                         // 会話履歴から適切な数だけをセレクトする
                         int rangeLength = Math.Min(messagesToSelect - messageStart, reversedHistoryList.Count - messageStart);
-                        //Debug.WriteLine(rangeLength);
+
                         if (rangeLength > 0)
                         {
                             forCompMes = reversedHistoryList.GetRange(messageStart, rangeLength).Select(message => message["content"].ToString()).Aggregate((a, b) => a + b);
@@ -410,7 +408,6 @@ namespace TmCGPTD.Models
                         {
                             forCompMes = reversedHistoryList[0]["content"].ToString();
                         }
-
 
                         if (messagesToSelect > 0)
                         {
@@ -429,8 +426,6 @@ namespace TmCGPTD.Models
                                 {
                                     summaryLog = summary;
                                 }
-
-                                //MessageBox.Show($"Conversation history was summarized as follows:{Environment.NewLine}{Environment.NewLine}{summaryLog}");
 
                                 // 返ってきた要約文で、conversationHistoryを書き換える
                                 conversationHistory.RemoveRange(messageStart, conversationHistory.Count - messageStart);
@@ -455,6 +450,7 @@ namespace TmCGPTD.Models
                     // 過去の会話履歴と現在の入力を結合
                     conversationHistory.Add(userInput);
 
+                    // リクエストパラメータを作成
                     var options = new Dictionary<string, object>() { { "model", VMLocator.MainWindowViewModel.ApiModel }, { "messages", conversationHistory } };
 
                     // オプションパラメータを追加
@@ -489,16 +485,20 @@ namespace TmCGPTD.Models
                         options.Add("logit_bias", logitBias);
                     }
 
+
                     string jsonContent = JsonSerializer.Serialize(options);
 
                     var content = new StringContent(jsonContent, System.Text.Encoding.UTF8, "application/json");
 
                     var response = await httpClientStr.PostAsync(VMLocator.MainWindowViewModel.ApiUrl, content);
 
+                    // レスポンスが成功した場合
                     if (response.IsSuccessStatusCode)
                     {
+                        // レスポンスボディを取得
                         string responseBody = await response.Content.ReadAsStringAsync();
                         var responseJson = JsonSerializer.Deserialize<JsonElement>(responseBody);
+
                         // レス本文
                         chatTextRes = Environment.NewLine + responseJson.GetProperty("choices")[0].GetProperty("message").GetProperty("content").GetString().Trim() + Environment.NewLine + Environment.NewLine;
 
@@ -519,16 +519,15 @@ namespace TmCGPTD.Models
                         {
                             chatTextRes += $"-Conversation history has been summarized. before: {preSummarizedHistoryTokenCount}, after: {tokenizer.Encode(postConversation).Count}.{Environment.NewLine}";
                         }
-                        else if (isDeleteHistory)
+                        else if (isDeleteHistory) // 会話履歴が全て削除された場合
                         {
                             chatTextRes += $"-Conversation history has been removed. before: {preSummarizedHistoryTokenCount}, after: {tokenizer.Encode(postConversation).Count}.{Environment.NewLine}";
                         }
+
                         //会話が成立した時点でタイトルが空欄だったらタイトルを自動生成する
                         if (string.IsNullOrEmpty(currentTitle))
                         {
                             VMLocator.ChatViewModel.ChatTitle = await GetTitleAsync(currentTitle);
-
-                            await VMLocator.ChatViewModel.TitleUpdateAsync();
                         }
                     }
                     else
@@ -557,7 +556,7 @@ namespace TmCGPTD.Models
 
                 var options = new Dictionary<string, object>
                 {
-                    { "model", VMLocator.MainWindowViewModel.ApiModel },
+                    { "model", "gpt-3.5-turbo" },
                     { "messages", new List<Dictionary<string, object>>
                         {
                             new Dictionary<string, object> { { "role", "system" }, { "content", "You are a professional editor. Please summarize the following chat log in about 300 tokens using the language in which the text is written. For a text that includes multiple conversations, the conversation set that appears at the beginning is the most important." } },
@@ -602,10 +601,20 @@ namespace TmCGPTD.Models
 
                 var options = new Dictionary<string, object>
                 {
-                    { "model", VMLocator.MainWindowViewModel.ApiModel },
+                    { "model", "gpt-3.5-turbo" },
                     { "messages", new List<Dictionary<string, object>>
                         {
-                            new Dictionary<string, object> { { "role", "system" }, { "content", "あなたはプロの編集者です。これから送るチャットログにチャットタイトルをつけてそれだけを回答してください。・チャットで使われている言語でタイトルを考えてください。・ログは冒頭に行くほど重要な情報です。・記号を使わないこと。・短くシンプルに、UNICODEの全角文字に換算して最大でも16文字を絶対に超えないように。これは重要な条件です。" } },
+                            new Dictionary<string, object> { { "role", "system" }, { "content", 
+                                    "あなたはプロの編集者です。これから送るチャットログにチャットタイトルをつけてそれだけを回答してください。\n" +
+                                    "- チャットで使われている言語でタイトルを考えてください。\n" +
+                                    "- ログは冒頭に行くほど重要な情報です。\n" +
+                                    "# 制約条件\n" +
+                                    "- 「」や\"\'などの記号を使わないこと。\n" +
+                                    "- 句読点を使わないこと。\n" +
+                                    "- 短くシンプルに、UNICODEの全角文字に換算して最大でも16文字を絶対に超えないように。これは重要な条件です。\n" +
+                                    "# 例\n" +
+                                    "宣言型モデルとフロントエンド\n" +
+                                    "日英翻訳" } },
                             new Dictionary<string, object> { { "role", "user" }, { "content", forTitleMes } }
                         }
                     }
@@ -623,7 +632,6 @@ namespace TmCGPTD.Models
                     var responseJson = JsonSerializer.Deserialize<JsonElement>(responseBody);
                     char[] charsToTrim = { ' ', '\"', '\'', '[', ']', '「', '」' };
                     summary = responseJson.GetProperty("choices")[0].GetProperty("message").GetProperty("content").GetString().Trim();
-                    //MessageBox.Show(summary);
                 }
                 else
                 {
