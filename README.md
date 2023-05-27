@@ -12,7 +12,7 @@ Designed to make it easy to cut and paste text to configure prompts.
 You can log in with your ChatGPT account and import logs from the web service version. Even if the chat log has reached its maximum length, you can continue the conversation semi-permanently after importing. (It has a feature that automatically compresses and retains old conversation history in the background.) Also, if you are a PLUS member, you can use the fast GPT3.5 model in the built-in browser as is.
 - **Preset phrase function**  
 You can register frequently used phrases, such as "Please translate ~ into English in several patterns," "You are a professional editor," and "Please summarize the following text in 300 characters or less," and insert them into the editor.
-- **Prompt template**.  
+- **Prompt template**  
 Prompt templates can be saved and loaded.
 - **Text editor history**  
 Automatically saves up to 200 entries of sent text history for reuse and tweaking of prompts.
