@@ -44,6 +44,6 @@ I only have an old Mac, so I haven't been able to test it on newer Macs, like th
 
 [AvaloniaUI](https://github.com/AvaloniaUI/Avalonia) is used for multi-platform support.
 
-More information (japanese) : [note](https://note.com/junmurakami/n/n93f4bc8f278d) お知らせや詳細な解説などはnoteで書いてます。
+More information (japanese) : [note](https://note.com/junmurakami/n/n93f4bc8f278d) ←お知らせや詳細な解説などはnoteで書こうと思います。
 
 by Jun Murakami
