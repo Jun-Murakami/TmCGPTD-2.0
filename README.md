@@ -34,8 +34,7 @@ ChatGPTのアカウントでログインしてWebサービス版のログをイ�
 - **APIオプション設定**  
 ChatモデルのすべてのAPIオプションをGUIで調整できます。
 
-
-<img width="1260" alt="スクリーンショット 2023-05-07 03 42 18" src="https://user-images.githubusercontent.com/126404131/236644730-ddc7a693-cefb-47d2-9740-157c42a8b997.png">
+<img width="1144" alt="スクリーンショット 2023-05-27 10 32 38" src="https://github.com/Jun-Murakami/TmCGPTD-2.0/assets/126404131/01f09bbd-8252-4416-946f-a7d997843ad9">
 <img width="1260" src="https://user-images.githubusercontent.com/126404131/236693431-4da2e7bc-f9da-4048-829a-9f21d290a335.png">
 <img width="1260" alt="スクリーンショット 2023-05-07 04 33 07" src="https://user-images.githubusercontent.com/126404131/236644742-c991c12d-50af-47d2-ab03-66646700c927.png">
 
