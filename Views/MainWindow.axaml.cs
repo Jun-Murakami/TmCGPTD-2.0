@@ -49,7 +49,7 @@ namespace TmCGPTD.Views
 
                 double dpiScaling = screen.PixelDensity;
                 this.Width = (workingArea.Height / 5) * 4;
-                this.Height = (workingArea.Height / 5) * 3;
+                this.Height = (workingArea.Height / 5) * 4.8;
 
                 this.WindowStartupLocation = WindowStartupLocation.CenterScreen;
             }

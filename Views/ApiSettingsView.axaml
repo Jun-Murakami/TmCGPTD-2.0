@@ -64,11 +64,11 @@
 		<ToggleSwitch Grid.Row="5" Grid.Column="3" IsChecked="{Binding ApiTopPIsEnable}" />
 		<TextBlock Grid.Row="5" Grid.Column="4" Text="1" />
 
-		<TextBlock Grid.Row="6" Grid.Column="0" Text="n" TextAlignment="Right" />
+<!--	<TextBlock Grid.Row="6" Grid.Column="0" Text="n" TextAlignment="Right" />
 		<Slider Grid.Row="6" Grid.Column="1" IsSnapToTickEnabled="True" TickFrequency="1" Minimum="1" Maximum="4096" Value="{Binding ApiN}" />
 		<local:CustomNumericUpDown Grid.Row="6" Grid.Column="2" FormatString="{}{0:#0}" Minimum="1" Maximum="4096" Increment="1" Value="{Binding ApiN}" />
 		<ToggleSwitch Grid.Row="6" Grid.Column="3" IsChecked="{Binding ApiNIsEnable}" />
-		<TextBlock Grid.Row="6" Grid.Column="4" Text="1" />
+		<TextBlock Grid.Row="6" Grid.Column="4" Text="1" />-->
 
 <!--	<TextBlock Grid.Row="7" Grid.Column="0" Text="logprobs" IsEnabled="False" TextAlignment="Right"/>
 		<Slider Grid.Row="7" Grid.Column="1" IsEnabled="False" IsSnapToTickEnabled="True" TickFrequency="1" Minimum="1" Maximum="5" Value="{Binding ApiLogprobs}" />
@@ -122,8 +122,9 @@
 
 		<TextBlock Grid.Row="18" Grid.Column="0" Grid.ColumnSpan="5" FontSize="12" Text="&quot;conversation history limit&quot; is a client option, not an API parameter.&#xA;When the set value (tokens) is exceeded,&#xA;the conversation history will be automatically summarized." HorizontalAlignment="Center" />
 
-		<Button Grid.Row="19" Grid.Column="0" Grid.ColumnSpan="5" Content="Reset" HorizontalAlignment="Center" Margin="0,20,0,15" Width="100" Height="30" Command="{Binding ResetApiSettingsCommand}"/>
+		<Button Grid.Row="19" Grid.Column="0" Grid.ColumnSpan="5" Content="Close" HorizontalAlignment="Center" Margin="0,20,0,15" Width="200" Command="{Binding ClosingApiSettingsCommand}"/>
 		
-		<Button Grid.Row="20" Grid.Column="0" Grid.ColumnSpan="5" Content="Close" HorizontalAlignment="Center" Margin="0,0,0,15" Width="200" Command="{Binding ClosingApiSettingsCommand}"/>
+		<Button Grid.Row="20" Grid.Column="0" Grid.ColumnSpan="5" Content="Reset" HorizontalAlignment="Center" Margin="0,0,0,15" Width="100" Height="30" Command="{Binding ResetApiSettingsCommand}"/>
+
     </Grid>
 </UserControl>

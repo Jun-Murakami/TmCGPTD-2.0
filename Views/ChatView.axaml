@@ -24,6 +24,7 @@
 				</Grid.ColumnDefinitions>
 				<Grid Grid.Column="0" VerticalAlignment="Center" Margin="5,0,0,0">
 					<ToggleButton Classes="ImageButton"
+								  ToolTip.Tip="Open / Close chat list"
 								  VerticalAlignment="Center"
 								  IsChecked="{Binding LogPainIsOpened}"
 								  IsVisible="{Binding LogPainButtonIsVisible}">
