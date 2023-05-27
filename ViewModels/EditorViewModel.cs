@@ -1,11 +1,18 @@
+using Avalonia;
 using Avalonia.Controls;
 using System;
+using System.IO;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using TextMateSharp.Grammars;
 using TmCGPTD.Views;
 using TmCGPTD.Models;
 using System.Windows.Input;
 using CommunityToolkit.Mvvm.Input;
+using FluentAvalonia.UI.Controls;
+using System.Threading.Tasks;
+using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Platform.Storage;
 
 namespace TmCGPTD.ViewModels
 {
@@ -14,6 +21,8 @@ namespace TmCGPTD.ViewModels
         DatabaseProcess _dbProcess = new DatabaseProcess();
         public EditorViewModel()
         {
+            EditorModeIsChecked = true;
+
             TextClear();
 
             PropertyChanged += (sender, e) =>
@@ -29,11 +38,22 @@ namespace TmCGPTD.ViewModels
             PrevCommand = new RelayCommand(OnPrevCommand, () => SelectedEditorLogIndex > 0);
             NextCommand = new RelayCommand(OnNextCommand, () => SelectedEditorLogIndex < EditorLogLists.Count - 1);
 
-            SelectedEditorLogIndex = -1;
+            SaveTemplateCommand = new AsyncRelayCommand(SaveTemplateAsync);
+            RenameTemplateCommand = new AsyncRelayCommand(RenameTemplateAsync);
+            DeleteTemplateCommand = new AsyncRelayCommand(DeleteTemplateAsync);
+            ImportTemplateCommand = new AsyncRelayCommand(ImportTemplateAsync);
+            ExportTemplateCommand = new AsyncRelayCommand(ExportTemplateAsync);
+
         }
 
         public ICommand PrevCommand { get; }
         public ICommand NextCommand { get; }
+        public IAsyncRelayCommand SaveTemplateCommand { get; }
+        public IAsyncRelayCommand RenameTemplateCommand { get; }
+        public IAsyncRelayCommand DeleteTemplateCommand { get; }
+        public IAsyncRelayCommand ImportTemplateCommand { get; }
+        public IAsyncRelayCommand ExportTemplateCommand { get; }
+
 
         private ObservableCollection<EditorLogs> _editorLogLists;
         public ObservableCollection<EditorLogs> EditorLogLists
@@ -89,7 +109,328 @@ namespace TmCGPTD.ViewModels
             }
         }
 
+        private ObservableCollection<Language> _languages;
+        public ObservableCollection<Language> Languages
+        {
+            get => _languages;
+            set => SetProperty(ref _languages, value);
+        }
+        private Language _selectedLang;
+        public Language SelectedLang
+        {
+            get => _selectedLang;
+            set => SetProperty(ref _selectedLang, value);
+        }
 
+        private int _selectedLangIndex;
+        public int SelectedLangIndex
+        {
+            get => _selectedLangIndex;
+            set => SetProperty(ref _selectedLangIndex, value);
+        }
+
+        private UserControl _selectedEditor2View;
+        public UserControl SelectedEditor2View
+        {
+            get => _selectedEditor2View;
+            set => SetProperty(ref _selectedEditor2View, value);
+        }
+
+        private UserControl _selectedEditor4View;
+        public UserControl SelectedEditor4View
+        {
+            get => _selectedEditor4View;
+            set => SetProperty(ref _selectedEditor4View, value);
+        }
+
+        private bool _editorModeIsChecked;
+        public bool EditorModeIsChecked
+        {
+            get => _editorModeIsChecked;
+            set
+            {
+                if (SetProperty(ref _editorModeIsChecked, value))
+                {
+                    UpdateSelectedEditorView();
+                }
+            }
+        }
+
+        private Editor2AvalonEditView _editor2AvalonEditView;
+        private Editor2TextBoxView _editor2TextBoxView;
+        private Editor4AvalonEditView _editor4AvalonEditView;
+        private Editor4TextBoxView _editor4TextBoxView;
+        private void UpdateSelectedEditorView()
+        {
+            if (_editorModeIsChecked)
+            {
+                if (_editor2AvalonEditView == null)
+                {
+                    _editor2AvalonEditView = new Editor2AvalonEditView();
+                }
+                if (_editor4AvalonEditView == null)
+                {
+                    _editor4AvalonEditView = new Editor4AvalonEditView();
+                }
+                SelectedEditor2View = _editor2AvalonEditView;
+                SelectedEditor4View = _editor4AvalonEditView;
+            }
+            else
+            {
+                if (_editor2TextBoxView == null)
+                {
+                    _editor2TextBoxView = new Editor2TextBoxView();
+                }
+                if (_editor4TextBoxView == null)
+                {
+                    _editor4TextBoxView = new Editor4TextBoxView();
+                }
+                SelectedEditor2View = _editor2TextBoxView;
+                SelectedEditor4View = _editor4TextBoxView;
+            }
+        }
+
+        private ObservableCollection<PromptTemplate> _templateItems;
+        public ObservableCollection<PromptTemplate> TemplateItems
+        {
+            get => _templateItems;
+            set => SetProperty(ref _templateItems, value);
+        }
+
+        private PromptTemplate _selectedTemplateItem;
+        public PromptTemplate SelectedTemplateItem
+        {
+            get => _selectedTemplateItem;
+            set
+            {
+                if (SetProperty(ref _selectedTemplateItem, value) && _selectedTemplateItem != null)
+                {
+                    _dbProcess.ShowTemplateAsync(_selectedTemplateItem.Id);
+                }
+            }
+        }
+
+        private long _selectedTemplateItemIndex;
+        public long SelectedTemplateItemIndex
+        {
+            get => _selectedTemplateItemIndex;
+            set => SetProperty(ref _selectedTemplateItemIndex, value);
+        }
+
+
+        private async Task SaveTemplateAsync()
+        {
+            string phrasesText;
+            ContentDialog dialog;
+            ContentDialogResult dialogResult;
+            try
+            {
+                if (SelectedTemplateItemIndex > -1)
+                {
+                    dialog = new ContentDialog() { Title = $"Overwrite '{SelectedTemplateItem.Title}' prompt template?", PrimaryButtonText = "Overwrite", SecondaryButtonText = "New", CloseButtonText = "Cancel" };
+                    dialogResult = await ContentDialogShowAsync(dialog);
+                    if (dialogResult == ContentDialogResult.Primary)
+                    {
+                        await _dbProcess.UpdateTemplateAsync(SelectedTemplateItem.Title);
+                        return;
+                    }
+                    else if (dialogResult != ContentDialogResult.Secondary)
+                    {
+                        return;
+                    }
+                }
+                else if(string.IsNullOrWhiteSpace(RecentText))
+                {
+                    return;
+                }
+
+                dialog = new ContentDialog()
+                {
+                    Title = "Please enter prompt template name.",
+                    PrimaryButtonText = "OK",
+                    CloseButtonText = "Cancel"
+                };
+
+                var viewModel = new PhrasePresetsNameInputViewModel(dialog);
+                dialog.Content = new PhrasePresetsNameInput()
+                {
+                    DataContext = viewModel
+                };
+
+                dialogResult = await ContentDialogShowAsync(dialog);
+                if (dialogResult != ContentDialogResult.Primary || string.IsNullOrWhiteSpace(viewModel.UserInput))
+                {
+                    return;
+                }
+
+                await _dbProcess.InsertTemplateDatabasetAsync(viewModel.UserInput);
+
+                await _dbProcess.GetTemplateItemsAsync();
+
+                SelectedTemplateItemIndex = -1;
+            }
+            catch (Exception ex)
+            {
+                dialog = new ContentDialog() { Title = $"Error: {ex.Message}", PrimaryButtonText = "OK" };
+                await ContentDialogShowAsync(dialog);
+            }
+        }
+
+        private async Task RenameTemplateAsync()
+        {
+            if (SelectedTemplateItemIndex < 0)
+            {
+                return;
+            }
+
+            var dialog = new ContentDialog()
+            {
+                Title = $"Please enter a new name to change from '{SelectedTemplateItem.Title}'.",
+                PrimaryButtonText = "OK",
+                CloseButtonText = "Cancel"
+            };
+
+            var viewModel = new PhrasePresetsNameInputViewModel(dialog);
+            dialog.Content = new PhrasePresetsNameInput()
+            {
+                DataContext = viewModel
+            };
+
+            var contentDialogResult = await ContentDialogShowAsync(dialog);
+            if (contentDialogResult != ContentDialogResult.Primary || string.IsNullOrWhiteSpace(viewModel.UserInput))
+            {
+                return;
+            }
+
+            try
+            {
+                await _dbProcess.UpdateTemplateNameAsync(SelectedTemplateItem.Title, viewModel.UserInput);
+            }
+            catch (Exception ex)
+            {
+                dialog = new ContentDialog() { Title = $"Error: {ex.Message}", PrimaryButtonText = "OK" };
+                await ContentDialogShowAsync(dialog);
+            }
+            await _dbProcess.GetTemplateItemsAsync();
+        }
+
+        private async Task DeleteTemplateAsync()
+        {
+            if (SelectedTemplateItemIndex < 0)
+            {
+                return;
+            }
+
+            var dialog = new ContentDialog()
+            {
+                Title = $"Delete propmt template '{SelectedTemplateItem.Title}' - are you sure? ",
+                PrimaryButtonText = "OK",
+                CloseButtonText = "Cancel"
+            };
+
+            var contentDialogResult = await ContentDialogShowAsync(dialog);
+            if (contentDialogResult != ContentDialogResult.Primary)
+            {
+                return;
+            }
+
+            try
+            {
+                await _dbProcess.DeleteTemplateAsync(SelectedTemplateItem.Title);
+            }
+            catch (Exception ex)
+            {
+                dialog = new ContentDialog() { Title = $"Error: {ex.Message}", PrimaryButtonText = "OK" };
+                await ContentDialogShowAsync(dialog);
+            }
+            await _dbProcess.GetTemplateItemsAsync();
+        }
+
+        private async Task ImportTemplateAsync()
+        {
+            var dialog = new FilePickerOpenOptions
+            {
+                AllowMultiple = false,
+                Title = "Select TXT file",
+                FileTypeFilter = new List<FilePickerFileType>
+                    {new("TXT files (*.txt)") { Patterns = new[] { "*.txt" } },
+                    new("All files (*.*)") { Patterns = new[] { "*" } }}
+            };
+            var result = await (Application.Current.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime).MainWindow.StorageProvider.OpenFilePickerAsync(dialog);
+
+            if (result.Count > 0)
+            {
+                try
+                {
+                    var selectedFilePath = result[0].Path.LocalPath;
+                    var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(selectedFilePath);
+
+                    var importedTemplate = await _dbProcess.ImportTemplateFromTxtAsync(selectedFilePath);
+
+                    await _dbProcess.InsertTemplateDatabasetAsync(fileNameWithoutExtension);
+
+                    await _dbProcess.GetTemplateItemsAsync();
+                }
+                catch (Exception ex)
+                {
+                    var cdialog = new ContentDialog() { Title = $"Error: {ex.Message}", PrimaryButtonText = "OK" };
+                    await ContentDialogShowAsync(cdialog);
+                }
+            }
+        }
+
+        private async Task ExportTemplateAsync()
+        {
+            if (SelectedTemplateItemIndex < 0 || string.IsNullOrWhiteSpace(RecentText))
+            {
+                return;
+            }
+
+            var dialog = new FilePickerSaveOptions
+            {
+                Title = "Export TXT file",
+                FileTypeChoices = new List<FilePickerFileType>
+                    {new("TXT files (*.txt)") { Patterns = new[] { "*.txt" } },
+                    new("All files (*.*)") { Patterns = new[] { "*" } }}
+            };
+
+            var result = await (Application.Current.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime).MainWindow.StorageProvider.SaveFilePickerAsync(dialog);
+
+            if (result != null)
+            {
+                var selectedFilePath = result.Path.LocalPath;
+                string extension = Path.GetExtension(selectedFilePath);
+                if (string.IsNullOrEmpty(extension))
+                {
+                    selectedFilePath += ".txt";
+                }
+
+                var _editorViewModel = VMLocator.EditorViewModel;
+
+                List<string> inputText = new()
+                {
+                    string.Join(Environment.NewLine, _editorViewModel.Editor1Text),
+                    string.Join(Environment.NewLine, _editorViewModel.Editor2Text),
+                    string.Join(Environment.NewLine, _editorViewModel.Editor3Text),
+                    string.Join(Environment.NewLine, _editorViewModel.Editor4Text),
+                    string.Join(Environment.NewLine, _editorViewModel.Editor5Text)
+                };
+                string finalText = string.Join(Environment.NewLine + "<---TMCGPT--->" + Environment.NewLine, inputText);
+
+                try
+                {
+                    await File.WriteAllTextAsync(selectedFilePath, finalText);
+
+                    var cdialog = new ContentDialog() { Title = $"Successfully exported prompt template.", PrimaryButtonText = "OK" };
+                    await ContentDialogShowAsync(cdialog);
+                }
+                catch (Exception ex)
+                {
+                    var cdialog = new ContentDialog() { Title = $"Error: {ex.Message}", PrimaryButtonText = "OK" };
+                    await ContentDialogShowAsync(cdialog);
+                }
+            }
+        }
 
         public void TextInput_TextChanged()
         {
@@ -115,6 +456,7 @@ namespace TmCGPTD.ViewModels
             Editor4Text = string.Empty;
             Editor5Text = string.Empty;
             RecentText = string.Empty;
+            SelectedTemplateItemIndex = -1;
         }
 
         private double _editorCommonFontSize;
@@ -164,6 +506,16 @@ namespace TmCGPTD.ViewModels
         {
             get => _editor5Text;
             set => SetProperty(ref _editor5Text, value);
+        }
+
+        private async Task<ContentDialogResult> ContentDialogShowAsync(ContentDialog dialog)
+        {
+            VMLocator.ChatViewModel.ChatViewIsVisible = false;
+            VMLocator.WebChatViewModel.WebChatViewIsVisible = false;
+            var dialogResult = await dialog.ShowAsync();
+            VMLocator.ChatViewModel.ChatViewIsVisible = true;
+            VMLocator.WebChatViewModel.WebChatViewIsVisible = true;
+            return dialogResult;
         }
 
     }

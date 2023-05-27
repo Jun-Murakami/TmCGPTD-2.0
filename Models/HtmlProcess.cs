@@ -159,7 +159,7 @@ namespace TmCGPTD.Models
                 if (titleNode != null)
                 {
                     string titleText = titleNode.InnerText;
-                    if (titleText == "New chat"|| titleText == "")
+                    if (titleText == "New chat" || titleText == "")
                     {
                         return "Please display chat screen.";
                     }
@@ -338,180 +338,223 @@ namespace TmCGPTD.Models
                 List<Dictionary<string, object>> conversationHistory = VMLocator.ChatViewModel.ConversationHistory;
 
                 bool isDeleteHistory = false;
-                string chatTextRes;
+                string chatTextRes = "";
                 string currentTitle = VMLocator.ChatViewModel.ChatTitle;
                 int MAX_CONTENT_LENGTH = VMLocator.MainWindowViewModel.MaxContentLength;
                 TikToken tokenizer = TikToken.EncodingForModel("gpt-3.5-turbo");
+
+                // 過去の会話履歴と現在の入力を結合する前に、過去の会話履歴に含まれるcontent文字列のトークン数を取得
+                int historyContentTokenCount = conversationHistory.Sum(d => tokenizer.Encode(d["content"].ToString()).Count);
+
+                // 要約前のトークン数を記録
+                int preSummarizedHistoryTokenCount = historyContentTokenCount;
+
+                // 履歴を逆順にする
+                List<Dictionary<string, object>> reversedHistoryList = conversationHistory;
+                reversedHistoryList.Reverse();
+
+                // 入力文字列のトークン数を取得
+                int inputTokenCount = tokenizer.Encode(chatTextPost).Count;
+
+                // 入力文字列のトークン数が制限トークン数「MAX_CONTENT_LENGTH」を超えた場合
+                if (inputTokenCount > MAX_CONTENT_LENGTH)
+                {
+                    throw new Exception($"The input text (inputTokenCount) exceeds the maximum token limit ({MAX_CONTENT_LENGTH}). Please remove {inputTokenCount - MAX_CONTENT_LENGTH} tokens.{Environment.NewLine}");
+                }
+
+                // 過去の履歴＋ユーザーの新規入力が制限トークン数「MAX_CONTENT_LENGTH」を超えた場合
+                if (historyContentTokenCount + inputTokenCount > MAX_CONTENT_LENGTH)
+                {
+                    int historyTokenCount = 0;
+                    int messagesToSelect = 0;
+                    int messageStart = 0;
+                    string forCompMes = "";
+
+
+                    // 会話履歴の最新のものからトークン数を数えて一時変数「historyTokenCount」に足していく
+                    for (int i = 0; i < reversedHistoryList.Count; i += 1)
+                    {
+                        string mes = reversedHistoryList[i]["content"].ToString();
+                        int messageTokenCount = tokenizer.Encode(mes).Count;
+                        historyTokenCount += messageTokenCount;
+
+                        if (i <= 4 && historyTokenCount < MAX_CONTENT_LENGTH / 5) //直近の会話が短ければそのまま生かす
+                        {
+                            messageStart += 1;
+                        }
+
+                        if (historyTokenCount > MAX_CONTENT_LENGTH)
+                        {
+                            messagesToSelect = i + 1; // 最後に処理した次のインデックスを記録
+                            break;
+                        }
+                    }
+
+                    foreach (var dict in reversedHistoryList)
+                    {
+                        string dictString = string.Join(", ", dict.Select(pair => $"{pair.Key}: {pair.Value}"));
+                    }
+
+                    // 会話履歴から適切な数だけをセレクトする
+                    int rangeLength = Math.Min(messagesToSelect - messageStart, reversedHistoryList.Count - messageStart);
+
+                    if (rangeLength > 0)
+                    {
+                        forCompMes = reversedHistoryList.GetRange(messageStart, rangeLength).Select(message => message["content"].ToString()).Aggregate((a, b) => a + b);
+                    }
+                    else if (messagesToSelect == 0)
+                    {
+                        forCompMes = reversedHistoryList[0]["content"].ToString();
+                    }
+
+                    if (messagesToSelect > 0)
+                    {
+                        // 抽出したテキストを要約APIリクエストに送信
+                        try
+                        {
+                            string summary = await GetSummaryAsync(forCompMes);
+                            summary = currentTitle + ": " + summary;
+
+                            string summaryLog = "";
+                            if (messageStart > 0)
+                            {
+                                summaryLog += $"{messageStart} latest message(s) + {Environment.NewLine}{Environment.NewLine}{summary}";
+                            }
+                            else
+                            {
+                                summaryLog = summary;
+                            }
+
+                            // 返ってきた要約文で、conversationHistoryを書き換える
+                            conversationHistory.RemoveRange(messageStart, conversationHistory.Count - messageStart);
+                            conversationHistory.Add(new Dictionary<string, object>() { { "role", "assistant" }, { "content", summary } });
+                        }
+                        catch (Exception ex)
+                        {
+                            throw new Exception($"{ex.Message + Environment.NewLine}");
+                        }
+                    }
+                    else
+                    {
+                        conversationHistory.Clear();
+                        isDeleteHistory = true;
+                    }
+
+                }
+
+                // 現在のユーザーの入力を表すディクショナリ
+                var userInput = new Dictionary<string, object>() { { "role", "user" }, { "content", chatTextPost } };
+
+                // 過去の会話履歴と現在の入力を結合
+                conversationHistory.Add(userInput);
+
+                // リクエストパラメータを作成
+                var options = new Dictionary<string, object>() { { "model", VMLocator.MainWindowViewModel.ApiModel }, { "messages", conversationHistory } };
+
+                // オプションパラメータを追加
+                if (VMLocator.MainWindowViewModel.ApiMaxTokensIsEnable)
+                    options.Add("max_tokens", VMLocator.MainWindowViewModel.ApiMaxTokens);
+                if (VMLocator.MainWindowViewModel.ApiTemperatureIsEnable)
+                    options.Add("temperature", VMLocator.MainWindowViewModel.ApiTemperature);
+                if (VMLocator.MainWindowViewModel.ApiTopPIsEnable)
+                    options.Add("top_p", VMLocator.MainWindowViewModel.ApiTopP);
+                if (VMLocator.MainWindowViewModel.ApiNIsEnable)
+                    options.Add("n", VMLocator.MainWindowViewModel.ApiN);
+                if (VMLocator.MainWindowViewModel.ApiLogprobIsEnable)
+                    options.Add("logprobs", VMLocator.MainWindowViewModel.ApiLogprobs);
+                if (VMLocator.MainWindowViewModel.ApiPresencePenaltyIsEnable)
+                    options.Add("presence_penalty", VMLocator.MainWindowViewModel.ApiPresencePenalty);
+                if (VMLocator.MainWindowViewModel.ApiFrequencyPenaltyIsEnable)
+                    options.Add("frequency_penalty", VMLocator.MainWindowViewModel.ApiFrequencyPenalty);
+                if (VMLocator.MainWindowViewModel.ApiBestOfIsEnable)
+                    options.Add("best_of", VMLocator.MainWindowViewModel.ApiBestOf);
+
+                // api_stop パラメータの処理
+                if (VMLocator.MainWindowViewModel.ApiStopIsEnable)
+                {
+                    string[] stopSequence = VMLocator.MainWindowViewModel.ApiStop.Split(',');
+                    options.Add("stop", stopSequence);
+                }
+
+                // api_logit_bias パラメータの処理
+                if (VMLocator.MainWindowViewModel.ApiLogitBiasIsEnable)
+                {
+                    var logitBias = JsonSerializer.Deserialize<Dictionary<string, double>>(VMLocator.MainWindowViewModel.ApiLogitBias);
+                    options.Add("logit_bias", logitBias);
+                }
+
+                // stream 有効化
+                options["stream"] = true;
+
+                // APIリクエストを送信
                 using (var httpClientStr = new HttpClient())
                 {
-
-                    httpClientStr.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", VMLocator.MainWindowViewModel.ApiKey);
                     httpClientStr.Timeout = TimeSpan.FromSeconds(300d);
 
-                    // 過去の会話履歴と現在の入力を結合する前に、過去の会話履歴に含まれるcontent文字列のトークン数を取得
-                    int historyContentTokenCount = conversationHistory.Sum(d => tokenizer.Encode(d["content"].ToString()).Count);
-
-                    // 要約前のトークン数を記録
-                    int preSummarizedHistoryTokenCount = historyContentTokenCount;
-
-                    // 履歴を逆順にする
-                    List<Dictionary<string, object>> reversedHistoryList = conversationHistory;
-                    reversedHistoryList.Reverse();
-
-                    // 入力文字列のトークン数が制限トークン数「MAX_CONTENT_LENGTH」を超えた場合
-                    if (tokenizer.Encode(chatTextPost).Count > MAX_CONTENT_LENGTH)
+                    // HttpRequestMessageの作成
+                    var httpRequestMessage = new HttpRequestMessage
                     {
-                        throw new Exception($"The input text ({tokenizer.Encode(chatTextPost).Count}) exceeds the maximum token limit ({MAX_CONTENT_LENGTH}). Please remove {tokenizer.Encode(chatTextPost).Count - MAX_CONTENT_LENGTH} tokens.{Environment.NewLine}");
-                    }
+                        Method = HttpMethod.Post,
+                        RequestUri = new Uri(VMLocator.MainWindowViewModel.ApiUrl),
+                        Headers = {
+                        { HttpRequestHeader.Authorization.ToString(), $"Bearer {VMLocator.MainWindowViewModel.ApiKey}" },
+                        { HttpRequestHeader.ContentType.ToString(), "application/json" }
+                    },
+                        Content = new StringContent(JsonSerializer.Serialize(options), Encoding.UTF8, "application/json")
+                    };
 
-                    // 過去の履歴＋ユーザーの新規入力が制限トークン数「MAX_CONTENT_LENGTH」を超えた場合
-                    if (historyContentTokenCount + tokenizer.Encode(chatTextPost).Count > MAX_CONTENT_LENGTH)
-                    {
-                        int historyTokenCount = 0;
-                        int messagesToSelect = 0;
-                        int messageStart = 0;
-                        string forCompMes = "";
-
-
-                        // 会話履歴の最新のものからトークン数を数えて一時変数「historyTokenCount」に足していく
-                        for (int i = 0; i < reversedHistoryList.Count; i += 1)
-                        {
-                            string mes = reversedHistoryList[i]["content"].ToString();
-                            int messageTokenCount = tokenizer.Encode(mes).Count;
-                            historyTokenCount += messageTokenCount;
-
-                            if (i <= 4 && historyTokenCount < MAX_CONTENT_LENGTH / 5) //直近の会話が短ければそのまま生かす
-                            {
-                                messageStart += 1;
-                            }
-
-                            if (historyTokenCount > MAX_CONTENT_LENGTH)
-                            {
-                                messagesToSelect = i + 1; // 最後に処理した次のインデックスを記録
-                                break;
-                            }
-                        }
-
-                        foreach (var dict in reversedHistoryList)
-                        {
-                            string dictString = string.Join(", ", dict.Select(pair => $"{pair.Key}: {pair.Value}"));
-                        }
-
-                        // 会話履歴から適切な数だけをセレクトする
-                        int rangeLength = Math.Min(messagesToSelect - messageStart, reversedHistoryList.Count - messageStart);
-
-                        if (rangeLength > 0)
-                        {
-                            forCompMes = reversedHistoryList.GetRange(messageStart, rangeLength).Select(message => message["content"].ToString()).Aggregate((a, b) => a + b);
-                        }
-                        else if (messagesToSelect == 0)
-                        {
-                            forCompMes = reversedHistoryList[0]["content"].ToString();
-                        }
-
-                        if (messagesToSelect > 0)
-                        {
-                            // 抽出したテキストを要約APIリクエストに送信
-                            try
-                            {
-                                string summary = await GetSummaryAsync(forCompMes);
-                                summary = currentTitle + ": " + summary;
-
-                                string summaryLog = "";
-                                if (messageStart > 0)
-                                {
-                                    summaryLog += $"{messageStart} latest message(s) + {Environment.NewLine}{Environment.NewLine}{summary}";
-                                }
-                                else
-                                {
-                                    summaryLog = summary;
-                                }
-
-                                // 返ってきた要約文で、conversationHistoryを書き換える
-                                conversationHistory.RemoveRange(messageStart, conversationHistory.Count - messageStart);
-                                conversationHistory.Add(new Dictionary<string, object>() { { "role", "assistant" }, { "content", summary } });
-                            }
-                            catch (Exception ex)
-                            {
-                                throw new Exception($"{ex.Message + Environment.NewLine}");
-                            }
-                        }
-                        else
-                        {
-                            conversationHistory.Clear();
-                            isDeleteHistory = true;
-                        }
-
-                    }
-
-                    // 現在のユーザーの入力を表すディクショナリ
-                    var userInput = new Dictionary<string, object>() { { "role", "user" }, { "content", chatTextPost } };
-
-                    // 過去の会話履歴と現在の入力を結合
-                    conversationHistory.Add(userInput);
-
-                    // リクエストパラメータを作成
-                    var options = new Dictionary<string, object>() { { "model", VMLocator.MainWindowViewModel.ApiModel }, { "messages", conversationHistory } };
-
-                    // オプションパラメータを追加
-                    if (VMLocator.MainWindowViewModel.ApiMaxTokensIsEnable)
-                        options.Add("max_tokens", VMLocator.MainWindowViewModel.ApiMaxTokens);
-                    if (VMLocator.MainWindowViewModel.ApiTemperatureIsEnable)
-                        options.Add("temperature", VMLocator.MainWindowViewModel.ApiTemperature);
-                    if (VMLocator.MainWindowViewModel.ApiTopPIsEnable)
-                        options.Add("top_p", VMLocator.MainWindowViewModel.ApiTopP);
-                    if (VMLocator.MainWindowViewModel.ApiNIsEnable)
-                        options.Add("n", VMLocator.MainWindowViewModel.ApiN);
-                    if (VMLocator.MainWindowViewModel.ApiLogprobIsEnable)
-                        options.Add("logprobs", VMLocator.MainWindowViewModel.ApiLogprobs);
-                    if (VMLocator.MainWindowViewModel.ApiPresencePenaltyIsEnable)
-                        options.Add("presence_penalty", VMLocator.MainWindowViewModel.ApiPresencePenalty);
-                    if (VMLocator.MainWindowViewModel.ApiFrequencyPenaltyIsEnable)
-                        options.Add("frequency_penalty", VMLocator.MainWindowViewModel.ApiFrequencyPenalty);
-                    if (VMLocator.MainWindowViewModel.ApiBestOfIsEnable)
-                        options.Add("best_of", VMLocator.MainWindowViewModel.ApiBestOf);
-
-                    // api_stop パラメータの処理
-                    if (VMLocator.MainWindowViewModel.ApiStopIsEnable)
-                    {
-                        string[] stopSequence = VMLocator.MainWindowViewModel.ApiStop.Split(',');
-                        options.Add("stop", stopSequence);
-                    }
-
-                    // api_logit_bias パラメータの処理
-                    if (VMLocator.MainWindowViewModel.ApiLogitBiasIsEnable)
-                    {
-                        var logitBias = JsonSerializer.Deserialize<Dictionary<string, double>>(VMLocator.MainWindowViewModel.ApiLogitBias);
-                        options.Add("logit_bias", logitBias);
-                    }
-
-
-                    string jsonContent = JsonSerializer.Serialize(options);
-
-                    var content = new StringContent(jsonContent, System.Text.Encoding.UTF8, "application/json");
-
-                    var response = await httpClientStr.PostAsync(VMLocator.MainWindowViewModel.ApiUrl, content);
+                    // SendAsyncでレスポンスを取得
+                    var response = await httpClientStr.SendAsync(httpRequestMessage, HttpCompletionOption.ResponseHeadersRead);
 
                     // レスポンスが成功した場合
                     if (response.IsSuccessStatusCode)
                     {
-                        // レスポンスボディを取得
-                        string responseBody = await response.Content.ReadAsStringAsync();
-                        var responseJson = JsonSerializer.Deserialize<JsonElement>(responseBody);
+                        // レスポンスのStreamを取得
+                        using var stream = await response.Content.ReadAsStreamAsync();
+                        using var reader = new StreamReader(stream);
+                        string line;
+
+                        // レスポンスを行ごとに読み込む
+                        while ((line = await reader.ReadLineAsync()) != null)
+                        {
+                            // "data: "で始まる行をパース
+                            if (line.StartsWith("data: "))
+                            {
+                                var json = line.Substring(6);
+
+                                // "data: [DONE]"を受け取ったらループを終了
+                                if (json == "[DONE]")
+                                {
+                                    await VMLocator.ChatViewModel.UpdateUIWithReceivedMessage("[DONE]");
+                                    break;
+                                }
+
+                                var chatResponse = JsonSerializer.Deserialize<ResponseChunkData>(json);
+
+                                // choices[0].delta.contentに差分の文字列がある場合
+                                if (chatResponse?.choices?.FirstOrDefault()?.delta?.content != null)
+                                {
+                                    // ログをUIに出力
+                                    chatTextRes += chatResponse.choices[0].delta.content;
+                                    await VMLocator.ChatViewModel.UpdateUIWithReceivedMessage(chatTextRes);
+                                }
+                            }
+                        }
+
+                        // 入力トークン数を計算
+                        var inputConversationTokenCount = tokenizer.Encode(conversationHistory.Select(d => d["content"].ToString()).Aggregate((a, b) => a + b)).Count;
+
+                        // レスポンスのトークン数を計算
+                        var responseTokenCount = tokenizer.Encode(chatTextRes).Count;
 
                         // レス本文
-                        chatTextRes = Environment.NewLine + responseJson.GetProperty("choices")[0].GetProperty("message").GetProperty("content").GetString().Trim() + Environment.NewLine + Environment.NewLine;
+                        chatTextRes = Environment.NewLine + chatTextRes + Environment.NewLine + Environment.NewLine;
 
                         // 応答を受け取った後、conversationHistory に追加
                         conversationHistory.Add(new Dictionary<string, object>() { { "role", "assistant" }, { "content", chatTextRes } });
 
-                        // usageプロパティだけ取得する
-                        JsonElement usageProperty;
-                        if (responseJson.TryGetProperty("usage", out usageProperty))
-                        {
-                            string usageValue = usageProperty.ToString();
-                            chatTextRes += $"usage={usageValue}" + Environment.NewLine;
-                        }
+                        // usageを計算
+                        chatTextRes += $"usage={{\"prompt_tokens\":{inputConversationTokenCount},\"completion_tokens\":{responseTokenCount},\"total_tokens\":{inputConversationTokenCount + responseTokenCount}}}" + Environment.NewLine;
 
                         // 要約が実行された場合、メソッドの戻り値の最後に要約前のトークン数と要約後のトークン数をメッセージとして付け加える
                         string postConversation = conversationHistory.Select(d => d["content"].ToString()).Aggregate((a, b) => a + b);
@@ -542,6 +585,27 @@ namespace TmCGPTD.Models
             {
                 throw new Exception($"{ex.Message}");
             }
+        }
+        public class ResponseChunkData
+        {
+            public string id { get; set; }
+            public string @object { get; set; }
+            public int created { get; set; }
+            public string model { get; set; }
+            public List<ChunkChoice> choices { get; set; }
+        }
+
+        public class ChunkChoice
+        {
+            public Message delta { get; set; }
+            public int index { get; set; }
+            public object finish_reason { get; set; }
+        }
+
+        public class Message
+        {
+            public string role { get; set; }
+            public string content { get; set; }
         }
 
         //文章要約圧縮メソッド--------------------------------------------------------------
@@ -604,7 +668,7 @@ namespace TmCGPTD.Models
                     { "model", "gpt-3.5-turbo" },
                     { "messages", new List<Dictionary<string, object>>
                         {
-                            new Dictionary<string, object> { { "role", "system" }, { "content", 
+                            new Dictionary<string, object> { { "role", "system" }, { "content",
                                     "あなたはプロの編集者です。これから送るチャットログにチャットタイトルをつけてそれだけを回答してください。\n" +
                                     "- チャットで使われている言語でタイトルを考えてください。\n" +
                                     "- ログは冒頭に行くほど重要な情報です。\n" +
@@ -644,7 +708,7 @@ namespace TmCGPTD.Models
         }
 
         // 表示用チャットログHTML変換--------------------------------------------------------------
-        public async Task<string> ConvertAddLogToHtml(string plainTextChatLog,DateTime resDate)
+        public async Task<string> ConvertAddLogToHtml(string plainTextChatLog, DateTime resDate)
         {
             plainTextChatLog = Regex.Replace(plainTextChatLog, @"\r\n|\r|\n", Environment.NewLine);
             var codeSnippetRegex = new Regex(@"^```(?:([\w-+#.]+)\s+)?([\s\S]*?)(^```)", RegexOptions.Multiline);

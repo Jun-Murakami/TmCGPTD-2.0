@@ -8,17 +8,108 @@
 		<Grid VerticalAlignment="Stretch" Name="EditorGrid">
 			<Grid.RowDefinitions>
 				<RowDefinition Height="50" />
-				<RowDefinition Height="0.17*" MinHeight="20"/>
+				<RowDefinition Height="0.17*" />
 				<RowDefinition Height="2"/>
-				<RowDefinition Height="0.27*" MinHeight="20"/>
+				<RowDefinition Height="0.27*" />
 				<RowDefinition Height="2"/>
-				<RowDefinition Height="0.17*" MinHeight="20"/>
+				<RowDefinition Height="0.17*" />
 				<RowDefinition Height="2"/>
-				<RowDefinition Height="0.27*" MinHeight="20"/>
+				<RowDefinition Height="0.27*" />
 				<RowDefinition Height="2"/>
-				<RowDefinition Height="0.12*" MinHeight="20"/>
+				<RowDefinition Height="0.12*" />
+				<RowDefinition Height="50" />
 			</Grid.RowDefinitions>
 			<Border Grid.Row="0" BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}" BorderThickness="0,0,0,1">
+				<Grid>
+					<Grid.ColumnDefinitions>
+						<ColumnDefinition Width="Auto"/>
+						<ColumnDefinition Width="*"/>
+						<ColumnDefinition Width="Auto"/>
+						<ColumnDefinition Width="Auto"/>
+						<ColumnDefinition Width="Auto"/>
+					</Grid.ColumnDefinitions>
+					<TextBlock Grid.Column="0"
+							   Text="Template :"
+							   VerticalAlignment="Center"
+							   Margin="10,0,0,0" />
+					<ComboBox Grid.Column="1"
+							  VerticalAlignment="Center"
+							  Margin="5,5,2,5"
+							  HorizontalAlignment="Stretch"
+							  ItemsSource="{Binding TemplateItems}"
+							  SelectedIndex="{Binding SelectedTemplateItemIndex}"
+							  SelectedItem="{Binding SelectedTemplateItem}">
+						<ComboBox.ItemTemplate>
+							<DataTemplate>
+								<TextBlock Text="{Binding Title}" />
+							</DataTemplate>
+						</ComboBox.ItemTemplate>
+					</ComboBox>
+					<Button Grid.Column="2"
+							Flyout="{StaticResource TemplateMenuFlyout}"
+							Classes="ImageButton"
+							VerticalAlignment="Center"
+							Padding="4,0"
+							Margin="0,0,6,0">
+						<Image Classes="ButtonIcon"
+							   Source="/Assets/iconSave.png"
+							   VerticalAlignment="Center" />
+					</Button>
+					<ComboBox Grid.Column="3"
+							  ToolTip.Tip="Select language for syntax highlighting"
+							  PlaceholderText="Syntax Highlithing"
+							  ItemsSource="{Binding Languages}"
+							  SelectedIndex="{Binding SelectedLangIndex, Mode=TwoWay}"
+							  SelectedItem="{Binding SelectedLang, Mode=TwoWay}"
+							  VerticalAlignment="Center"
+							  Width="186">
+						<ComboBox.ItemTemplate>
+							<DataTemplate>
+								<TextBlock Text="{Binding Aliases[0]}" />
+							</DataTemplate>
+						</ComboBox.ItemTemplate>
+					</ComboBox>
+					<ToggleSwitch Grid.Column="4"
+								  ToolTip.Tip="Switch editor mode"
+								  IsChecked="{Binding EditorModeIsChecked}"
+								  OnContent="Code"
+								  OffContent="Text"
+								  Margin="6,0,0,5"
+								  VerticalAlignment="Center"/>
+				</Grid>
+			</Border>
+			<TextBox Grid.Row="1"
+					 Name="Editor1"
+					 AcceptsReturn="True"
+					 Text="{Binding Editor1Text, Mode=TwoWay}"
+					 FontSize="{Binding EditorCommonFontSize}" />
+			<GridSplitter Grid.Row="2" Height="2" Background="rgb(52, 53, 65)" Focusable="False"/>
+			<TransitioningContentControl Grid.Row="3"
+										 Content="{Binding SelectedEditor2View}">
+				<TransitioningContentControl.PageTransition>
+					<PageSlide Duration="0:00:00.050" Orientation="Horizontal"/>
+				</TransitioningContentControl.PageTransition>
+			</TransitioningContentControl>
+			<GridSplitter Grid.Row="4" Height="2" Background="rgb(52, 53, 65)" Focusable="False"/>
+			<TextBox Grid.Row="5"
+					 Name="Editor3"
+					 AcceptsReturn="True"
+					 Text="{Binding Editor3Text, Mode=TwoWay}"
+					 FontSize="{Binding EditorCommonFontSize}" />
+			<GridSplitter Grid.Row="6" Height="2" Background="rgb(52, 53, 65)" Focusable="False" />
+			<TransitioningContentControl Grid.Row="7"
+										 Content="{Binding SelectedEditor4View}">
+				<TransitioningContentControl.PageTransition>
+					<PageSlide Duration="0:00:00.050" Orientation="Horizontal"/>
+				</TransitioningContentControl.PageTransition>
+			</TransitioningContentControl>
+			<GridSplitter Grid.Row="8" Height="2" Background="rgb(52, 53, 65)" Focusable="False" />
+			<TextBox Grid.Row="9"
+					 Name="Editor5"
+					 AcceptsReturn="True"
+					 Text="{Binding Editor5Text, Mode=TwoWay}"
+					 FontSize="{Binding EditorCommonFontSize}"/>
+			<Border Grid.Row="10" BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}" BorderThickness="0,1,0,0">
 				<Grid>
 					<Grid.ColumnDefinitions>
 						<ColumnDefinition Width="Auto"/>
@@ -62,34 +153,15 @@
 					</Button>
 				</Grid>
 			</Border>
-			<TextBox Grid.Row="1"
-					 Name="Editor1"
-					 AcceptsReturn="True"
-					 Text="{Binding Editor1Text, Mode=TwoWay}"
-					 FontSize="{Binding EditorCommonFontSize}" />
-			<GridSplitter Grid.Row="2" Height="2" Background="rgb(52, 53, 65)" Focusable="False"/>
-			<TextBox Grid.Row="3"
-					 Name="Editor2"
-					 AcceptsReturn="True"
-					 Text="{Binding Editor2Text, Mode=TwoWay}"
-					 FontSize="{Binding EditorCommonFontSize}" />
-			<GridSplitter Grid.Row="4" Height="2" Background="rgb(52, 53, 65)" Focusable="False"/>
-			<TextBox Grid.Row="5"
-					 Name="Editor3"
-					 AcceptsReturn="True"
-					 Text="{Binding Editor3Text, Mode=TwoWay}"
-					 FontSize="{Binding EditorCommonFontSize}" />
-			<GridSplitter Grid.Row="6" Height="2" Background="rgb(52, 53, 65)" Focusable="False" />
-			<TextBox Grid.Row="7"
-					 Name="Editor4"
-					 AcceptsReturn="True"
-					 Text="{Binding Editor4Text, Mode=TwoWay}"
-					 FontSize="{Binding EditorCommonFontSize}" />
-			<GridSplitter Grid.Row="8" Height="2" Background="rgb(52, 53, 65)" Focusable="False" />
-			<TextBox Grid.Row="9"
-					 Name="Editor5"
-					 AcceptsReturn="True"
-					 Text="{Binding Editor5Text, Mode=TwoWay}"
-					 FontSize="{Binding EditorCommonFontSize}"/>
 		</Grid>
+		<UserControl.Resources>
+			<MenuFlyout x:Key="TemplateMenuFlyout" Placement="Bottom">
+				<MenuItem Header="Save Template" Command="{Binding SaveTemplateCommand}"/>
+				<MenuItem Header="Rename Template" Command="{Binding RenameTemplateCommand}" />
+				<MenuItem Header="Delete Template" Command="{Binding DeleteTemplateCommand}" />
+				<Separator />
+				<MenuItem Header="Import from TXT" Command="{Binding ImportTemplateCommand}" />
+				<MenuItem Header="Export to TXT" Command="{Binding ExportTemplateCommand}" />
+			</MenuFlyout>
+		</UserControl.Resources>
 </UserControl>

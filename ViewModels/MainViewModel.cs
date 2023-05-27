@@ -106,8 +106,8 @@ namespace TmCGPTD.ViewModels
 
         public List<string> LeftPanes { get; } = new List<string>
         {
-            "Chat",
-            "WebChat"
+            "API Chat",
+            "Web Chat"
         };
 
 
@@ -172,7 +172,6 @@ namespace TmCGPTD.ViewModels
         }
 
 
-
         private async Task PostAsync()
         {
             if (string.IsNullOrWhiteSpace(VMLocator.EditorViewModel.RecentText) || VMLocator.ChatViewModel.ChatIsRunning)
@@ -184,7 +183,7 @@ namespace TmCGPTD.ViewModels
             {
                 await _dbProcess.InserEditorLogDatabasetAsync();
 
-                if (SelectedLeftPane == "WebChat")
+                if (SelectedLeftPane == "Web Chat")
                 {
                     await VMLocator.WebChatViewModel.PostWebChat();
                 }
@@ -198,13 +197,14 @@ namespace TmCGPTD.ViewModels
                 VMLocator.EditorViewModel.TextClear();
                 await _dbProcess.GetEditorLogDatabaseAsync();
                 VMLocator.EditorViewModel.SelectedEditorLogIndex = -1;
+                VMLocator.EditorViewModel.SelectedTemplateItemIndex = -1;
 
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 VMLocator.ChatViewModel.ChatIsRunning = false;
-                //var cdialog = new ContentDialog() { Title = "Error: " + ex.Message, PrimaryButtonText = "OK" };
-                //await ContentDialogShowAsync(cdialog);
+                var cdialog = new ContentDialog() { Title = "Error: " + ex.Message, PrimaryButtonText = "OK" };
+                await ContentDialogShowAsync(cdialog);
             }
         }
 
@@ -581,6 +581,9 @@ namespace TmCGPTD.ViewModels
             {
                 ExecuteClear(i);
             }
+
+            VMLocator.EditorViewModel.SelectedEditorLogIndex = -1;
+            VMLocator.EditorViewModel.SelectedTemplateItemIndex = -1;
         }
 
         private async Task CopyToClipboard()

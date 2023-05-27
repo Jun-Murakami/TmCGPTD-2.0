@@ -13,7 +13,7 @@ using Avalonia.Interactivity;
 
 namespace TmCGPTD.Views
 {
-    public partial class ChatView: UserControl
+    public partial class ChatView : UserControl
     {
         private AvaloniaCefBrowser _browser;
         private Button _button;
@@ -47,7 +47,7 @@ namespace TmCGPTD.Views
         private async void Browser_LoadEnd(object sender, LoadEndEventArgs e)
         {
             if (VMLocator.DataGridViewModel.SelectedItem != null)
-            { 
+            {
                 if (string.IsNullOrWhiteSpace(VMLocator.MainViewModel.SearchLogKeyword))
                 {
                     var script = "window.scrollTo(0, document.body.scrollHeight);";
@@ -59,7 +59,7 @@ namespace TmCGPTD.Views
                     await ChatViewModel.TextSearch(ChatViewModel.SearchKeyword, true, true);
                 }
             }
-            await Dispatcher.UIThread.InvokeAsync(() =>{_browser.Opacity = 1;});
+            await Dispatcher.UIThread.InvokeAsync(() => { _browser.Opacity = 1; });
         }
 
         private async void ViewModel_PropertyChanged(object sender, PropertyChangedEventArgs e)

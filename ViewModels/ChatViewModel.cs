@@ -8,6 +8,8 @@ using Xilium.CefGlue.Avalonia;
 using Avalonia.Controls;
 using TmCGPTD.Models;
 using System.Text.Json;
+using System.Diagnostics;
+using Avalonia.Threading;
 
 namespace TmCGPTD.ViewModels
 {
@@ -73,7 +75,7 @@ namespace TmCGPTD.ViewModels
                         wrapper.appendChild(newUserElement);";
                 _browser.ExecuteJavaScript(jsCode);
 
-                htmlToAdd = $"<div class=\"assistant\"><span class=\"thinkingHeader\">AI: Now thinking...</span></div>";
+                htmlToAdd = $"<div class=\"assistant\"><span class=\"thinkingHeader\">Now thinking...</span></div>";
 
                 jsCode = $@"var wrapper = document.getElementById('scrollableWrapper');
                         var newAssistantElement = document.createElement('div');
@@ -84,23 +86,6 @@ namespace TmCGPTD.ViewModels
 
                 var resText = await _htmlProcess.PostChatAsync(postText);
                 var resDate = DateTime.Now;
-                var convertedHtml = await _htmlProcess.ConvertAddLogToHtml(resText, resDate);
-                escapedString = JsonSerializer.Serialize(convertedHtml);
-
-                jsCode = $@"var wrapper = document.getElementById('scrollableWrapper');
-                        var thinkingHeader = wrapper.querySelector('.thinkingHeader');
-                        if (thinkingHeader) {{
-                            var newElement = document.createElement('div');
-                            newElement.innerHTML = {escapedString};
-                            thinkingHeader.parentNode.insertBefore(newElement, thinkingHeader);
-                            thinkingHeader.parentNode.removeChild(thinkingHeader);
-                        }} else {{
-                            var newElement = document.createElement('div');
-                            newElement.innerHTML = {escapedString};
-                            wrapper.appendChild(newElement);
-                        }}
-                        window.scrollTo({{top: document.body.scrollHeight, behavior: 'smooth' }});";
-                _browser.ExecuteJavaScript(jsCode);
 
                 await _databaseProcess.InsertDatabaseChatAsync(postDate, postText, resDate, resText);
 
@@ -125,11 +110,59 @@ namespace TmCGPTD.ViewModels
                         window.scrollTo({{top: document.body.scrollHeight, behavior: 'smooth' }});";
                 _browser.ExecuteJavaScript(jsCode);
                 ChatIsRunning = false;
-                throw;
+                //throw;
             }
 
             ChatIsRunning = false;
         }
+
+        // チャット受信メソッド--------------------------------------------------------------
+        private bool isReceiving = false;
+
+        public async Task UpdateUIWithReceivedMessage(string message)
+        {
+            var resDate = DateTime.Now;
+            var convertedHtml = await _htmlProcess.ConvertAddLogToHtml(message, resDate);
+            var escapedString = JsonSerializer.Serialize(convertedHtml);
+
+            if (message == "[DONE]")
+            {
+                // 'thinkingHeader'を削除し、受信中フラグをオフにする
+                string removeThinkingHeaderScript = @"
+                    var thinkingHeader = document.querySelector('.thinkingHeader');
+                    thinkingHeader.parentNode.removeChild(thinkingHeader);
+                    window.scrollTo({{top: document.body.scrollHeight, behavior: 'smooth' }});
+                ";
+                _browser.ExecuteJavaScript(removeThinkingHeaderScript);
+                isReceiving = false;
+            }
+            else
+            {
+                if (!isReceiving)
+                {
+                    // 受信中フラグをオンにし、新しいdivを作成
+                    isReceiving = true;
+                    string createDivScript = $@"
+                    var newDiv = document.createElement('div');
+                    newDiv.id = 'receivingDiv';
+                    var thinkingHeader = document.querySelector('.thinkingHeader');
+                    thinkingHeader.parentNode.insertBefore(newDiv, thinkingHeader.nextSibling);
+                ";
+                    _browser.ExecuteJavaScript(createDivScript);
+                }
+                else
+                {
+                    // 受け取ったメッセージを挿入
+                    string insertMessageScript = $@"
+                    var receivingDiv = document.getElementById('receivingDiv');
+                    receivingDiv.innerHTML = {escapedString};
+                ";
+                    _browser.ExecuteJavaScript(insertMessageScript);
+                }
+
+            }
+        }
+
 
         // 新しいチャットを初期化--------------------------------------------------------------
         public async Task InitializeChatAsync()

@@ -5,7 +5,7 @@ using TmCGPTD.Models;
 
 namespace TmCGPTD.ViewModels
 {
-    public class DataGridViewModel: ViewModelBase
+    public class DataGridViewModel : ViewModelBase
     {
 
         private int _selectedItemIndex;
@@ -53,17 +53,17 @@ namespace TmCGPTD.ViewModels
         {
             var _chatViewModel = VMLocator.ChatViewModel;
 
-            if(!_chatViewModel.ChatIsRunning)
-            { 
+            if (!_chatViewModel.ChatIsRunning)
+            {
                 var result = await _dbProcess.GetChatLogDatabaseAsync(_selectedItem);
 
                 _chatViewModel.ChatTitle = result[0];
                 _chatViewModel.ConversationHistory = JsonSerializer.Deserialize<List<Dictionary<string, object>>>(result[1]);
                 _chatViewModel.HtmlContent = await _htmlProcess.ConvertChatLogToHtml(result[2]);
 
-                if(VMLocator.MainViewModel.SelectedLeftPane == "WebChat")
+                if (VMLocator.MainViewModel.SelectedLeftPane == "Web Chat")
                 {
-                    VMLocator.MainViewModel.SelectedLeftPane = "Chat";
+                    VMLocator.MainViewModel.SelectedLeftPane = "API Chat";
                 }
             }
         }

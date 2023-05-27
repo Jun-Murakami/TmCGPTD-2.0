@@ -20,13 +20,17 @@ namespace TmCGPTD
             }
         }
 
+        // アプリケーション設定
         public string AppDataPath { get; }
         public string DbPath { get; }
         public double Width { get; set; }
         public double Height { get; set; }
         public int X { get; set; }
         public int Y { get; set; }
+        public bool IsMaximized { get; set; }
+        public bool EditorMode { get; set; }
         public double EditorFontSize { get; set; }
+        public int SyntaxHighlighting { get; set; }
         public string PhrasePreset { get; set; }
 
         // ChatGPT API接続設定
@@ -61,13 +65,15 @@ namespace TmCGPTD
         // DefaultSetting
         public AppSettings()
         {
+            EditorMode = true;
             EditorFontSize = 15;
+            SyntaxHighlighting = 0;
             PhrasePreset = "";
 
             AppDataPath = GetAppDataDirectory();
             DbPath = Path.Combine(AppDataPath, "log_database.db");
 
-            ApiMaxTokens = 2048;
+            ApiMaxTokens = 4000;
             ApiTemperature = 1;
             ApiTopP = 1.0;
             ApiN = 1;
@@ -82,7 +88,7 @@ namespace TmCGPTD
             ApiKey = "";
             MaxContentLength = 3072;
 
-            ApiMaxTokensIsEnable = false;
+            ApiMaxTokensIsEnable = true;
             ApiTemperatureIsEnable = false;
             ApiTopPIsEnable = false;
             ApiNIsEnable = false;

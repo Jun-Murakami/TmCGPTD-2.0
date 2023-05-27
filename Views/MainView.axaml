@@ -44,7 +44,7 @@
 									<RowDefinition Height="50"/>
 									<RowDefinition Height="*"/>
 								</Grid.RowDefinitions>
-								<ListBox Grid.Row="0" ItemsSource="{Binding LogPanes}" SelectedItem="{Binding	SelectedLogPain}">
+								<ListBox Grid.Row="0" ItemsSource="{Binding LogPanes}" SelectedItem="{Binding SelectedLogPain}">
 									<ListBox.ItemsPanel>
 										<ItemsPanelTemplate>
 											<WrapPanel />
@@ -94,7 +94,10 @@
 										</Button>
 									</Grid>
 								</Border>
-								<Border Grid.Row="2" Background="rgb(42, 43, 55)" BorderBrush="rgb(42, 43, 55)" BorderThickness="0,1,0,0">
+								<Border Grid.Row="2"
+										Background="rgb(42, 43, 55)"
+										BorderBrush="rgb(42, 43, 55)"
+										BorderThickness="0,1,0,0">
 									<local:DataGridView />
 								</Border>
 							</Grid>
@@ -159,7 +162,8 @@
 											</ItemsPanelTemplate>
 										</ListBox.ItemsPanel>
 									</ListBox>
-									<Button HorizontalAlignment="Right"
+									<Button ToolTip.Tip="Keyboard shortcuts"
+											HorizontalAlignment="Right"
 											VerticalAlignment="Center"
 											BorderThickness="0"
 											Width="28"
@@ -210,7 +214,7 @@
 													<Grid>
 														<Button Content="Post"
 																Height="38"
-																Width="100"
+																Width="110"
 																Margin="0,0,10,0"
 																VerticalAlignment="Center"
 																HorizontalAlignment="Center"
@@ -241,8 +245,24 @@
 								</StackPanel>
 							</Expander>
 							<StackPanel Orientation="Horizontal">
-								<Button Content="Phrase Presets" Flyout="{StaticResource PhraseMenuFlyout}" VerticalAlignment="Bottom" Margin="10,8,8,8"/>
-								<ComboBox ItemsSource="{Binding PhrasePresetsItems}" SelectedItem="{Binding SelectedPhraseItem}" Width="200" VerticalAlignment="Bottom" Margin="0,8,8,8"/>
+								<TextBlock Text="Phrase Presets :"
+										   Margin="10,8,5,16"
+										   VerticalAlignment="Bottom" />
+								<ComboBox ItemsSource="{Binding PhrasePresetsItems}"
+										  SelectedItem="{Binding SelectedPhraseItem}"
+										  Width="200"
+										  VerticalAlignment="Bottom"
+										  Margin="0,8,5,8"/>
+								<Button Flyout="{StaticResource PhraseMenuFlyout}"
+										Background="Transparent"
+										Classes="ImageButton"
+										VerticalAlignment="Bottom"
+										Padding="4,0"
+										Margin="0,8,8,8">
+									<Image Classes="ButtonIcon"
+										   Source="/Assets/iconSave.png"
+										   VerticalAlignment="Center" />
+									</Button>
 							</StackPanel>
 						</Grid>
 					</Grid>
@@ -251,7 +271,7 @@
 		</Grid>
 	</Grid>
 	<UserControl.Resources>
-		<MenuFlyout x:Key="PhraseMenuFlyout" Placement="TopEdgeAlignedLeft">
+		<MenuFlyout x:Key="PhraseMenuFlyout" Placement="Top">
 			<MenuItem Header="Save Presets" Command="{Binding SavePhrasesCommand}"/>
 			<MenuItem Header="Rename Presets" Command="{Binding RenamePhrasesCommand}" />
 			<MenuItem Header="Delete Presets" Command="{Binding DeletePhrasesCommand}" />

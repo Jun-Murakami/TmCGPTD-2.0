@@ -8,6 +8,6 @@
              x:DataType="vm:PhrasePresetsNameInputViewModel"
              x:Class="TmCGPTD.Views.PhrasePresetsNameInput">
     <StackPanel Spacing="10" MinWidth="400">
-        <AutoCompleteBox Text="{CompiledBinding UserInput}" InputMethod.IsInputMethodEnabled="True" AttachedToVisualTree="InputField_OnAttachedToVisualTree" />
+        <TextBox Text="{CompiledBinding UserInput}" AttachedToVisualTree="InputField_OnAttachedToVisualTree" />
     </StackPanel>
 </UserControl>

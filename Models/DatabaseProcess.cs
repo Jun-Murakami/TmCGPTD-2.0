@@ -54,7 +54,17 @@ namespace TmCGPTD.Models
             command.ExecuteNonQuery();
 
             // editorlogインデックス作成
-            sql = "CREATE INDEX idx_editortext ON editorlog (text);";
+            sql = "CREATE INDEX idx_editor_text ON editorlog (text);";
+            command.CommandText = sql;
+            command.ExecuteNonQuery();
+
+            // templateテーブル作成
+            sql = "CREATE TABLE template (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT NOT NULL DEFAULT '', text TEXT NOT NULL DEFAULT '');";
+            command.CommandText = sql;
+            command.ExecuteNonQuery();
+
+            // templateインデックス作成
+            sql = "CREATE INDEX idx_template_text ON editorlog (text);";
             command.CommandText = sql;
             command.ExecuteNonQuery();
         }
@@ -644,6 +654,277 @@ namespace TmCGPTD.Models
             await DbLoadToMemoryAsync();
             VMLocator.DataGridViewModel.ChatList = await SearchChatDatabaseAsync();
             return "OK";
+        }
+
+        // データベースにTemplateをインサートする--------------------------------------------------------------
+        public async Task InsertTemplateDatabasetAsync(string title)
+        {
+            var _editorViewModel = VMLocator.EditorViewModel;
+
+            List<string> inputText = new()
+            {
+                string.Join(Environment.NewLine, _editorViewModel.Editor1Text),
+                string.Join(Environment.NewLine, _editorViewModel.Editor2Text),
+                string.Join(Environment.NewLine, _editorViewModel.Editor3Text),
+                string.Join(Environment.NewLine, _editorViewModel.Editor4Text),
+                string.Join(Environment.NewLine, _editorViewModel.Editor5Text)
+            };
+            string finalText = string.Join(Environment.NewLine + "<---TMCGPT--->" + Environment.NewLine, inputText);
+
+            using var connection = new SQLiteConnection($"Data Source={AppSettings.Instance.DbPath}");
+            await connection.OpenAsync();
+
+            using var transaction = connection.BeginTransaction();
+            try
+            {
+                using (var command = new SQLiteCommand("INSERT INTO template(title, text) VALUES (@title, @text)", connection))
+                {
+                    command.Parameters.AddWithValue("@title", title);
+                    command.Parameters.AddWithValue("@text", finalText);
+                    await command.ExecuteNonQueryAsync();
+                }
+                transaction.Commit();
+            }
+            catch (Exception)
+            {
+                transaction.Rollback();
+                throw;
+            }
+            // インメモリをいったん閉じてまた開く
+            await memoryConnection.CloseAsync();
+            await DbLoadToMemoryAsync();
+        }
+
+        // Template Update--------------------------------------------------------------
+        public async Task UpdateTemplateAsync(string title)
+        {
+            using var connection = new SQLiteConnection($"Data Source={AppSettings.Instance.DbPath}");
+            await connection.OpenAsync();
+
+            using var transaction = connection.BeginTransaction();
+            try
+            {
+                var _editorViewModel = VMLocator.EditorViewModel;
+
+                List<string> inputText = new()
+                {
+                    string.Join(Environment.NewLine, _editorViewModel.Editor1Text),
+                    string.Join(Environment.NewLine, _editorViewModel.Editor2Text),
+                    string.Join(Environment.NewLine, _editorViewModel.Editor3Text),
+                    string.Join(Environment.NewLine, _editorViewModel.Editor4Text),
+                    string.Join(Environment.NewLine, _editorViewModel.Editor5Text)
+                };
+                string finalText = string.Join(Environment.NewLine + "<---TMCGPT--->" + Environment.NewLine, inputText);
+
+                using var command = new SQLiteCommand(connection)
+                {
+                    CommandText = "UPDATE template SET text = @templateText WHERE title = @title;"
+                };
+
+                command.Parameters.AddWithValue("@templateText", finalText);
+                command.Parameters.AddWithValue("@title", title);
+
+                int rowsAffected = await command.ExecuteNonQueryAsync();
+                if (rowsAffected == 0)
+                {
+                    throw new Exception("No matching record found to update.");
+                }
+                transaction.Commit();
+            }
+            catch (Exception ex)
+            {
+                transaction.Rollback();
+                throw new Exception($"Updating template preset '{title}': {ex.Message}", ex);
+            }
+            await memoryConnection.CloseAsync();
+            await DbLoadToMemoryAsync();
+        }
+
+        // Template Rename--------------------------------------------------------------
+        public async Task UpdateTemplateNameAsync(string oldName, string newName)
+        {
+            using var connection = new SQLiteConnection($"Data Source={AppSettings.Instance.DbPath}");
+            await connection.OpenAsync();
+
+            using var transaction = connection.BeginTransaction();
+            try
+            {
+                using var command = new SQLiteCommand(connection)
+                {
+                    CommandText = "UPDATE template SET title = @newName WHERE title = @oldName;"
+                };
+
+                command.Parameters.AddWithValue("@oldName", oldName);
+                command.Parameters.AddWithValue("@newName", newName);
+
+                int rowsAffected = await command.ExecuteNonQueryAsync();
+                if (rowsAffected == 0)
+                {
+                    throw new Exception("No matching record found to update.");
+                }
+                transaction.Commit();
+            }
+            catch (Exception ex)
+            {
+                transaction.Rollback();
+                throw new Exception($"Updating the name from '{oldName}' to '{newName}': {ex.Message}", ex);
+            }
+            await memoryConnection.CloseAsync();
+            await DbLoadToMemoryAsync();
+        }
+
+        // Template Delete--------------------------------------------------------------
+        public async Task DeleteTemplateAsync(string selectedTemplateItem)
+        {
+            try
+            {
+                using var connection = new SQLiteConnection($"Data Source={AppSettings.Instance.DbPath}");
+                await connection.OpenAsync();
+
+                using var transaction = connection.BeginTransaction(System.Data.IsolationLevel.Serializable);
+                try
+                {
+                    string sql = "DELETE FROM template WHERE title = @selectedTemplateItem";
+                    using var command = new SQLiteCommand(sql, connection, transaction);
+                    command.Parameters.AddWithValue("@selectedTemplateItem", selectedTemplateItem);
+
+                    await command.ExecuteNonQueryAsync();
+                    transaction.Commit();
+                }
+                catch (Exception ex)
+                {
+                    transaction.Rollback();
+                    throw new Exception("Occurred while deleting the selected template.", ex);
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Occurred while connecting to the database.", ex);
+            }
+            await memoryConnection.CloseAsync();
+            await DbLoadToMemoryAsync();
+        }
+
+        // Template Import--------------------------------------------------------------
+        public async Task<string> ImportTemplateFromTxtAsync(string selectedFilePath)
+        {
+            string text = "";
+
+            try
+            {
+                // Check if the file exists
+                if (!File.Exists(selectedFilePath))
+                {
+                    throw new FileNotFoundException("The specified file does not exist.", selectedFilePath);
+                }
+
+                // Read the file asynchronously
+                using (StreamReader reader = new StreamReader(selectedFilePath))
+                {
+                    int lineCount = 0;
+                    while (lineCount > -1)
+                    {
+                        if (reader.EndOfStream)
+                        {
+                            break;
+                        }
+                        else
+                        {
+                            text = text + await reader.ReadLineAsync();
+                        }
+                        lineCount++;
+                    }
+                    // textカラムの値を取得して、区切り文字で分割する
+                    string[] texts;
+                    texts = text.Split(new[] { "<---TMCGPT--->" }, StringSplitOptions.None);
+                    for (int i = 0, loopTo = Math.Min(texts.Length - 1, 4); i <= loopTo; i++) // 5要素目までを取得
+                    {
+                        string propertyName = $"Editor{i + 1}Text";
+                        PropertyInfo property = VMLocator.EditorViewModel.GetType().GetProperty(propertyName);
+                        if (property != null)
+                        {
+                            property.SetValue(VMLocator.EditorViewModel, string.Empty);
+                            if (!string.IsNullOrWhiteSpace(texts[i]))
+                            {
+                                property.SetValue(VMLocator.EditorViewModel, texts[i].Trim()); // 空白を削除して反映
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+            return text;
+        }
+
+        // データベースからTemplateログリストを取得--------------------------------------------------------------
+        public async Task GetTemplateItemsAsync()
+        {
+            try
+            {
+                string query = $"SELECT id, title FROM template ORDER BY title ASC";
+
+                using var cmd = new SQLiteCommand(query, memoryConnection);
+
+                using SQLiteDataReader reader = (SQLiteDataReader)await cmd.ExecuteReaderAsync();
+
+                var dropList = new ObservableCollection<PromptTemplate>();
+
+                while (await reader.ReadAsync())
+                {
+                    long id = reader.GetInt64(0);
+                    string text = reader.GetString(1).Replace("\r\n", " ").Replace("\r", " ").Replace("\n", " ").Replace("\t", " ");
+
+                    text = text.Replace("<---TMCGPT--->", "-");
+                    text = text.Length > 50 ? text.Substring(0, 50) + "..." : text;
+                    var item = new PromptTemplate { Id = id, Title = text };
+                    dropList.Add(item);
+                }
+
+                VMLocator.EditorViewModel.TemplateItems = dropList;
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        // データベースからEditorログを取得して表示--------------------------------------------------------------
+        public void ShowTemplateAsync(long id)
+        {
+            try
+            {
+                string query = $"SELECT text FROM template WHERE id = {id}";
+                using var command = new SQLiteCommand(query, memoryConnection);
+                using var reader = command.ExecuteReader();
+                if (reader.Read())
+                {
+                    // textカラムの値を取得して、区切り文字で分割する
+                    string[] texts;
+                    string text = reader.GetString(0);
+                    texts = text.Split(new[] { "<---TMCGPT--->" }, StringSplitOptions.None);
+                    for (int i = 0, loopTo = Math.Min(texts.Length - 1, 4); i <= loopTo; i++) // 5要素目までを取得
+                    {
+                        string propertyName = $"Editor{i + 1}Text";
+                        PropertyInfo property = VMLocator.EditorViewModel.GetType().GetProperty(propertyName);
+                        if (property != null)
+                        {
+                            property.SetValue(VMLocator.EditorViewModel, string.Empty);
+                            if (!string.IsNullOrWhiteSpace(texts[i]))
+                            {
+                                property.SetValue(VMLocator.EditorViewModel, texts[i].Trim()); // 空白を削除して反映
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                var dialog = new ContentDialog() { Title = "Error : " + ex.Message, PrimaryButtonText = "OK" };
+                _ = ContentDialogShowAsync(dialog);
+            }
         }
 
         // データベースにEditorlogをインサートする--------------------------------------------------------------

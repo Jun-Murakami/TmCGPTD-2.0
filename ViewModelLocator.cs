@@ -60,5 +60,33 @@ namespace TmCGPTD
             set => _phrasePresetsViewModel = value;
         }
 
+        private static Editor2TextBoxViewModel _editor2TextBoxViewModel;
+        public static Editor2TextBoxViewModel Editor2TextBoxViewModel
+        {
+            get => _editor2TextBoxViewModel ??= new Editor2TextBoxViewModel();
+            set => _editor2TextBoxViewModel = value;
+        }
+
+        private static Editor2AvalonEditViewModel _editor2AvalonEditViewModel;
+        public static Editor2AvalonEditViewModel Editor2AvalonEditViewModel
+        {
+            get => _editor2AvalonEditViewModel ??= new Editor2AvalonEditViewModel();
+            set => _editor2AvalonEditViewModel = value;
+        }
+
+        private static Editor4TextBoxViewModel _editor4TextBoxViewModel;
+        public static Editor4TextBoxViewModel Editor4TextBoxViewModel
+        {
+            get => _editor4TextBoxViewModel ??= new Editor4TextBoxViewModel();
+            set => _editor4TextBoxViewModel = value;
+        }
+
+        private static Editor4AvalonEditViewModel _editor4AvalonEditViewModel;
+        public static Editor4AvalonEditViewModel Editor4AvalonEditViewModel
+        {
+            get => _editor4AvalonEditViewModel ??= new Editor4AvalonEditViewModel();
+            set => _editor4AvalonEditViewModel = value;
+        }
+
     }
 }

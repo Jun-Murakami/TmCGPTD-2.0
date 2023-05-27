@@ -40,6 +40,7 @@ namespace TmCGPTD.Views
                 this.Width = settings.Width;
                 this.Height = settings.Height;
                 this.Position = new PixelPoint(settings.X, settings.Y);
+                this.WindowState = settings.IsMaximized ? WindowState.Maximized : WindowState.Normal;
             }
             else
             {
@@ -66,11 +67,12 @@ namespace TmCGPTD.Views
             VMLocator.MainViewModel.SelectedLogPain = "Chat List";
 
             await _dbProcess.GetEditorLogDatabaseAsync();
-
+            await _dbProcess.GetTemplateItemsAsync();
 
             VMLocator.EditorViewModel.EditorCommonFontSize = settings.EditorFontSize > 0 ? settings.EditorFontSize : 1;
             VMLocator.MainViewModel.SelectedPhraseItem = settings.PhrasePreset;
-
+            VMLocator.EditorViewModel.EditorModeIsChecked = true;
+            
             VMLocator.MainWindowViewModel.ApiMaxTokens = settings.ApiMaxTokens;
             VMLocator.MainWindowViewModel.ApiTemperature = settings.ApiTemperature;
             VMLocator.MainWindowViewModel.ApiTopP = settings.ApiTopP;
@@ -109,8 +111,11 @@ namespace TmCGPTD.Views
             _previousWidth = ClientSize.Width;
 
             VMLocator.DataGridViewModel.ChatList = await _dbProcess.SearchChatDatabaseAsync();
+            VMLocator.EditorViewModel.EditorModeIsChecked = settings.EditorMode;
+            VMLocator.EditorViewModel.SelectedLangIndex = settings.SyntaxHighlighting;
 
             await _dbProcess.CleanUpEditorLogDatabaseAsync();
+            VMLocator.EditorViewModel.SelectedEditorLogIndex = -1;
 
             if (string.IsNullOrWhiteSpace(VMLocator.MainWindowViewModel.ApiKey))
             {
@@ -163,13 +168,17 @@ namespace TmCGPTD.Views
         private void SaveWindowSizeAndPosition()
         {
             var settings = AppSettings.Instance;
+            settings.IsMaximized = this.WindowState == WindowState.Maximized;
+            this.WindowStateÅ@= WindowState.Normal;
             settings.Width = this.Width;
             settings.Height = this.Height;
             settings.X = this.Position.X;
             settings.Y = this.Position.Y;
 
+            settings.EditorMode = VMLocator.EditorViewModel.EditorModeIsChecked;
             settings.EditorFontSize = VMLocator.EditorViewModel.EditorCommonFontSize;
             settings.PhrasePreset = VMLocator.MainViewModel.SelectedPhraseItem;
+            settings.SyntaxHighlighting = VMLocator.EditorViewModel.SelectedLangIndex;
 
             SaveAppSettings(settings);
         }

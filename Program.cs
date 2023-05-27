@@ -41,7 +41,6 @@ namespace TmCGPTD
                           LogSeverity = CefLogSeverity.Error,
                           LogFile = AppSettings.Instance.AppDataPath + "\\cef_" + ".log",
                           //BackgroundColor = new CefColor(255, 52, 53, 65),
-
 #if WINDOWLESS
                           WindowlessRenderingEnabled = true
 #else
