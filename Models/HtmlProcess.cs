@@ -359,7 +359,7 @@ namespace TmCGPTD.Models
                 // 入力文字列のトークン数が制限トークン数「MAX_CONTENT_LENGTH」を超えた場合
                 if (inputTokenCount > MAX_CONTENT_LENGTH)
                 {
-                    throw new Exception($"The input text (inputTokenCount) exceeds the maximum token limit ({MAX_CONTENT_LENGTH}). Please remove {inputTokenCount - MAX_CONTENT_LENGTH} tokens.{Environment.NewLine}");
+                    throw new Exception($"The input text ({inputTokenCount}) exceeds the maximum token limit ({MAX_CONTENT_LENGTH}). Please remove {inputTokenCount - MAX_CONTENT_LENGTH} tokens.{Environment.NewLine}");
                 }
 
                 // 過去の履歴＋ユーザーの新規入力が制限トークン数「MAX_CONTENT_LENGTH」を超えた場合
@@ -700,7 +700,7 @@ namespace TmCGPTD.Models
                 else
                 {
                     string errorBody = await response.Content.ReadAsStringAsync();
-                    throw new Exception($"Error: Response status code does not indicate success: {response.StatusCode} ({response.ReasonPhrase}). Response body: {errorBody}");
+                    return $"Error in title naming";
                 }
             }
 

@@ -25,7 +25,11 @@
     <None Remove=".gitignore" />
     <None Remove="Assets\TmCGPTD.ico" />
     <None Remove="Views\WebChatView.xaml" />
+    <AvaloniaResource Include="Assets\Roboto-Light.ttf" />
+    <AvaloniaResource Include="Assets\SourceSansPro-Light.ttf" />
     <AvaloniaResource Include="Assets\Lato-Regular.ttf" />
+    <AvaloniaResource Include="Assets\Roboto-Regular.ttf" />
+    <AvaloniaResource Include="Assets\SourceSansPro-Regular.ttf" />
     <AvaloniaResource Include="Assets\TmCGPTD.ico" />
     <AvaloniaResource Include="Assets\TmCGPTD2.png" />
     <AvaloniaResource Include="Assets\iconClip.png" />
@@ -55,6 +59,7 @@
     <PackageReference Include="Avalonia.Diagnostics" Condition="'$(Configuration)'=='Debug64'">
       <Version>11.0.0-preview4</Version>
     </PackageReference>
+    <PackageReference Include="Avalonia.Xaml.Interactivity" Version="11.0.0-preview8" />
     <PackageReference Include="AvaloniaEdit.TextMate" Version="11.0.0-preview8" />
     <PackageReference Include="CefGlue.Avalonia" Version="106.5249.7-avalonia11" />
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.0-preview2" />

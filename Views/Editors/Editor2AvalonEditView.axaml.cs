@@ -31,20 +31,7 @@ namespace TmCGPTD.Views
             DataContextChanged += OnDataContextChanged;
 
             _editor2 = this.FindControl<TextEditor>("Editor2Avalon");
-            _editor2.Document.TextChanged += OnEditorTextChenged;
-            _editor2.AttachedToVisualTree += OnAttachedToVisualTree;
             _editor2.Document.Text = string.Empty;
-        }
-        private void OnAttachedToVisualTree(object sender, EventArgs e)
-        {
-            if ( _editor2.Document.Text != VMLocator.EditorViewModel.Editor2Text)
-            {
-                _editor2.Document.Text = VMLocator.EditorViewModel.Editor2Text;
-            }
-        }
-        private void OnEditorTextChenged(object sender, EventArgs e)
-        {
-            VMLocator.EditorViewModel.Editor2Text = _editor2.Document.Text;
         }
         private void OnDataContextChanged(object sender, EventArgs e)
         {
@@ -67,7 +54,6 @@ namespace TmCGPTD.Views
             }
         }
 
-        private System.Timers.Timer _propertyChangedDelayTimer;
         private async void OnEditorViewModelPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
             if (e.PropertyName == nameof(EditorViewModel.SelectedLang))
@@ -90,42 +76,7 @@ namespace TmCGPTD.Views
                     }
                 }
             }
-            else if (e.PropertyName == nameof(VMLocator.EditorViewModel.Editor2Text) && _editor2.Document.Text != VMLocator.EditorViewModel.Editor2Text)
-            {
-                // タイマーが既に設定されている場合はリセット
-                _propertyChangedDelayTimer?.Stop();
-                _propertyChangedDelayTimer?.Dispose();
-
-                // タイマーを0.1秒に設定し、その後に非同期更新処理を実行
-                _propertyChangedDelayTimer = new System.Timers.Timer(100);
-                _propertyChangedDelayTimer.Elapsed += async (s, args) => await UpdateEditorTextAsync();
-                _propertyChangedDelayTimer.Start();
-            }
         }
-
-        private async Task UpdateEditorTextAsync()
-        {
-            // セマフォを取得（他の操作が完了するまで待機）
-            await _updateSemaphore.WaitAsync();
-
-            try
-            {
-                // UIスレッドで実行
-                await Dispatcher.UIThread.InvokeAsync(() =>
-                {
-                    _editor2.Document.Text = VMLocator.EditorViewModel.Editor2Text;
-                });
-            }
-            finally
-            {
-                // セマフォを解放
-                _updateSemaphore.Release();
-                // タイマーをリセット
-                _propertyChangedDelayTimer?.Stop();
-                _propertyChangedDelayTimer?.Dispose();
-            }
-        }
-
 
         private TextMate.Installation _textMateInstallation;
         private ElementGenerator _generator = new ElementGenerator();

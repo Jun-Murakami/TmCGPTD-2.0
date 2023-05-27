@@ -8,15 +8,15 @@
 		<Grid VerticalAlignment="Stretch" Name="EditorGrid">
 			<Grid.RowDefinitions>
 				<RowDefinition Height="50" />
+				<RowDefinition Height="0.21*" />
+				<RowDefinition Height="2"/>
+				<RowDefinition Height="0.30*" />
+				<RowDefinition Height="2"/>
 				<RowDefinition Height="0.17*" />
 				<RowDefinition Height="2"/>
-				<RowDefinition Height="0.27*" />
+				<RowDefinition Height="0.24*" />
 				<RowDefinition Height="2"/>
-				<RowDefinition Height="0.17*" />
-				<RowDefinition Height="2"/>
-				<RowDefinition Height="0.27*" />
-				<RowDefinition Height="2"/>
-				<RowDefinition Height="0.12*" />
+				<RowDefinition Height="0.08*" />
 				<RowDefinition Height="50" />
 			</Grid.RowDefinitions>
 			<Border Grid.Row="0" BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}" BorderThickness="0,0,0,1">

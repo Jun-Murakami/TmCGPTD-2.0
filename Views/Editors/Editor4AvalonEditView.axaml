@@ -11,6 +11,10 @@
 	<Panel>
 		<AvalonEdit:TextEditor VerticalAlignment="Stretch" Name="Editor4Avalon"
 							   FontSize="{Binding Path=DataContext.EditorCommonFontSize, RelativeSource={RelativeSource FindAncestor, AncestorType=views:EditorView}}">
+			<i:Interaction.Behaviors>
+				<behaviors:DocumentTextBindingBehavior
+					Text="{Binding Path=DataContext.Editor4Text, RelativeSource={RelativeSource FindAncestor, AncestorType=views:EditorView},Mode=TwoWay}" />
+			</i:Interaction.Behaviors>
 		</AvalonEdit:TextEditor>
 	</Panel>
 </UserControl>

@@ -28,22 +28,11 @@ namespace TmCGPTD.Views
             DataContextChanged += OnDataContextChanged;
 
             _editor4 = this.FindControl<TextEditor>("Editor4Avalon");
-            _editor4.Document.TextChanged += OnEditorTextChenged;
-            _editor4.AttachedToVisualTree += OnAttachedToVisualTree;
+
             _editor4.Document.Text = string.Empty;
             ConfigureTextEditor(_editor4);
         }
-        private void OnAttachedToVisualTree(object sender, EventArgs e)
-        {
-            if (_editor4.Document.Text != VMLocator.EditorViewModel.Editor4Text)
-            {
-                _editor4.Document.Text = VMLocator.EditorViewModel.Editor4Text;
-            }
-        }
-        private void OnEditorTextChenged(object sender, EventArgs e)
-        {
-            VMLocator.EditorViewModel.Editor4Text = _editor4.Document.Text;
-        }
+
             private void OnDataContextChanged(object sender, EventArgs e)
         {
             if (_editorViewModel != null)
@@ -60,7 +49,6 @@ namespace TmCGPTD.Views
             }
         }
 
-        private System.Timers.Timer _propertyChangedDelayTimer;
         private async void OnEditorViewModelPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
             if (e.PropertyName == nameof(EditorViewModel.SelectedLang))
@@ -82,39 +70,6 @@ namespace TmCGPTD.Views
                         return;
                     }
                 }
-            }
-            else if (e.PropertyName == nameof(VMLocator.EditorViewModel.Editor4Text) && _editor4.Document.Text != VMLocator.EditorViewModel.Editor4Text)
-            {
-                // タイマーが既に設定されている場合はリセット
-                _propertyChangedDelayTimer?.Stop();
-                _propertyChangedDelayTimer?.Dispose();
-
-                // タイマーを0.1秒に設定し、その後に非同期更新処理を実行
-                _propertyChangedDelayTimer = new System.Timers.Timer(100);
-                _propertyChangedDelayTimer.Elapsed += async (s, args) => await UpdateEditorTextAsync();
-                _propertyChangedDelayTimer.Start();
-            }
-        }
-        private async Task UpdateEditorTextAsync()
-        {
-            // セマフォを取得（他の操作が完了するまで待機）
-            await _updateSemaphore.WaitAsync();
-
-            try
-            {
-                // UIスレッドで実行
-                await Dispatcher.UIThread.InvokeAsync(() =>
-                {
-                    _editor4.Document.Text = VMLocator.EditorViewModel.Editor4Text;
-                });
-            }
-            finally
-            {
-                // セマフォを解放
-                _updateSemaphore.Release();
-                // タイマーをリセット
-                _propertyChangedDelayTimer?.Stop();
-                _propertyChangedDelayTimer?.Dispose();
             }
         }
 
