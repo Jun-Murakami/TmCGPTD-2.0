@@ -169,7 +169,7 @@ namespace TmCGPTD.Views
         {
             var settings = AppSettings.Instance;
             settings.IsMaximized = this.WindowState == WindowState.Maximized;
-            this.WindowStateÅ@= WindowState.Normal;
+            this.WindowState = WindowState.Normal;
             settings.Width = this.Width;
             settings.Height = this.Height;
             settings.X = this.Position.X;
