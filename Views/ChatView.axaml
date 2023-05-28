@@ -45,7 +45,8 @@
 				<TextBox Grid.Column="1"
 						 Classes="NormalInput"
 						 Classes.clearButton="True"
-						 Text="{Binding	ChatTitle, Mode=TwoWay}"/>
+						 Text="{Binding	ChatTitle, Mode=TwoWay}"
+						 Watermark="Chat Title"/>
 				<Button Grid.Column="2"
 						Name="ButtonWrite"
 						Classes="ImageButton"

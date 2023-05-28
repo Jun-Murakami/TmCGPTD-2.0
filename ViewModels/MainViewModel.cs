@@ -46,6 +46,8 @@ namespace TmCGPTD.ViewModels
 
             HotKeyDisplayCommand = new AsyncRelayCommand(HotKeyDisplayAsync);
 
+            ShowDatabaseSettingsCommand = new AsyncRelayCommand(ShowDatabaseSettingsAsync);
+
             PhrasePresetsItems = new ObservableCollection<string>();
         }
 
@@ -67,6 +69,7 @@ namespace TmCGPTD.ViewModels
         public ICommand Editor5Clear { get; }
         public ICommand EditorAllClear { get; }
         public ICommand CopyToClipboardCommand { get; }
+        public IAsyncRelayCommand ShowDatabaseSettingsCommand { get; }
         public IAsyncRelayCommand HotKeyDisplayCommand { get; }
 
 
@@ -377,6 +380,7 @@ namespace TmCGPTD.ViewModels
                 phrasesText = string.Join(Environment.NewLine, VMLocator.PhrasePresetsViewModel.Phrases);
                 await _dbProcess.SavePhrasesAsync(viewModel.UserInput, phrasesText);
 
+                SelectedPhraseItem = "";
                 await LoadPhraseItemsAsync();
                 SelectedPhraseItem = viewModel.UserInput;
                 }
@@ -422,6 +426,8 @@ namespace TmCGPTD.ViewModels
                 dialog = new ContentDialog() { Title = $"Error: {ex.Message}", PrimaryButtonText = "OK" };
                 await ContentDialogShowAsync(dialog);
             }
+
+            SelectedPhraseItem = "";
             await LoadPhraseItemsAsync();
             SelectedPhraseItem = viewModel.UserInput;
         }
@@ -483,6 +489,7 @@ namespace TmCGPTD.ViewModels
 
                     await _dbProcess.SavePhrasesAsync(fileNameWithoutExtension, phrasesText);
 
+                    SelectedPhraseItem = "";
                     await LoadPhraseItemsAsync();
                     SelectedPhraseItem = fileNameWithoutExtension;
                 }
@@ -597,6 +604,18 @@ namespace TmCGPTD.ViewModels
             }
             await Task.Delay(500);
             IsCopyButtonClicked = false;
+        }
+
+        private async Task ShowDatabaseSettingsAsync()
+        {
+            var dialog = new ContentDialog()
+            {
+                Title = $"Move database file to a cloud drive (e.g., DropBox) and load them from another computer, chat logs and phrase presets can be synchronized.",
+                PrimaryButtonText = "OK"
+            };
+
+            dialog.Content = new DatabaseSettingsView();
+            await ContentDialogShowAsync(dialog);
         }
 
         private async Task HotKeyDisplayAsync()

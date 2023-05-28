@@ -110,7 +110,7 @@ namespace TmCGPTD.ViewModels
                         window.scrollTo({{top: document.body.scrollHeight, behavior: 'smooth' }});";
                 _browser.ExecuteJavaScript(jsCode);
                 ChatIsRunning = false;
-                //throw;
+                throw;
             }
 
             ChatIsRunning = false;

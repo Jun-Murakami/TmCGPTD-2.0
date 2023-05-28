@@ -22,7 +22,7 @@ namespace TmCGPTD
 
         // アプリケーション設定
         public string AppDataPath { get; }
-        public string DbPath { get; }
+        public string DbPath { get; set; }
         public double Width { get; set; }
         public double Height { get; set; }
         public int X { get; set; }

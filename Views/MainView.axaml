@@ -162,6 +162,17 @@
 											</ItemsPanelTemplate>
 										</ListBox.ItemsPanel>
 									</ListBox>
+									<Button ToolTip.Tip="Database settings"
+											HorizontalAlignment="Right"
+											VerticalAlignment="Center"
+											BorderThickness="0"
+											Width="28"
+											Height="28"
+											Margin="0,0,30,0"
+											Command="{Binding ShowDatabaseSettingsCommand}">
+										<Image Source="/Assets/iconDatabase.png"
+											   VerticalAlignment="Center" />
+									</Button>
 									<Button ToolTip.Tip="Keyboard shortcuts"
 											HorizontalAlignment="Right"
 											VerticalAlignment="Center"

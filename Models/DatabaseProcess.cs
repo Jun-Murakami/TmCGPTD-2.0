@@ -1061,8 +1061,8 @@ namespace TmCGPTD.Models
             await connection.CloseAsync();
         }
 
-            // チャットログを更新--------------------------------------------------------------
-            public async Task InsertDatabaseChatAsync(DateTime postDate, string postText, DateTime resDate, string resText)
+        // チャットログを更新--------------------------------------------------------------
+        public async Task InsertDatabaseChatAsync(DateTime postDate, string postText, DateTime resDate, string resText)
         {
 
             var insertText = new List<string>
@@ -1147,6 +1147,49 @@ namespace TmCGPTD.Models
             await memoryConnection.CloseAsync();
             await DbLoadToMemoryAsync();
         }
+
+        // データベースをチェック--------------------------------------------------------------
+        public async Task<bool> CheckTableExists(string selectedFilePath)
+        {
+            // テーブル名のリスト
+            string[] tableNames = { "phrase", "chatlog", "editorlog", "template" };
+
+            try
+            {
+                // データベースに接続
+                using (var connection = new SQLiteConnection($"Data Source={selectedFilePath};Version=3;"))
+                {
+                    connection.Open();
+
+                    foreach (var tableName in tableNames)
+                    {
+                        // テーブルが存在するかどうかをチェック
+                        string commandText = $"SELECT name FROM sqlite_master WHERE type='table' AND name='{tableName}';";
+                        using (var command = new SQLiteCommand(commandText, connection))
+                        {
+                            // テーブルが存在しない場合、ExecuteScalar() は null を返す
+                            var result = await command.ExecuteScalarAsync();
+                            if (result == null)
+                            {
+                                // テーブルが存在しないため、false を返す
+                                return false;
+                            }
+                        }
+                    }
+
+                    // インメモリをいったん閉じる
+                    await memoryConnection.CloseAsync();
+
+                    // すべてのテーブルが存在するため、true を返す
+                    return true;
+
+                }
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+         }
 
         private static async Task<ContentDialogResult> ContentDialogShowAsync(ContentDialog dialog)
         {

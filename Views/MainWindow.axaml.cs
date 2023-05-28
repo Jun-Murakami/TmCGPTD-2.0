@@ -54,7 +54,9 @@ namespace TmCGPTD.Views
                 this.Position = new PixelPoint(5, 0);
             }
 
-            if (!File.Exists(AppSettings.Instance.DbPath))
+            VMLocator.DatabaseSettingsViewModel.DatabasePath = settings.DbPath;
+
+            if (!File.Exists(settings.DbPath))
             {
                 _dbProcess.CreateDatabase();
             }
@@ -165,7 +167,7 @@ namespace TmCGPTD.Views
             return settings;
         }
 
-        private void SaveWindowSizeAndPosition()
+        public void SaveWindowSizeAndPosition()
         {
             var settings = AppSettings.Instance;
             settings.IsMaximized = this.WindowState == WindowState.Maximized;

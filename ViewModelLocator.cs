@@ -60,6 +60,13 @@ namespace TmCGPTD
             set => _phrasePresetsViewModel = value;
         }
 
+        private static DatabaseSettingsViewModel _databaseSettingsViewModel;
+        public static DatabaseSettingsViewModel DatabaseSettingsViewModel
+        {
+            get => _databaseSettingsViewModel ??= new DatabaseSettingsViewModel();
+            set => _databaseSettingsViewModel = value;
+        }
+
         private static Editor2TextBoxViewModel _editor2TextBoxViewModel;
         public static Editor2TextBoxViewModel Editor2TextBoxViewModel
         {

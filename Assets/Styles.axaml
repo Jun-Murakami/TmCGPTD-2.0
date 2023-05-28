@@ -28,6 +28,9 @@
 			<Setter Property="Margin" Value="0,5,15,5" />
 			<Setter Property="FontFamily" Value="avares://TmCGPTD/Assets/migu-1m-regular.ttf#Migu 1M" />
 		</Style>
+		<Style Selector="TextBlock#PART_Watermark">
+			<Setter Property="Opacity" Value="0.4" />
+		</Style>
 		<Style Selector="#PART_CaptionButtons Button:pointerover">
 			<Setter Property="Background" Value="rgb(106, 108, 125)" />
 		</Style>

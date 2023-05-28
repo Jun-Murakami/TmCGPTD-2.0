@@ -656,7 +656,7 @@ namespace TmCGPTD.Models
         {
             string summary;
 
-            forTitleMes = VMLocator.ChatViewModel.ConversationHistory.Select(message => message["content"].ToString()).Reverse().Aggregate((a, b) => a + b); ;
+            forTitleMes = VMLocator.ChatViewModel.ConversationHistory.Select(message => message["content"].ToString()).Reverse().Aggregate((a, b) => a + b);
 
             using (var httpClient = new HttpClient())
             {
