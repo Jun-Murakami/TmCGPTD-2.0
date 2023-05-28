@@ -43,10 +43,6 @@
 			<Setter Property="CornerRadius" Value="6"/>
 			<Setter Property="Margin" Value="0" />
 			<Setter Property="FontFamily" Value="avares://TmCGPTD/Assets/Lato-Regular.ttf#Lato" />
-			<!--<Setter Property="FontFamily" Value="avares://TmCGPTD/Assets/Lato-Light.ttf#Lato" />-->
-			<!--<Setter Property="FontFamily" Value="avares://TmCGPTD/Assets/Roboto-Regular.ttf#Roboto" />-->
-			<!--<Setter Property="FontFamily" Value="avares://TmCGPTD/Assets/Roboto-Light.ttf#Roboto" />-->
-			<!--<Setter Property="FontFamily" Value="avares://TmCGPTD/Assets/SourceSansPro-Regular.ttf#Source Sans Pro" />-->
 			<Setter Property="Transitions">
 				<Transitions>
 					<BrushTransition Property="Background" Duration="0:0:0.2"/>

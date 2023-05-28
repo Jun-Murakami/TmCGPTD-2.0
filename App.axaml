@@ -31,10 +31,6 @@
 		<Color x:Key="ToggleButtonBackgroundPointerOver">rgb(84, 85, 99)</Color>
 		<Color x:Key="ToggleButtonBackgroundChecked">rgb(52, 53, 65)</Color>
 		<Color x:Key="ToggleButtonBackgroundCheckedPointerOver">rgb(84, 85, 99)</Color>
-		<!--<Color x:Key="TextControlBackground">rgb(42, 43, 55)</Color>-->
-		<!--<Color x:Key="TextControlBackgroundFocused">rgb(42, 43, 55)</Color>-->
-		<!--<Color x:Key="TextControlBackgroundPointerOver">rgb(47, 48, 60)</Color>-->
-		<!--<Color x:Key="TextControlBorderBrushFocused">rgb(42, 43, 55)</Color>-->
 		<Color x:Key="DividerStrokeColorDefaultBrush">rgb(52, 53, 65)</Color>
 		<Color x:Key="MenuFlyoutPresenterBackground">rgb(52, 53, 65)</Color>
 		<Color x:Key="MenuFlyoutItemBackgroundPointerOver">rgb(74, 75, 89)</Color>

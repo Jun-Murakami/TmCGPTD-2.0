@@ -130,7 +130,7 @@ namespace TmCGPTD.ViewModels
 
         public List<string> RightPanes { get; } = new List<string>
         {
-            "Editor",
+            "Prompt Editor",
             "Preview"
         };
 

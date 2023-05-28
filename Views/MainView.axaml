@@ -232,7 +232,7 @@
 																Command="{Binding PostCommand}"
 																ToolTip.Tip="Post text (Ctrl + Enter)"
 																HotKey="Ctrl+Enter" />
-														<Image Source="/Assets/iconWrite.png"
+														<Image Source="/Assets/iconPost.png"
 															   VerticalAlignment="Center"
 															   HorizontalAlignment="Left"
 															   IsHitTestVisible="False"
