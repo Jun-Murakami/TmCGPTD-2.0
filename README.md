@@ -25,7 +25,7 @@ Designed to make it easy to cut and paste text to configure prompts.
 - **Importing web service version logs**  
 You can log in with your ChatGPT account and import logs from the web service version. Even if the chat log has reached its maximum length, you can continue the conversation semi-permanently after importing.
 - **Preset phrase function**  
-You can register frequently used phrases, such as "Please translate ~ into English in several patterns," and insert them into the editor.
+You can register frequently used phrases and insert them into the editor.
 - **Prompt template**  
 Prompt templates can be saved and loaded.
 - **Text editor history**  
