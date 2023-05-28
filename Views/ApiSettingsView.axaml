@@ -117,14 +117,13 @@
 		<TextBlock Grid.Row="16" Grid.Column="0" Text="url" TextAlignment="Right"/>
 		<TextBox Grid.Row="16" Grid.Column="1" Grid.ColumnSpan="2" AcceptsReturn="False" Classes.clearButton="True" Text="{Binding ApiUrl}" />
 
-		<TextBlock Grid.Row="17" Grid.Column="0" Text="API key" TextAlignment="Right" Margin="0,18,0,30"/>
-		<TextBox Grid.Row="17" Grid.Column="1" Grid.ColumnSpan="2" AcceptsReturn="False" PasswordChar="*" RevealPassword="False" Classes="revealPasswordButton" Margin="10,18,0,20" Text="{Binding ApiKey}" />
+		<TextBlock Grid.Row="17" Grid.Column="0" Text="API key" TextAlignment="Right" />
+		<TextBox Grid.Row="17" Grid.Column="1" Grid.ColumnSpan="2" AcceptsReturn="False" PasswordChar="*" RevealPassword="False" Classes="revealPasswordButton" Margin="10,18,0,15" Text="{Binding ApiKey}" />
 
 		<TextBlock Grid.Row="18" Grid.Column="0" Grid.ColumnSpan="5" FontSize="12" Text="&quot;conversation history limit&quot; is a client option, not an API parameter.&#xA;When the set value (tokens) is exceeded,&#xA;the conversation history will be automatically summarized." HorizontalAlignment="Center" />
 
-		<Button Grid.Row="19" Grid.Column="0" Grid.ColumnSpan="5" Content="Close" HorizontalAlignment="Center" Margin="0,20,0,15" Width="200" Command="{Binding ClosingApiSettingsCommand}"/>
-		
-		<Button Grid.Row="20" Grid.Column="0" Grid.ColumnSpan="5" Content="Reset" HorizontalAlignment="Center" Margin="0,0,0,15" Width="100" Height="30" Command="{Binding ResetApiSettingsCommand}"/>
+		<Button Grid.Row="19" Grid.Column="0" Grid.ColumnSpan="5" Content="Reset" HorizontalAlignment="Center" Margin="0,20,0,15" Width="100" Height="30" Command="{Binding ResetApiSettingsCommand}"/>
 
+		<Button Grid.Row="20" Grid.Column="0" Grid.ColumnSpan="5" Content="Close" HorizontalAlignment="Center" Margin="0,0,0,15" Width="200" Command="{Binding ClosingApiSettingsCommand}"/>
     </Grid>
 </UserControl>

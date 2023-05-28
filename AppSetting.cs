@@ -65,7 +65,7 @@ namespace TmCGPTD
         // DefaultSetting
         public AppSettings()
         {
-            EditorMode = true;
+            EditorMode = false;
             EditorFontSize = 15;
             SyntaxHighlighting = 0;
             PhrasePreset = "";

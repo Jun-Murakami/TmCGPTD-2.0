@@ -48,10 +48,10 @@ namespace TmCGPTD.Views
                 var workingArea = screen.WorkingArea;
 
                 double dpiScaling = screen.PixelDensity;
-                this.Width = (workingArea.Height / 5) * 4;
-                this.Height = (workingArea.Height / 5) * 4.8;
+                this.Width = 1300;
+                this.Height = 840;
 
-                this.WindowStartupLocation = WindowStartupLocation.CenterScreen;
+                this.Position = new PixelPoint(5, 0);
             }
 
             if (!File.Exists(AppSettings.Instance.DbPath))
