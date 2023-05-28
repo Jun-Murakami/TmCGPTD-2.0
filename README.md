@@ -16,9 +16,6 @@ You can register frequently used phrases, such as "Please translate ~ into Engli
 Prompt templates can be saved and loaded.
 - **Text editor history**  
 Automatically saves up to 200 entries of sent text history for reuse and tweaking of prompts.
-- **API option settings**  
-All API options for the Chat model can be adjusted via the GUI.
-> To synchronize chat logs across multiple computers, click the database icon in the top right corner of the screen and set the database file storage location to a cloud drive (e.g., Dropbox).
 
 ## 機能:  
 
@@ -32,17 +29,11 @@ ChatGPTのアカウントでログインしてWebサービス版のログをイ�
 プロンプトのテンプレートを保存、読み込みできます。
 - **テキストエディタ履歴**  
 プロンプトを使いまわしたり、微調整したりするために、送信した文章の履歴を200件まで自動的に保存します。
-- **APIオプション設定**  
-ChatモデルのAPIオプションをGUIで調整できます。
 > 複数のコンピューターでチャットログを同期するには、画面右上のデータベースアイコンをクリックして、データベースファイルの保存場所をクラウドドライブ（Dropboxなど）に設定してください。
 
 <img width="1144" alt="スクリーンショット 2023-05-27 10 32 38" src="https://github.com/Jun-Murakami/TmCGPTD-2.0/assets/126404131/01f09bbd-8252-4416-946f-a7d997843ad9">
 <img width="1260" src="https://user-images.githubusercontent.com/126404131/236693431-4da2e7bc-f9da-4048-829a-9f21d290a335.png">
 <img width="1260" alt="スクリーンショット 2023-05-07 04 33 07" src="https://user-images.githubusercontent.com/126404131/236644742-c991c12d-50af-47d2-ab03-66646700c927.png">
-
-(ToDo:Support Google Drive to synchronize settings and logs in the cloud.)
-
-I only have an old Mac, so I haven't been able to test it on newer Macs, like the Silicon Mac. I would appreciate it if you could let me know if there are any issues.
 
 [AvaloniaUI](https://github.com/AvaloniaUI/Avalonia) is used for multi-platform support.
 
