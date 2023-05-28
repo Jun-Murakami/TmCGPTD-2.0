@@ -7,11 +7,11 @@ ChatGPT APIのクライアントアプリです。Windows10以降、MacOSに対�
 ## 機能:  
 
 - **縦5分割のテキストエディタ**  
-文章を切り貼りして命令文／プロンプトを構成しやすいようになっています。
+文章を切り貼りして、長めの命令文／プロンプトを構成しやすいようになっています。
 - **Webサービス版ログのインポート**  
 ChatGPTのアカウントでログインしてWebサービス版のログをインポートできます。チャットの長さが最大に達しているログでも、インポートした後は半永久的に会話が継続できます。（古い会話履歴を自動的に圧縮し、裏で保持する機能が備わっています。）また、内蔵のブラウザでそのままWeb版のチャットも使用できます。取り込んだ全てのログに対してテキスト全文検索が出来ます。
-- **定型文プリセット機能**  
-「～を英語で何パターンか翻訳してください。」とか、「あなたはプロの編集者です」「下記の文章を300文字以内で要約してください。」など、よく使う定型文を登録しておいて、エディターに挿入できます。
+- **定型句プリセット機能**  
+よく使う定型句を登録しておいて、エディターに挿入できます。
 - **プロンプトテンプレート**  
 プロンプトのテンプレートを保存、読み込みできます。
 - **テキストエディタ履歴**  
@@ -23,9 +23,9 @@ ChatGPTのアカウントでログインしてWebサービス版のログをイ�
 - **Vertical 5-split text editor**  
 Designed to make it easy to cut and paste text to configure prompts.
 - **Importing web service version logs**  
-You can log in with your ChatGPT account and import logs from the web service version. Even if the chat log has reached its maximum length, you can continue the conversation semi-permanently after importing. (It has a feature that automatically compresses and retains old conversation history in the background.) Also, if you are a PLUS member, you can use the fast GPT3.5 model in the built-in browser as is.
+You can log in with your ChatGPT account and import logs from the web service version. Even if the chat log has reached its maximum length, you can continue the conversation semi-permanently after importing.
 - **Preset phrase function**  
-You can register frequently used phrases, such as "Please translate ~ into English in several patterns," "You are a professional editor," and "Please summarize the following text in 300 characters or less," and insert them into the editor.
+You can register frequently used phrases, such as "Please translate ~ into English in several patterns," and insert them into the editor.
 - **Prompt template**  
 Prompt templates can be saved and loaded.
 - **Text editor history**  
