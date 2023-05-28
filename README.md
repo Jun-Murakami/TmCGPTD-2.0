@@ -29,10 +29,10 @@ ChatGPTのアカウントでログインしてWebサービス版のログをイ�
 「～を英語で何パターンか翻訳してください。」とか、「あなたはプロの編集者です」「下記の文章を300文字以内で要約してください。」など、よく使う定型文を登録しておいて、エディターに挿入できます。
 - **プロンプトテンプレート**  
 プロンプトのテンプレートを保存、読み込みできます。
-- **テキストエディター履歴**  
+- **テキストエディタ履歴**  
 プロンプトを使いまわしたり、微調整したりするために、送信した文章の履歴を200件まで自動的に保存します。
 - **APIオプション設定**  
-ChatモデルのすべてのAPIオプションをGUIで調整できます。
+ChatモデルのAPIオプションをGUIで調整できます。
 
 <img width="1144" alt="スクリーンショット 2023-05-27 10 32 38" src="https://github.com/Jun-Murakami/TmCGPTD-2.0/assets/126404131/01f09bbd-8252-4416-946f-a7d997843ad9">
 <img width="1260" src="https://user-images.githubusercontent.com/126404131/236693431-4da2e7bc-f9da-4048-829a-9f21d290a335.png">
@@ -44,6 +44,8 @@ I only have an old Mac, so I haven't been able to test it on newer Macs, like th
 
 [AvaloniaUI](https://github.com/AvaloniaUI/Avalonia) is used for multi-platform support.
 
-More information (japanese) : [note](https://note.com/junmurakami/n/n93f4bc8f278d)
+More information (japanese) : お知らせや詳細な解説などはnoteで書いてこうと思います。
+
+https://note.com/junmurakami
 
 by Jun Murakami
