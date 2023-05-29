@@ -15,9 +15,6 @@
 		<Style Selector="SplitView Panel#PART_PaneRoot">
 			<Setter Property="Background" Value="rgb(52, 53, 65)" />
 		</Style>
-		<Style Selector="SplitView Grid#SplitPaneGrid">
-			<Setter Property="Background" Value="rgb(52, 53, 65)" />
-		</Style>
 		<Style Selector="TextBlock">
 			<Setter Property="FontFamily" Value="avares://TmCGPTD/Assets/Lato-Regular.ttf#Lato" />
 			<Setter Property="Foreground" Value="rgb(220, 220, 220)" />

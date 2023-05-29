@@ -47,6 +47,7 @@
 		<Color x:Key="MenuFlyoutPresenterBorderBrush">rgb(44, 44, 54)</Color>
 		<Color x:Key="ComboBoxDropDownBackground">rgb(52, 53, 65)</Color>
 		<Color x:Key="ContentDialogBackground">rgb(42, 43, 55)</Color>
+		<Color x:Key="SolidBackgroundFillColorBase">rgb(52, 53, 65)</Color>
 		<Color x:Key="SolidBackgroundFillColorSecondary">rgb(52, 53, 65)</Color>
 		<Color x:Key="TextControlButtonForeground">rgb(126, 128, 145)</Color>
 		<Color x:Key="SystemControlForegroundBaseHighBrush">rgb(220, 220, 220)</Color>
