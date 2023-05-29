@@ -243,7 +243,7 @@ namespace TmCGPTD.ViewModels
 
                   // ŒŸõ‚ªƒqƒbƒg‚µ‚½ê‡
                   if (searchResults.length > 0) {
-                    searchDisplay.textContent = `${currentSearchIndex + 1} / ${searchResults.length} results found.`;
+                    searchDisplay.textContent = `${currentSearchIndex + 1} / ${searchResults.length} results`;
                   }
 
                   // Opacity‚ÆDisplay‚ğİ’è
