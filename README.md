@@ -12,10 +12,9 @@ ChatGPT APIのクライアントアプリです。Windows10以降、MacOSに対�
 ChatGPTのアカウントでログインしてWebサービス版のログをインポートできます。チャットの長さが最大に達しているログでも、インポートした後は半永久的に会話が継続できます。（古い会話履歴を自動的に圧縮し、裏で保持する機能が備わっています。）また、内蔵のブラウザでそのままWeb版のチャットも使用できます。取り込んだ全てのログに対してテキスト全文検索が出来ます。
 - **定型句プリセット機能**  
 よく使う定型句を登録しておいて、エディターに挿入できます。
-- **プロンプトテンプレート**  
-プロンプトのテンプレートを保存、読み込みできます。
-- **テキストエディタ履歴**  
-プロンプトを使いまわしたり、微調整したりするために、送信した文章の履歴を自動的に保存します。
+- **プロンプトテンプレート＆ログ**  
+プロンプトのテンプレートを保存、読み込みできます。送信した文章の履歴も自動的に保存します。
+
 > 複数のコンピューターでチャットログを同期するには、画面右上のデータベースアイコンをクリックして、データベースファイルの保存場所をクラウドドライブ（Dropboxなど）に設定してください。
 
 ## Features:  
@@ -26,10 +25,8 @@ Designed to make it easy to cut and paste text to configure prompts.
 You can log in with your ChatGPT account and import logs from the web service version. Even if the chat log has reached its maximum length, you can continue the conversation semi-permanently after importing.
 - **Preset phrase function**  
 You can register frequently used phrases and insert them into the editor.
-- **Prompt template**  
-Prompt templates can be saved and loaded.
-- **Text editor history**  
-Automatically saves up to 200 entries of sent text history for reuse and tweaking of prompts.
+- **Prompt template & log**  
+Prompt templates can be saved and loaded. Automatically saves up to 200 entries of sent text history.
 
 <img width="1144" alt="スクリーンショット 2023-05-27 10 32 38" src="https://github.com/Jun-Murakami/TmCGPTD-2.0/assets/126404131/01f09bbd-8252-4416-946f-a7d997843ad9">
 <img width="1260" src="https://user-images.githubusercontent.com/126404131/236693431-4da2e7bc-f9da-4048-829a-9f21d290a335.png">
