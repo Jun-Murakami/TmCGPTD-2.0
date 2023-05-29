@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Xilium.CefGlue.Avalonia;
 using FluentAvalonia.UI.Controls;
 using TmCGPTD.Models;
+using AvaloniaEdit.Editing;
 
 namespace TmCGPTD.ViewModels
 {
@@ -31,11 +32,11 @@ namespace TmCGPTD.ViewModels
 
                 string script = @"const mainTag = document.querySelector('main');
                         const formTag = mainTag.querySelector('form');
-                        const textarea = formTag.querySelector('textarea');"+
+                        const textarea = formTag.querySelector('textarea');" +
                         $"textarea.value = {escapedString};";
                 await _browser.EvaluateJavaScript<string>(script);
 
-                await Task.Delay(200);
+                await Task.Delay(300);
 
                 script = @"const mainTag = document.querySelector('main');
                         const formTag = mainTag.querySelector('form');
@@ -43,7 +44,7 @@ namespace TmCGPTD.ViewModels
                         button.removeAttribute('disabled');";
                 await _browser.EvaluateJavaScript<string>(script);
 
-                await Task.Delay(200);
+                await Task.Delay(300);
 
                 script = @"const mainTag = document.querySelector('main');
                         const formTag = mainTag.querySelector('form');
@@ -51,7 +52,7 @@ namespace TmCGPTD.ViewModels
                         button.click();";
                 await _browser.EvaluateJavaScript<string>(script);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 var dialog = new ContentDialog() { Title = "Error : " + ex.Message, PrimaryButtonText = "OK" };
                 await ContentDialogShowAsync(dialog);

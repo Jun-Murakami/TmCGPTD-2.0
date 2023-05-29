@@ -24,7 +24,7 @@
     <AvaloniaResource Include="Assets\Styles.axaml" />
     <None Remove=".gitignore" />
     <None Remove="Assets\TmCGPTD.ico" />
-    <None Remove="Views\WebChatView.xaml" />
+    <None Remove="src\Views\WebChatView.xaml" />
     <AvaloniaResource Include="Assets\Lato-Regular.ttf" />
     <AvaloniaResource Include="Assets\TmCGPTD.ico" />
     <AvaloniaResource Include="Assets\TmCGPTD2.png" />
@@ -34,7 +34,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <AvaloniaXaml Include="Views\WebChatView.xaml" />
+    <AvaloniaXaml Include="src\Views\WebChatView.xaml" />
   </ItemGroup>
 
   <ItemGroup>
@@ -68,7 +68,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Update="Views\HotKeyDisplayView.axaml.cs">
+    <Compile Update="src\Views\HotKeyDisplayView.axaml.cs">
       <DependentUpon>HotKeyDisplayView.axaml</DependentUpon>
     </Compile>
   </ItemGroup>
