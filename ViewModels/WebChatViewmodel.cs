@@ -35,11 +35,15 @@ namespace TmCGPTD.ViewModels
                         $"textarea.value = {escapedString};";
                 await _browser.EvaluateJavaScript<string>(script);
 
+                await Task.Delay(200);
+
                 script = @"const mainTag = document.querySelector('main');
                         const formTag = mainTag.querySelector('form');
                         const button = formTag.querySelector('button');
                         button.removeAttribute('disabled');";
                 await _browser.EvaluateJavaScript<string>(script);
+
+                await Task.Delay(200);
 
                 script = @"const mainTag = document.querySelector('main');
                         const formTag = mainTag.querySelector('form');

@@ -1,0 +1,11 @@
+﻿
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:system="clr-namespace:System;assembly=System.Runtime">
+    <system:String x:Key="My.Strings.PhrasePresets">Phrase Presets :</system:String>
+    <system:String x:Key="My.Strings.ConversationHitoryInfo">"conversation history limit" is a client option, not an API parameter.
+When the set value (tokens) is exceeded,
+the conversation history will be automatically summarized.</system:String>
+    <system:String x:Key="My.Strings.DatabaseInfo">Move database file to a cloud folder (e.g., DropBox) and load them from another computer, chat logs and phrase presets can be synchronized.</system:String>
+    <system:String x:Key="My.Strings.ChatScreenInfo">Please display chat screen.</system:String>
+</ResourceDictionary>

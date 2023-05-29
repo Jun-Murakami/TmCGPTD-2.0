@@ -256,7 +256,7 @@
 								</StackPanel>
 							</Expander>
 							<StackPanel Orientation="Horizontal">
-								<TextBlock Text="Phrase Presets :"
+								<TextBlock Text="{DynamicResource My.Strings.PhrasePresets}"
 										   Margin="10,8,5,16"
 										   VerticalAlignment="Bottom" />
 								<ComboBox ItemsSource="{Binding PhrasePresetsItems}"

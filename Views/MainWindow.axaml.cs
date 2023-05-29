@@ -9,6 +9,11 @@ using Avalonia.Threading;
 using System.Threading.Tasks;
 using TmCGPTD.Models;
 using Avalonia.Interactivity;
+using System.Globalization;
+using Avalonia.Markup.Xaml.Styling;
+using System.Linq;
+using Avalonia.Markup.Xaml;
+using System.Diagnostics;
 
 namespace TmCGPTD.Views
 {
@@ -27,6 +32,13 @@ namespace TmCGPTD.Views
 
             DataContext = MainWindowViewModel;
             VMLocator.MainWindowViewModel = MainWindowViewModel;
+
+            // Get the current culture info
+            var cultureInfo = CultureInfo.CurrentCulture;
+            if(cultureInfo.Name == "ja-JP")
+            {
+                Translate("ja-JP");
+            }
         }
 
         private double _previousWidth;
@@ -190,6 +202,21 @@ namespace TmCGPTD.Views
             var jsonString = JsonSerializer.Serialize(settings);
             File.WriteAllText(Path.Combine(settings.AppDataPath, "settings.json"), jsonString);
         }
+
+        public void Translate(string targetLanguage)
+        {
+            var translations = App.Current.Resources.MergedDictionaries.OfType<ResourceInclude>().FirstOrDefault(x => x.Source?.OriginalString?.Contains("/Lang/") ?? false);
+
+            if (translations != null)
+                App.Current.Resources.MergedDictionaries.Remove(translations);
+
+            App.Current.Resources.MergedDictionaries.Add(
+                (ResourceDictionary)AvaloniaXamlLoader.Load(
+                    new Uri($"avares://TmCGPTD/Assets/Lang/{targetLanguage}.axaml")
+                    )
+                );
+        }
+
 
         private async Task<ContentDialogResult> ContentDialogShowAsync(ContentDialog dialog)
         {

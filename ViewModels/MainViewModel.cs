@@ -13,6 +13,7 @@ using TmCGPTD.Models;
 using FluentAvalonia.UI.Controls;
 using Avalonia;
 using Avalonia.Platform.Storage;
+using System.Diagnostics;
 
 namespace TmCGPTD.ViewModels
 {
@@ -546,6 +547,7 @@ namespace TmCGPTD.ViewModels
         private async Task ClearPhrasesAsync()
         {
             VMLocator.PhrasePresetsViewModel.Phrases = new ObservableCollection<string>(Enumerable.Repeat("", 20));
+            SelectedPhraseItem = "";
         }
 
         public async Task LoadPhraseItemsAsync()
@@ -596,11 +598,9 @@ namespace TmCGPTD.ViewModels
         private async Task CopyToClipboard()
         {
             IsCopyButtonClicked = true;
-            if (ApplicationExtensions.GetTopLevel(Avalonia.Application.Current).Clipboard != null)
+            if (ApplicationExtensions.GetTopLevel(Avalonia.Application.Current!)!.Clipboard != null)
             {
-                await ApplicationExtensions.GetTopLevel(Avalonia.Application.Current).Clipboard.SetTextAsync(VMLocator.EditorViewModel.RecentText);
-                //var dialog = new ContentDialog() { Title = $"Copied to clipboard.", PrimaryButtonText = "OK" };
-                //await ContentDialogShowAsync(dialog);
+                await ApplicationExtensions.GetTopLevel(Avalonia.Application.Current!)!.Clipboard!.SetTextAsync(VMLocator.EditorViewModel.RecentText);
             }
             await Task.Delay(500);
             IsCopyButtonClicked = false;
@@ -608,9 +608,10 @@ namespace TmCGPTD.ViewModels
 
         private async Task ShowDatabaseSettingsAsync()
         {
+            Application.Current!.TryFindResource("My.Strings.DatabaseInfo", out object resource1);
             var dialog = new ContentDialog()
             {
-                Title = $"Move database file to a cloud drive (e.g., DropBox) and load them from another computer, chat logs and phrase presets can be synchronized.",
+                Title = resource1,
                 PrimaryButtonText = "OK"
             };
 

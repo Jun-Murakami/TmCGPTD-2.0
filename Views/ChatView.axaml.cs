@@ -28,7 +28,10 @@ namespace TmCGPTD.Views
             VMLocator.ChatViewModel = ChatViewModel;
 
             var browserWrapper = this.FindControl<Decorator>("ChatBrowserWrapper");
-            _browser = new AvaloniaCefBrowser();
+            _browser = new AvaloniaCefBrowser
+            {
+                LifeSpanHandler = new CustomLifeSpanHandler(),
+            };
             _browser.ContextMenuHandler = new CustomContextMenuHandler();
             browserWrapper.Child = _browser;
 
@@ -100,7 +103,7 @@ namespace TmCGPTD.Views
 
         private void FocusSearchBox(object sender, RoutedEventArgs e)
         {
-            if (VMLocator.MainViewModel.SelectedLeftPane == "Chat")
+            if (VMLocator.MainViewModel.SelectedLeftPane == "API Chat")
             {
                 _searchBox.Focus();
             }

@@ -71,10 +71,11 @@ namespace TmCGPTD.ViewModels
             {
                 if (SetProperty(ref _selectedEditorLog, value))
                 {
-                    if (SelectedEditorLog != null)
+                    if (SelectedEditorLog != null && SelectedEditorLogIndex != -1)
                     {
                         DatabaseProcess _databaseProcess = new DatabaseProcess();
                         _databaseProcess.ShowEditorLogDatabaseAsync(SelectedEditorLog.Id);
+                        SelectedTemplateItemIndex = -1;
                     }
                 }
             }
@@ -203,9 +204,10 @@ namespace TmCGPTD.ViewModels
             get => _selectedTemplateItem;
             set
             {
-                if (SetProperty(ref _selectedTemplateItem, value) && _selectedTemplateItem != null)
+                if (SetProperty(ref _selectedTemplateItem, value) && _selectedTemplateItem != null && SelectedTemplateItemIndex != -1)
                 {
                     _dbProcess.ShowTemplateAsync(_selectedTemplateItem.Id);
+                    SelectedEditorLogIndex = -1;
                 }
             }
         }
@@ -343,6 +345,7 @@ namespace TmCGPTD.ViewModels
                 dialog = new ContentDialog() { Title = $"Error: {ex.Message}", PrimaryButtonText = "OK" };
                 await ContentDialogShowAsync(dialog);
             }
+            SelectedTemplateItemIndex = -1;
             await _dbProcess.GetTemplateItemsAsync();
         }
 
@@ -364,6 +367,8 @@ namespace TmCGPTD.ViewModels
                 {
                     var selectedFilePath = result[0].Path.LocalPath;
                     var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(selectedFilePath);
+
+                    SelectedTemplateItemIndex = -1;
 
                     var importedTemplate = await _dbProcess.ImportTemplateFromTxtAsync(selectedFilePath);
 

@@ -10,12 +10,22 @@
         <local:ViewLocator/>
     </Application.DataTemplates>
 
+	<Application.Resources>
+		<ResourceDictionary>
+			<ResourceDictionary.MergedDictionaries>
+				<ResourceInclude Source="/Assets/Lang/en-US.axaml" />
+			</ResourceDictionary.MergedDictionaries>
+		</ResourceDictionary>
+
+	</Application.Resources>
+	
 	<Application.Styles>
 		<sty:FluentAvaloniaTheme  PreferUserAccentColor="False" PreferSystemTheme="False"/>
 		<StyleInclude Source="avares://AvaloniaEdit/Themes/Fluent/AvaloniaEdit.xaml" />
 		<StyleInclude Source="avares://TmCGPTD/Assets/Styles.axaml" />
 		<dialogHostAvalonia:DialogHostStyles />
 	</Application.Styles>
+	
 	<Application.Resources>
 		<Color x:Key="SystemAccentColor">rgb(155, 138, 255)</Color>
 		<Color x:Key="SystemAccentColorDark1">rgb(155, 138, 255)</Color>

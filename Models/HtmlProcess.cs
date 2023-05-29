@@ -13,6 +13,7 @@ using System.Net.Http;
 using TiktokenSharp;
 using System.Diagnostics;
 using Avalonia;
+using Avalonia.Controls;
 
 namespace TmCGPTD.Models
 {
@@ -153,6 +154,8 @@ namespace TmCGPTD.Models
                 HtmlAgilityPack.HtmlDocument htmlDoc = new HtmlAgilityPack.HtmlDocument();
                 htmlDoc.LoadHtml(htmlSource);
 
+                Application.Current!.TryFindResource("My.Strings.ChatScreenInfo", out object resource1);
+                string resourceString = resource1.ToString();
 
                 HtmlNode titleNode = htmlDoc.DocumentNode.SelectSingleNode("//title");
 
@@ -161,7 +164,7 @@ namespace TmCGPTD.Models
                     string titleText = titleNode.InnerText;
                     if (titleText == "New chat" || titleText == "")
                     {
-                        return "Please display chat screen.";
+                        return resourceString;
                     }
                     else
                     {
@@ -170,14 +173,14 @@ namespace TmCGPTD.Models
                 }
                 else
                 {
-                    return "Please display chat screen.";
+                    return resourceString;
                 }
 
                 // mainタグをサーチ
                 var mainTag = htmlDoc.DocumentNode.SelectSingleNode("//main");
                 if (mainTag == null)
                 {
-                    return "Please display chat screen.";
+                    return resourceString;
                 }
 
                 // divタグを取得
