@@ -168,6 +168,13 @@ namespace TmCGPTD.ViewModels
             }
         }
 
+        private bool _phraseExpanderIsOpened;
+        public bool PhraseExpanderIsOpened
+        {
+            get => _phraseExpanderIsOpened;
+            set => SetProperty(ref _phraseExpanderIsOpened, value);
+        }
+
         private bool _isCopyButtonClicked;
         public bool IsCopyButtonClicked
         {

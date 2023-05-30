@@ -76,9 +76,11 @@ namespace TmCGPTD.Views
             await _dbProcess.DbLoadToMemoryAsync();
             await VMLocator.MainViewModel.LoadPhraseItemsAsync();
 
-            VMLocator.MainViewModel.SelectedPhraseItem = AppSettings.Instance.PhrasePreset;
+            VMLocator.MainViewModel.SelectedPhraseItem = settings.PhrasePreset;
 
             VMLocator.MainViewModel.SelectedLogPain = "Chat List";
+
+            VMLocator.MainViewModel.PhraseExpanderIsOpened = settings.PhraseExpanderMode;
 
             await _dbProcess.GetEditorLogDatabaseAsync();
             await _dbProcess.GetTemplateItemsAsync();
@@ -193,6 +195,7 @@ namespace TmCGPTD.Views
             settings.EditorFontSize = VMLocator.EditorViewModel.EditorCommonFontSize;
             settings.PhrasePreset = VMLocator.MainViewModel.SelectedPhraseItem;
             settings.SyntaxHighlighting = VMLocator.EditorViewModel.SelectedLangIndex;
+            settings.PhraseExpanderMode = VMLocator.MainViewModel.PhraseExpanderIsOpened;
 
             SaveAppSettings(settings);
         }

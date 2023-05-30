@@ -225,7 +225,7 @@
 					</Grid>
 				</Border>
 				<Grid Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="3">
-					<Expander ExpandDirection="Up" IsExpanded="True" Margin="0,5,0,0">
+					<Expander ExpandDirection="Up" IsExpanded="{Binding	PhraseExpanderIsOpened}" Margin="0,5,0,0">
 						<StackPanel>
 							<local:PhrasePresetsView />
 						</StackPanel>

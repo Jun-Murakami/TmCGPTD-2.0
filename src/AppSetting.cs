@@ -32,6 +32,7 @@ namespace TmCGPTD
         public double EditorFontSize { get; set; }
         public int SyntaxHighlighting { get; set; }
         public string PhrasePreset { get; set; }
+        public bool PhraseExpanderMode { get; set; }
 
         // ChatGPT API接続設定
         public int ApiMaxTokens { get; set; }
@@ -69,6 +70,7 @@ namespace TmCGPTD
             EditorFontSize = 15;
             SyntaxHighlighting = 0;
             PhrasePreset = "";
+            PhraseExpanderMode = true;
 
             AppDataPath = GetAppDataDirectory();
             DbPath = Path.Combine(AppDataPath, "log_database.db");

@@ -22,6 +22,7 @@
 	<Application.Styles>
 		<sty:FluentAvaloniaTheme  PreferUserAccentColor="False" PreferSystemTheme="False"/>
 		<StyleInclude Source="avares://AvaloniaEdit/Themes/Fluent/AvaloniaEdit.xaml" />
+		<StyleInclude Source="avares://TmCGPTD/Assets/CustomDataGridStyles.axaml"/>
 		<StyleInclude Source="avares://TmCGPTD/Assets/Styles.axaml" />
 		<dialogHostAvalonia:DialogHostStyles />
 	</Application.Styles>

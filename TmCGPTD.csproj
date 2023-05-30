@@ -21,6 +21,7 @@
 
 	<ItemGroup>
     <AvaloniaResource Include="Assets\**" />
+    <AvaloniaResource Remove="Assets\CustomDataGridStyles.axaml" />
     <AvaloniaResource Include="Assets\Styles.axaml" />
     <None Remove=".gitignore" />
     <None Remove="Assets\TmCGPTD.ico" />
@@ -53,7 +54,7 @@
     <!--Condition below is needed to remove Avalonia.Diagnostics package from build output in Release configuration.-->
     <PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" Version="11.0.0-preview8-fork4" />
     <PackageReference Include="Avalonia.Diagnostics" Condition="'$(Configuration)'=='Debug64'">
-      <Version>11.0.0-preview4</Version>
+      <Version>11.0.0-preview8</Version>
     </PackageReference>
     <PackageReference Include="Avalonia.Xaml.Interactivity" Version="11.0.0-preview8" />
     <PackageReference Include="AvaloniaEdit.TextMate" Version="11.0.0-preview8" />
@@ -65,6 +66,12 @@
     <PackageReference Include="HtmlAgilityPack" Version="1.11.46" />
     <PackageReference Include="System.Data.SQLite" Version="1.0.117" />
     <PackageReference Include="TiktokenSharp" Version="1.0.5" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AvaloniaXaml Update="Assets\CustomDataGridStyles.axaml">
+      <SubType>Designer</SubType>
+    </AvaloniaXaml>
   </ItemGroup>
 
   <ItemGroup>
