@@ -1,9 +1,0 @@
-{
-  "profiles": {
-    "プロファイル 1": {
-      "commandName": "Project",
-      "nativeDebugging": false,
-      "jsWebView2Debugging": false
-    }
-  }
-}
