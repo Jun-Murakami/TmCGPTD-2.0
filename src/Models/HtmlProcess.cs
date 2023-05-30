@@ -14,6 +14,7 @@ using TiktokenSharp;
 using System.Diagnostics;
 using Avalonia;
 using Avalonia.Controls;
+using System.Reactive.Joins;
 
 namespace TmCGPTD.Models
 {
@@ -110,6 +111,10 @@ namespace TmCGPTD.Models
 
                 content = WebUtility.HtmlEncode(content); // エスケープを適用
                 content = codeSnippetRegex.Replace(content, WrapCodeSnippet);
+
+                string linkRegex = @"\((http://[^\s]+|https://[^\s]+)\)";
+                content = Regex.Replace(content, linkRegex, "(<a href=\"$1\" target=\"_blank\" rel=\"noopener noreferrer\">$1</a>)");
+
                 var usageMatch = usageRegex.Match(content);
                 if (usageMatch.Success)
                 {
@@ -263,17 +268,26 @@ namespace TmCGPTD.Models
                         pattern = "<span class=.*>[0-9]+ / [0-9]+</span>";
                         htmlString = Regex.Replace(htmlString, pattern, "");
 
+                        pattern = "<a href=\"(.*?)\".*?</a>";
+                        string replacement = $"($1)";
+                        htmlString = Regex.Replace(htmlString, pattern, replacement);
+
+
                         // 置換処理
                         htmlString = htmlString.Replace("<pre class=\"\">", $"{br}{br}```")
                                                .Replace("<pre>", $"{br}{br}```")
                                                .Replace("</pre>", $"{br}```{br}{br}")
                                                .Replace("Copy code", $"{br}")
-                                               .Replace("<ol>", $"{br}")
-                                               .Replace("</ol>", $"{br}")
+                                               .Replace("<ol>", $"")
+                                               .Replace("</ol>", $"")
                                                .Replace("<ul>", $"{br}")
                                                .Replace("</ul>", $"{br}")
-                                               .Replace("<li>", $"{br}- ")
-                                               .Replace("</li>", $"{br}");
+                                               .Replace("<li><p>", $"- ")
+                                               .Replace("</p></li>", $"{br}{br}")
+                                               .Replace("<li>", $"- ")
+                                               .Replace("</li>", $"{br}{br}")
+                                               .Replace("<p>", "")
+                                               .Replace("</p>", $"{br}{br}");
 
                         // 置換処理が完了した後、再度HTMLドキュメントに戻す
                         var modifiedHtmlDoc = new HtmlAgilityPack.HtmlDocument();

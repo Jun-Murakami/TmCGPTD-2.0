@@ -14,6 +14,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Diagnostics;
 using Avalonia.Threading;
+using Avalonia;
 
 namespace TmCGPTD.Views
 {
@@ -32,7 +33,33 @@ namespace TmCGPTD.Views
 
             _editor2 = this.FindControl<TextEditor>("Editor2Avalon");
             _editor2.Document.Text = string.Empty;
+
+            // アタッチされたときのイベントを購読
+            _editor2.AttachedToVisualTree += OnEditor2AttachedToVisualTree;
+
         }
+
+        private void OnEditor2AttachedToVisualTree(object sender, VisualTreeAttachmentEventArgs e)
+        {
+            Language language = _editorViewModel.SelectedLang;
+
+            if (_foldingManager != null)
+            {
+                _foldingManager.Clear();
+                FoldingManager.Uninstall(_foldingManager);
+            }
+            if (language != null && language.Extensions != null)
+            {
+                string scopeName = _registryOptions.GetScopeByLanguageId(language.Id);
+                _textMateInstallation.SetGrammar(scopeName);
+                if (language.Id == "xml")
+                {
+                    _foldingManager = FoldingManager.Install(_editor2.TextArea);
+                    return;
+                }
+            }
+        }
+
         private void OnDataContextChanged(object sender, EventArgs e)
         {
             if (_editorViewModel != null)

@@ -9,6 +9,26 @@ body {
 
 ::selection {
   background-color: #6e64af;
+  color: #dcdcdc;
+}
+
+a{
+  font-size: 0.9em;
+}
+
+a:link, a:visited {
+  color: #9b90db;
+  text-decoration: none;
+}
+
+a:hover {
+  color: #9b8aff;
+  text-decoration: underline;
+}
+
+a:active {
+  color: #ff8a9b;
+  text-decoration: underline;
 }
 
 ::-webkit-scrollbar {

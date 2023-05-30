@@ -12,6 +12,7 @@ using TmCGPTD.ViewModels;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Threading;
+using Avalonia;
 
 namespace TmCGPTD.Views
 {
@@ -31,9 +32,32 @@ namespace TmCGPTD.Views
 
             _editor4.Document.Text = string.Empty;
             ConfigureTextEditor(_editor4);
+            // アタッチされたときのイベントを購読
+            _editor4.AttachedToVisualTree += OnEditor4AttachedToVisualTree;
         }
 
-            private void OnDataContextChanged(object sender, EventArgs e)
+        private void OnEditor4AttachedToVisualTree(object sender, VisualTreeAttachmentEventArgs e)
+        {
+            Language language = _editorViewModel.SelectedLang;
+
+            if (_foldingManager != null)
+            {
+                _foldingManager.Clear();
+                FoldingManager.Uninstall(_foldingManager);
+            }
+            if (language != null && language.Extensions != null)
+            {
+                string scopeName = _registryOptions.GetScopeByLanguageId(language.Id);
+                _textMateInstallation.SetGrammar(scopeName);
+                if (language.Id == "xml")
+                {
+                    _foldingManager = FoldingManager.Install(_editor4.TextArea);
+                    return;
+                }
+            }
+        }
+
+        private void OnDataContextChanged(object sender, EventArgs e)
         {
             if (_editorViewModel != null)
             {
