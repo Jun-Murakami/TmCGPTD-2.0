@@ -15,6 +15,7 @@ using System.Diagnostics;
 using Avalonia;
 using Avalonia.Controls;
 using System.Reactive.Joins;
+using TextMateSharp.Internal.Oniguruma;
 
 namespace TmCGPTD.Models
 {
@@ -112,8 +113,17 @@ namespace TmCGPTD.Models
                 content = WebUtility.HtmlEncode(content); // エスケープを適用
                 content = codeSnippetRegex.Replace(content, WrapCodeSnippet);
 
-                string linkRegex = @"\((http://[^\s]+|https://[^\s]+)\)";
-                content = Regex.Replace(content, linkRegex, "(<a href=\"$1\" target=\"_blank\" rel=\"noopener noreferrer\">$1</a>)");
+                string pattern = @"\[\!\[(.*?)\]\((.*?)\)\]\((.*?)\)";
+                content = Regex.Replace(content, pattern, @"<a href=""$3"" target=""_blank"" rel=""noopener noreferrer""><img src=""$2"" alt=""$1""></a>");
+
+                Regex linkRegex = new Regex(@"\[([^\]]+?)\]\(([^\)]+?)\)");
+                content = linkRegex.Replace(content, m => $"<a href=\"{m.Groups[2].Value}\" target=\"_blank\" rel=\"noopener noreferrer\">{m.Groups[1].Value}</a>");
+
+                Regex imgRegex = new Regex(@"!\[([^\]]*?)\]\(([^\)]+?)\)");
+                content = imgRegex.Replace(content, m => $"<img src=\"{m.Groups[2].Value}\" alt=\"{m.Groups[1].Value}\">");
+
+                Regex strongRegex = new Regex(@"\*\*(.+?)\*\*");
+                content = strongRegex.Replace(content, m => $"<strong>{m.Groups[1].Value}</strong>");
 
                 var usageMatch = usageRegex.Match(content);
                 if (usageMatch.Success)
@@ -265,19 +275,45 @@ namespace TmCGPTD.Models
                         pattern = "<div>Finished browsing</div>";
                         htmlString = Regex.Replace(htmlString, pattern, "");
 
-                        pattern = "<span class=.*>[0-9]+ / [0-9]+</span>";
-                        htmlString = Regex.Replace(htmlString, pattern, "");
+                        pattern = "<sup>([^<]*?)</sup>";
+                        htmlString = Regex.Replace(htmlString, pattern, "($1)");
 
-                        pattern = "<a href=\"(.*?)\".*?</a>";
-                        string replacement = $"($1)";
+                        pattern = "Used <b>[^<]*</b>";
+                        htmlString = Regex.Replace(htmlString, pattern, $"");
+
+                        pattern = "<a href=\"([^\"]*?)\"[^>]*?>([^<]*?)</a>";
+                        string replacement = $"[$2]($1)";
                         htmlString = Regex.Replace(htmlString, pattern, replacement);
 
+                        Regex _favconRegex = new Regex("<img[^>]*?src=\"[^>]*?\"[^>]*?alt=\"Favicon\"?[^>]*?>");
+                        htmlString = _favconRegex.Replace(htmlString, "");
 
+                        Regex _regex = new Regex("<img.+?src=\"(.*?)\".*?>");
+                        htmlString = _regex.Replace(htmlString, $"{br}![]($1)");
+
+                        pattern = @"![[]]\([^)]*.ico\)";
+                        htmlString = Regex.Replace(htmlString, pattern, "");
+
+                        pattern = @"![[]]\([^)]*.svg\)";
+                        htmlString = Regex.Replace(htmlString, pattern, "");
+
+                        pattern = "<span class=[^>]+?>[0-9]+? / [0-9]+?</span>";
+                        htmlString = Regex.Replace(htmlString, pattern, "");
+                        Debug.WriteLine(htmlString);
                         // 置換処理
                         htmlString = htmlString.Replace("<pre class=\"\">", $"{br}{br}```")
                                                .Replace("<pre>", $"{br}{br}```")
                                                .Replace("</pre>", $"{br}```{br}{br}")
                                                .Replace("Copy code", $"{br}")
+                                               .Replace("<strong>", $"**")
+                                               .Replace("</strong>", $"**")
+                                               .Replace("<hr>", $"{br}{br}")
+                                               .Replace("<h2>", $"{br}")
+                                               .Replace("</h2>", $"{br}")
+                                               .Replace("<h3>", $"{br}")
+                                               .Replace("</h3>", $"{br}")
+                                               .Replace("<h4>", $"{br}")
+                                               .Replace("</h4>", $"{br}")
                                                .Replace("<ol>", $"")
                                                .Replace("</ol>", $"")
                                                .Replace("<ul>", $"{br}")
@@ -285,7 +321,7 @@ namespace TmCGPTD.Models
                                                .Replace("<li><p>", $"- ")
                                                .Replace("</p></li>", $"{br}{br}")
                                                .Replace("<li>", $"- ")
-                                               .Replace("</li>", $"{br}{br}")
+                                               .Replace("</li>", $"{br}")
                                                .Replace("<p>", "")
                                                .Replace("</p>", $"{br}{br}");
 

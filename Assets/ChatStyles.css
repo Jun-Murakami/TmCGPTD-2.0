@@ -12,23 +12,29 @@ body {
   color: #dcdcdc;
 }
 
-a{
-  font-size: 0.9em;
-}
-
 a:link, a:visited {
-  color: #9b90db;
+  color: #9b8aff;
   text-decoration: none;
 }
 
 a:hover {
-  color: #9b8aff;
+  color: #bbaaff;
   text-decoration: underline;
 }
 
 a:active {
   color: #ff8a9b;
   text-decoration: underline;
+}
+
+img {
+    width: 100%;
+    height: auto;
+    margin: 10px 0;
+}
+
+strong {
+  font-weight: 700;
 }
 
 ::-webkit-scrollbar {
