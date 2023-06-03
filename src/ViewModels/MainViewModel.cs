@@ -604,10 +604,20 @@ namespace TmCGPTD.ViewModels
 
         private async Task CopyToClipboard()
         {
+            if (string.IsNullOrWhiteSpace(VMLocator.EditorViewModel.RecentText)) {
+                return;
+            }
+
             IsCopyButtonClicked = true;
             if (ApplicationExtensions.GetTopLevel(Avalonia.Application.Current!)!.Clipboard != null)
             {
+                await _dbProcess.InserEditorLogDatabasetAsync();
+
                 await ApplicationExtensions.GetTopLevel(Avalonia.Application.Current!)!.Clipboard!.SetTextAsync(VMLocator.EditorViewModel.RecentText);
+
+                await _dbProcess.GetEditorLogDatabaseAsync();
+                VMLocator.EditorViewModel.SelectedEditorLogIndex = -1;
+                VMLocator.EditorViewModel.SelectedTemplateItemIndex = -1;
             }
             await Task.Delay(500);
             IsCopyButtonClicked = false;
@@ -638,7 +648,7 @@ namespace TmCGPTD.ViewModels
             await ContentDialogShowAsync(dialog);
         }
 
-        private async Task<ContentDialogResult> ContentDialogShowAsync(ContentDialog dialog)
+        public async Task<ContentDialogResult> ContentDialogShowAsync(ContentDialog dialog)
         {
             VMLocator.ChatViewModel.ChatViewIsVisible = false;
             VMLocator.WebChatViewModel.WebChatViewIsVisible = false;

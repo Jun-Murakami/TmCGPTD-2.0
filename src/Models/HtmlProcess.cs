@@ -16,6 +16,7 @@ using Avalonia;
 using Avalonia.Controls;
 using System.Reactive.Joins;
 using TextMateSharp.Internal.Oniguruma;
+using FluentAvalonia.UI.Controls;
 
 namespace TmCGPTD.Models
 {
@@ -384,125 +385,42 @@ namespace TmCGPTD.Models
         }
 
         // APIに接続してレスポンス取得--------------------------------------------------------------
+        private List<Dictionary<string, object>> conversationHistory = new();
+        private bool isDeleteHistory = false;
         public async Task<string> PostChatAsync(string chatTextPost)
         {
             try
             {
-                List<Dictionary<string, object>> conversationHistory = VMLocator.ChatViewModel.ConversationHistory;
+                conversationHistory = VMLocator.ChatViewModel.ConversationHistory;
+                isDeleteHistory = false;
 
-                bool isDeleteHistory = false;
                 string chatTextRes = "";
                 string currentTitle = VMLocator.ChatViewModel.ChatTitle;
-                int MAX_TOKENS = VMLocator.MainWindowViewModel.ApiMaxTokens;
-                if (!VMLocator.MainWindowViewModel.ApiMaxTokensIsEnable)
-                {
-                    MAX_TOKENS = 2048;
-                }
-                int MAX_CONTENT_LENGTH = VMLocator.MainWindowViewModel.MaxContentLength;
-                if (!VMLocator.MainWindowViewModel.MaxContentLengthIsEnable)
-                {
-                    MAX_CONTENT_LENGTH = 3072;
-                }
+
+                int maxTokens = VMLocator.MainWindowViewModel.ApiMaxTokens;
+                int maxContentLength = VMLocator.MainWindowViewModel.MaxContentLengthIsEnable ? VMLocator.MainWindowViewModel.MaxContentLength : 3072;
 
                 TikToken tokenizer = TikToken.EncodingForModel("gpt-3.5-turbo");
 
-                // 過去の会話履歴と現在の入力を結合する前に、過去の会話履歴に含まれるcontent文字列のトークン数を取得
+                // トークン数を取得
                 int historyContentTokenCount = conversationHistory.Sum(d => tokenizer.Encode(d["content"].ToString()).Count);
+                int inputTokenCount = tokenizer.Encode(chatTextPost).Count;
 
                 // 要約前のトークン数を記録
                 int preSummarizedHistoryTokenCount = historyContentTokenCount;
 
                 // 履歴を逆順にする
-                List<Dictionary<string, object>> reversedHistoryList = conversationHistory;
+                List<Dictionary<string, object>> reversedHistoryList = new List<Dictionary<string, object>>(conversationHistory);
                 reversedHistoryList.Reverse();
 
-                // 入力文字列のトークン数を取得
-                int inputTokenCount = tokenizer.Encode(chatTextPost).Count;
-
-                // 入力文字列のトークン数+MAX_TOKENSが4096を超えた場合
-                if ((inputTokenCount + MAX_TOKENS) > 4096)
+                // トークン数を判定し、必要に応じてconversationHistoryを圧縮する
+                if (VMLocator.MainWindowViewModel.ApiMaxTokensIsEnable)
                 {
-                    throw new Exception($"The values for input text ({inputTokenCount}) + max_tokens ({MAX_TOKENS}) exceeds 4097 tokens. Please reduce by at least {(inputTokenCount + MAX_TOKENS) - 4097} tokens.{Environment.NewLine}");
+                    await ProcessApiMaxTokensEnabledAsync(inputTokenCount, maxTokens, reversedHistoryList, currentTitle, tokenizer, maxContentLength);
                 }
-
-                // 過去の履歴＋ユーザーの新規入力＋MAX_TOKENSがMAX_CONTENT_LENGTHを超えた場合
-                if (historyContentTokenCount + inputTokenCount + MAX_TOKENS > MAX_CONTENT_LENGTH)
+                else
                 {
-                    int historyTokenCount = 0;
-                    int messagesToSelect = 0;
-                    int messageStart = 0;
-                    string forCompMes = "";
-
-
-                    // 会話履歴の最新のものからトークン数を数えて一時変数「historyTokenCount」に足していく
-                    for (int i = 0; i < reversedHistoryList.Count; i += 1)
-                    {
-                        string mes = reversedHistoryList[i]["content"].ToString();
-                        int messageTokenCount = tokenizer.Encode(mes).Count;
-                        historyTokenCount += messageTokenCount;
-
-                        if (i <= 4 && historyTokenCount < MAX_CONTENT_LENGTH / 5) //直近の会話が短ければそのまま生かす
-                        {
-                            messageStart += 1;
-                        }
-
-                        if (historyTokenCount > MAX_CONTENT_LENGTH)
-                        {
-                            messagesToSelect = i + 1; // 最後に処理した次のインデックスを記録
-                            break;
-                        }
-                    }
-
-                    foreach (var dict in reversedHistoryList)
-                    {
-                        string dictString = string.Join(", ", dict.Select(pair => $"{pair.Key}: {pair.Value}"));
-                    }
-
-                    // 会話履歴から適切な数だけをセレクトする
-                    int rangeLength = Math.Min(messagesToSelect - messageStart, reversedHistoryList.Count - messageStart);
-
-                    if (rangeLength > 0)
-                    {
-                        forCompMes = reversedHistoryList.GetRange(messageStart, rangeLength).Select(message => message["content"].ToString()).Aggregate((a, b) => a + b);
-                    }
-                    else if (messagesToSelect == 0)
-                    {
-                        forCompMes = reversedHistoryList[0]["content"].ToString();
-                    }
-
-                    if (messagesToSelect > 0)
-                    {
-                        // 抽出したテキストを要約APIリクエストに送信
-                        try
-                        {
-                            string summary = await GetSummaryAsync(forCompMes);
-                            summary = currentTitle + ": " + summary;
-
-                            string summaryLog = "";
-                            if (messageStart > 0)
-                            {
-                                summaryLog += $"{messageStart} latest message(s) + {Environment.NewLine}{Environment.NewLine}{summary}";
-                            }
-                            else
-                            {
-                                summaryLog = summary;
-                            }
-
-                            // 返ってきた要約文で、conversationHistoryを書き換える
-                            conversationHistory.RemoveRange(messageStart, conversationHistory.Count - messageStart);
-                            conversationHistory.Add(new Dictionary<string, object>() { { "role", "assistant" }, { "content", summary } });
-                        }
-                        catch (Exception ex)
-                        {
-                            throw new Exception($"{ex.Message + Environment.NewLine}");
-                        }
-                    }
-                    else
-                    {
-                        conversationHistory.Clear();
-                        isDeleteHistory = true;
-                    }
-
+                    await ProcessApiMaxTokensDisabledAsync(inputTokenCount, maxContentLength, reversedHistoryList, currentTitle, tokenizer);
                 }
 
                 // 現在のユーザーの入力を表すディクショナリ
@@ -510,6 +428,7 @@ namespace TmCGPTD.Models
 
                 // 過去の会話履歴と現在の入力を結合
                 conversationHistory.Add(userInput);
+
 
                 // リクエストパラメータを作成
                 var options = new Dictionary<string, object>() { { "model", VMLocator.MainWindowViewModel.ApiModel }, { "messages", conversationHistory } };
@@ -616,6 +535,13 @@ namespace TmCGPTD.Models
                         // 応答を受け取った後、conversationHistory に追加
                         conversationHistory.Add(new Dictionary<string, object>() { { "role", "assistant" }, { "content", chatTextRes } });
 
+                        // ビューモデルを更新
+                        VMLocator.ChatViewModel.ConversationHistory = conversationHistory;
+
+                        // デバッグ
+                        //var cdialog = new ContentDialog() { Title = string.Join("\n", conversationHistory.Select(d => string.Join(", ", d.Select(pair => $"{pair.Key}: {pair.Value}")))), PrimaryButtonText = "OK" };
+                        //await VMLocator.MainViewModel.ContentDialogShowAsync(cdialog);
+
                         // usageを計算
                         chatTextRes += $"usage={{\"prompt_tokens\":{inputConversationTokenCount},\"completion_tokens\":{responseTokenCount},\"total_tokens\":{inputConversationTokenCount + responseTokenCount}}}" + Environment.NewLine;
 
@@ -625,7 +551,7 @@ namespace TmCGPTD.Models
                         {
                             chatTextRes += $"-Conversation history has been summarized. before: {preSummarizedHistoryTokenCount}, after: {tokenizer.Encode(postConversation).Count}.{Environment.NewLine}";
                         }
-                        else if (isDeleteHistory) // 会話履歴が全て削除された場合
+                        else if (isDeleteHistory) // 会話履歴が全て削除された場合、その旨をメッセージとして付け加える
                         {
                             chatTextRes += $"-Conversation history has been removed. before: {preSummarizedHistoryTokenCount}, after: {tokenizer.Encode(postConversation).Count}.{Environment.NewLine}";
                         }
@@ -672,6 +598,91 @@ namespace TmCGPTD.Models
         }
 
         //文章要約圧縮メソッド--------------------------------------------------------------
+        private async Task ProcessApiMaxTokensEnabledAsync(int inputTokenCount, int maxTokens, List<Dictionary<string, object>> reversedHistoryList, string currentTitle, TikToken tokenizer, int maxContentLength)
+        {
+            if ((inputTokenCount + maxTokens) > 4096)
+            {
+                throw new Exception($"The values for input text ({inputTokenCount}) + max_tokens ({maxTokens}) exceeds 4097 tokens. Please reduce by at least {(inputTokenCount + maxTokens) - 4097} tokens.{Environment.NewLine}");
+            }
+
+            await UpdateHistoryBasedOnContentLengthAsync(inputTokenCount, maxTokens, reversedHistoryList, currentTitle, tokenizer, maxContentLength);
+        }
+
+        private async Task ProcessApiMaxTokensDisabledAsync(int inputTokenCount, int maxContentLength, List<Dictionary<string, object>> reversedHistoryList, string currentTitle, TikToken tokenizer)
+        {
+            if (inputTokenCount > 4096)
+            {
+                throw new Exception($"The values for input text ({inputTokenCount}) exceeds 4096 tokens. Please reduce by at least {inputTokenCount - 4096} tokens.{Environment.NewLine}");
+            }
+
+            await UpdateHistoryBasedOnContentLengthAsync(inputTokenCount, 0, reversedHistoryList, currentTitle, tokenizer, maxContentLength);
+        }
+
+        private async Task UpdateHistoryBasedOnContentLengthAsync(int inputTokenCount, int maxTokens, List<Dictionary<string, object>> reversedHistoryList, string currentTitle, TikToken tokenizer, int maxContentLength)
+        {
+            int historyTokenCount = 0;
+            int messagesToSelect = 0;
+            int messageStart = 0;
+
+            // 会話履歴の最新のものからトークン数を数えて一時変数「historyTokenCount」に足していく
+            for (int i = 0; i < reversedHistoryList.Count; i += 1)
+            {
+                string mes = reversedHistoryList[i]["content"].ToString();
+                int messageTokenCount = tokenizer.Encode(mes).Count;
+                historyTokenCount += messageTokenCount;
+
+                if (i <= 4 && historyTokenCount < maxContentLength / 5) //直近の会話が短ければそのまま生かす
+                {
+                    messageStart += 1;
+                }
+
+                if (historyTokenCount > inputTokenCount + maxTokens + 400)
+                {
+                    messagesToSelect = i + 1; // 最後に処理した次のインデックスを記録
+                    break;
+                }
+            }
+
+            if (messagesToSelect > 0)
+            {
+                await ProcessSelectedMessagesAsync(messageStart, messagesToSelect, reversedHistoryList, currentTitle);
+            }
+            else
+            {
+                if (conversationHistory.Count != 0)
+                {
+                    conversationHistory.Clear();
+                    isDeleteHistory = true;
+                }
+            }
+        }
+
+        private async Task ProcessSelectedMessagesAsync(int messageStart, int messagesToSelect, List<Dictionary<string, object>> reversedHistoryList, string currentTitle)
+        {
+            // 会話履歴から適切な数だけをセレクトする
+            int rangeLength = Math.Min(messagesToSelect - messageStart, reversedHistoryList.Count - messageStart);
+
+            string forCompMes = rangeLength > 0 ? reversedHistoryList.GetRange(messageStart, rangeLength).Select(message => message["content"].ToString()).Aggregate((a, b) => a + b) : reversedHistoryList[0]["content"].ToString();
+
+            // 抽出したテキストを要約APIリクエストに送信
+            try
+            {
+                string summary = await GetSummaryAsync(forCompMes);
+                summary = currentTitle + ": " + summary;
+
+                string summaryLog = messageStart > 0 ? $"{messageStart} latest message(s) + {Environment.NewLine}{Environment.NewLine}{summary}" : summary;
+
+                // 返ってきた要約文で、conversationHistoryを書き換える
+                conversationHistory.RemoveRange(messageStart, conversationHistory.Count - messageStart);
+                conversationHistory.Add(new Dictionary<string, object>() { { "role", "assistant" }, { "content", summary } });
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"{ex.Message + Environment.NewLine}");
+            }
+        }
+
+
         public async Task<string> GetSummaryAsync(string forCompMes)
         {
             string summary;
@@ -800,6 +811,19 @@ namespace TmCGPTD.Models
 
             var content = WebUtility.HtmlEncode(plainTextChatLog); // エスケープを適用
             content = codeSnippetRegex.Replace(content, WrapCodeSnippet);
+
+            string pattern = @"\[\!\[(.*?)\]\((.*?)\)\]\((.*?)\)";
+            content = Regex.Replace(content, pattern, @"<a href=""$3"" target=""_blank"" rel=""noopener noreferrer""><img src=""$2"" alt=""$1""></a>");
+
+            Regex linkRegex = new Regex(@"\[([^\]]+?)\]\(([^\)]+?)\)");
+            content = linkRegex.Replace(content, m => $"<a href=\"{m.Groups[2].Value}\" target=\"_blank\" rel=\"noopener noreferrer\">{m.Groups[1].Value}</a>");
+
+            Regex imgRegex = new Regex(@"!\[([^\]]*?)\]\(([^\)]+?)\)");
+            content = imgRegex.Replace(content, m => $"<img src=\"{m.Groups[2].Value}\" alt=\"{m.Groups[1].Value}\">");
+
+            Regex strongRegex = new Regex(@"\*\*(.+?)\*\*");
+            content = strongRegex.Replace(content, m => $"<strong>{m.Groups[1].Value}</strong>");
+
             var usageMatch = usageRegex.Match(content);
             if (usageMatch.Success)
             {

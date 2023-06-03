@@ -75,7 +75,7 @@ namespace TmCGPTD
             AppDataPath = GetAppDataDirectory();
             DbPath = Path.Combine(AppDataPath, "log_database.db");
 
-            ApiMaxTokens = 4000;
+            ApiMaxTokens = 2048;
             ApiTemperature = 1;
             ApiTopP = 1.0;
             ApiN = 1;
@@ -90,7 +90,7 @@ namespace TmCGPTD
             ApiKey = "";
             MaxContentLength = 3072;
 
-            ApiMaxTokensIsEnable = true;
+            ApiMaxTokensIsEnable = false;
             ApiTemperatureIsEnable = false;
             ApiTopPIsEnable = false;
             ApiNIsEnable = false;
