@@ -398,6 +398,12 @@ namespace TmCGPTD.Models
                 {
                     MAX_TOKENS = 2048;
                 }
+                int MAX_CONTENT_LENGTH = VMLocator.MainWindowViewModel.MaxContentLength;
+                if (!VMLocator.MainWindowViewModel.MaxContentLengthIsEnable)
+                {
+                    MAX_CONTENT_LENGTH = 3072;
+                }
+
                 TikToken tokenizer = TikToken.EncodingForModel("gpt-3.5-turbo");
 
                 // 過去の会話履歴と現在の入力を結合する前に、過去の会話履歴に含まれるcontent文字列のトークン数を取得
@@ -419,8 +425,8 @@ namespace TmCGPTD.Models
                     throw new Exception($"The values for input text ({inputTokenCount}) + max_tokens ({MAX_TOKENS}) exceeds 4097 tokens. Please reduce by at least {(inputTokenCount + MAX_TOKENS) - 4097} tokens.{Environment.NewLine}");
                 }
 
-                // 過去の履歴＋ユーザーの新規入力＋MAX_TOKENSがVMLocator.MainWindowViewModel.MaxContentLengthを超えた場合
-                if (historyContentTokenCount + inputTokenCount + MAX_TOKENS > VMLocator.MainWindowViewModel.MaxContentLength)
+                // 過去の履歴＋ユーザーの新規入力＋MAX_TOKENSがMAX_CONTENT_LENGTHを超えた場合
+                if (historyContentTokenCount + inputTokenCount + MAX_TOKENS > MAX_CONTENT_LENGTH)
                 {
                     int historyTokenCount = 0;
                     int messagesToSelect = 0;
@@ -435,12 +441,12 @@ namespace TmCGPTD.Models
                         int messageTokenCount = tokenizer.Encode(mes).Count;
                         historyTokenCount += messageTokenCount;
 
-                        if (i <= 4 && historyTokenCount < VMLocator.MainWindowViewModel.MaxContentLength / 5) //直近の会話が短ければそのまま生かす
+                        if (i <= 4 && historyTokenCount < MAX_CONTENT_LENGTH / 5) //直近の会話が短ければそのまま生かす
                         {
                             messageStart += 1;
                         }
 
-                        if (historyTokenCount > VMLocator.MainWindowViewModel.MaxContentLength)
+                        if (historyTokenCount > MAX_CONTENT_LENGTH)
                         {
                             messagesToSelect = i + 1; // 最後に処理した次のインデックスを記録
                             break;
