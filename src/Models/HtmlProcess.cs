@@ -393,7 +393,11 @@ namespace TmCGPTD.Models
                 bool isDeleteHistory = false;
                 string chatTextRes = "";
                 string currentTitle = VMLocator.ChatViewModel.ChatTitle;
-                int MAX_CONTENT_LENGTH = VMLocator.MainWindowViewModel.MaxContentLength;
+                int MAX_TOKENS = VMLocator.MainWindowViewModel.ApiMaxTokens;
+                if (!VMLocator.MainWindowViewModel.ApiMaxTokensIsEnable)
+                {
+                    MAX_TOKENS = 2048;
+                }
                 TikToken tokenizer = TikToken.EncodingForModel("gpt-3.5-turbo");
 
                 // 過去の会話履歴と現在の入力を結合する前に、過去の会話履歴に含まれるcontent文字列のトークン数を取得
@@ -409,14 +413,14 @@ namespace TmCGPTD.Models
                 // 入力文字列のトークン数を取得
                 int inputTokenCount = tokenizer.Encode(chatTextPost).Count;
 
-                // 入力文字列のトークン数が制限トークン数「MAX_CONTENT_LENGTH」を超えた場合
-                if (inputTokenCount > MAX_CONTENT_LENGTH)
+                // 入力文字列のトークン数+MAX_TOKENSが4096を超えた場合
+                if ((inputTokenCount + MAX_TOKENS) > 4096)
                 {
-                    throw new Exception($"The input text ({inputTokenCount}) exceeds the maximum token limit ({MAX_CONTENT_LENGTH}). Please remove {inputTokenCount - MAX_CONTENT_LENGTH} tokens.{Environment.NewLine}");
+                    throw new Exception($"The values for input text ({inputTokenCount}) + max_tokens ({MAX_TOKENS}) exceeds 4097 tokens. Please reduce by at least {(inputTokenCount + MAX_TOKENS) - 4097} tokens.{Environment.NewLine}");
                 }
 
-                // 過去の履歴＋ユーザーの新規入力が制限トークン数「MAX_CONTENT_LENGTH」を超えた場合
-                if (historyContentTokenCount + inputTokenCount > MAX_CONTENT_LENGTH)
+                // 過去の履歴＋ユーザーの新規入力＋MAX_TOKENSがVMLocator.MainWindowViewModel.MaxContentLengthを超えた場合
+                if (historyContentTokenCount + inputTokenCount + MAX_TOKENS > VMLocator.MainWindowViewModel.MaxContentLength)
                 {
                     int historyTokenCount = 0;
                     int messagesToSelect = 0;
@@ -431,12 +435,12 @@ namespace TmCGPTD.Models
                         int messageTokenCount = tokenizer.Encode(mes).Count;
                         historyTokenCount += messageTokenCount;
 
-                        if (i <= 4 && historyTokenCount < MAX_CONTENT_LENGTH / 5) //直近の会話が短ければそのまま生かす
+                        if (i <= 4 && historyTokenCount < VMLocator.MainWindowViewModel.MaxContentLength / 5) //直近の会話が短ければそのまま生かす
                         {
                             messageStart += 1;
                         }
 
-                        if (historyTokenCount > MAX_CONTENT_LENGTH)
+                        if (historyTokenCount > VMLocator.MainWindowViewModel.MaxContentLength)
                         {
                             messagesToSelect = i + 1; // 最後に処理した次のインデックスを記録
                             break;

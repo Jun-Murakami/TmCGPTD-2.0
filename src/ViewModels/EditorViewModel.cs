@@ -21,6 +21,7 @@ namespace TmCGPTD.ViewModels
         DatabaseProcess _dbProcess = new DatabaseProcess();
         public EditorViewModel()
         {
+            EditorCommonFontSize = 16;
             EditorModeIsChecked = true;
 
             TextClear();
