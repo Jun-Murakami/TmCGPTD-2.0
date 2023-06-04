@@ -23,7 +23,7 @@ namespace TmCGPTD.Models
         // 表示用HTML初期化--------------------------------------------------------------
         public async Task<string> InitializeChatLogToHtml()
         {
-            using var streamReader = new StreamReader(AssetLoader.Open(new Uri("avares://TmCGPTD/Assets/ChatTemplete.html")));
+            using var streamReader = new StreamReader(AssetLoader.Open(new Uri("avares://TmCGPTD/Assets/ChatTempleteLogo.html")));
             using var chatCssStreamReader = new StreamReader(AssetLoader.Open(new Uri("avares://TmCGPTD/Assets/ChatStyles.css")));
             using var cssStreamReader = new StreamReader(AssetLoader.Open(new Uri("avares://TmCGPTD/Assets/vs2015.min.css")));
 

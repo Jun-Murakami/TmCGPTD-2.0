@@ -62,9 +62,17 @@ namespace TmCGPTD.ViewModels
                 string postText = VMLocator.EditorViewModel.RecentText.Trim().Trim('\r', '\n');
                 string escapedString = JsonSerializer.Serialize(postText);
 
+                string jsCode = $@"var element = document.querySelector('.svg-container');
+                                if (element) {{
+                                    element.remove();
+                                }}";
+                _browser.ExecuteJavaScript(jsCode);
+
+                await Task.Delay(100);
+
                 string htmlToAdd = $"<div class=\"user\"><span class=\"userHeader\">[{postDate}] by You</span></div>";
 
-                string jsCode = $@"var wrapper = document.getElementById('scrollableWrapper');
+                jsCode = $@"var wrapper = document.getElementById('scrollableWrapper');
                         var newUserElement = document.createElement('div');
                         newUserElement.innerHTML = `{htmlToAdd}`;
                         var newTextElement = document.createElement('div');
