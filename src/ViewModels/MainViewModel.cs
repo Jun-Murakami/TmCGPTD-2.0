@@ -616,6 +616,11 @@ namespace TmCGPTD.ViewModels
 
         private async Task CopyToClipboard()
         {
+            if (string.IsNullOrWhiteSpace(VMLocator.EditorViewModel.RecentText))
+            {
+                return;
+            }
+
             IsCopyButtonClicked = true;
             if (ApplicationExtensions.GetTopLevel(Avalonia.Application.Current!)!.Clipboard != null)
             {
