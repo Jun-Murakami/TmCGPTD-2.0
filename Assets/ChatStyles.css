@@ -194,3 +194,15 @@ button {
 #floatingCopyButton:hover {
   background: #444654;
 }
+
+.svg-container {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.svg-container svg {
+    width: 400px;
+    height: auto;
+}

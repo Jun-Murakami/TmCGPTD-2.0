@@ -321,6 +321,7 @@ namespace TmCGPTD.ViewModels
             try
             {
                 await _dbProcess.DeleteChatLogDatabaseAsync(VMLocator.DataGridViewModel.SelectedItem.Id);
+                await VMLocator.ChatViewModel.InitializeChatAsync();
                 VMLocator.DataGridViewModel.ChatList = await _dbProcess.SearchChatDatabaseAsync();
             }
             catch (Exception ex)
