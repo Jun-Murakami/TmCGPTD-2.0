@@ -132,8 +132,6 @@ namespace TmCGPTD.Views
             this.GetObservable(ClientSizeProperty).Subscribe(size => OnSizeChanged(size));
             _previousWidth = ClientSize.Width;
 
-            Debug.WriteLine(settings.EditorHeight1);
-
             VMLocator.DataGridViewModel.ChatList = await _dbProcess.SearchChatDatabaseAsync();
             VMLocator.EditorViewModel.EditorModeIsChecked = settings.EditorMode;
             VMLocator.EditorViewModel.SelectedLangIndex = settings.SyntaxHighlighting;
