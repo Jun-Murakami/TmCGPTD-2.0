@@ -88,10 +88,17 @@ namespace TmCGPTD.ViewModels
                     LoadChatListCommand.Execute(value);
                     if (string.IsNullOrWhiteSpace(value))
                     {
-                        VMLocator.ChatViewModel.SearchKeyword = string.Empty;
+                        SearchKeyword = string.Empty;
                     }
                 }
             }
+        }
+
+        private string _searchKeyword;
+        public string SearchKeyword
+        {
+            get => _searchKeyword;
+            set => SetProperty(ref _searchKeyword, value);
         }
 
         private bool _logPainIsOpened;
@@ -99,6 +106,13 @@ namespace TmCGPTD.ViewModels
         {
             get => _logPainIsOpened;
             set => SetProperty(ref _logPainIsOpened, value);
+        }
+
+        private bool _logPainButtonIsVisible;
+        public bool LogPainButtonIsVisible
+        {
+            get => _logPainButtonIsVisible;
+            set => SetProperty(ref _logPainButtonIsVisible, value);
         }
 
         private UserControl _selectedLeftView;
