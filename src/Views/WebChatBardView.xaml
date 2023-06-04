@@ -25,8 +25,8 @@
 					<ToggleButton Classes="ImageButton"
 								  ToolTip.Tip="Open / Close chat list"
 								  VerticalAlignment="Center"
-								  IsChecked="{Binding Source={StaticResource VMLocator}, Path=ChatViewModel.LogPainIsOpened}"
-								  IsVisible="{Binding Source={StaticResource VMLocator}, Path=ChatViewModel.LogPainButtonIsVisible}">
+								  IsChecked="{Binding Source={StaticResource VMLocator}, Path=MainViewModel.LogPainIsOpened}"
+								  IsVisible="{Binding Source={StaticResource VMLocator}, Path=MainViewModel.LogPainButtonIsVisible}">
 						<Image Classes="ButtonIcon"
 							   Source="/Assets/iconArrow.png"
 							   VerticalAlignment="Center"
@@ -57,7 +57,7 @@
 							 Width="170"
 							 Classes.clearButton="True"
 							 Padding="30,7,0,7"
-							 Text="{Binding Source={StaticResource VMLocator}, Path=ChatViewModel.SearchKeyword, Mode=TwoWay}"/>
+							 Text="{Binding Source={StaticResource VMLocator}, Path=MainViewModel.SearchKeyword, Mode=TwoWay}"/>
 					<Image Source="/Assets/iconSearch.png"
 						   HorizontalAlignment="Left"
 						   VerticalAlignment="Center"

@@ -15,8 +15,8 @@ namespace TmCGPTD.ViewModels
 
         public WebChatViewModel()
         {
-            SearchPrev = new AsyncRelayCommand(async () => await TextSearch(VMLocator.ChatViewModel.SearchKeyword, false));
-            SearchNext = new AsyncRelayCommand(async () => await TextSearch(VMLocator.ChatViewModel.SearchKeyword, true));
+            SearchPrev = new AsyncRelayCommand(async () => await TextSearch(VMLocator.MainViewModel.SearchKeyword, false));
+            SearchNext = new AsyncRelayCommand(async () => await TextSearch(VMLocator.MainViewModel.SearchKeyword, true));
 
             ImportWebChatLogCommand = new AsyncRelayCommand(async () => await ImportWebChatLog());
 

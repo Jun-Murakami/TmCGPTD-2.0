@@ -58,8 +58,8 @@ namespace TmCGPTD.Views
                 }
                 else
                 {
-                    ChatViewModel.SearchKeyword = VMLocator.MainViewModel.SearchLogKeyword;
-                    await ChatViewModel.TextSearch(ChatViewModel.SearchKeyword, true, true);
+                    VMLocator.MainViewModel.SearchKeyword = VMLocator.MainViewModel.SearchLogKeyword;
+                    await ChatViewModel.TextSearch(VMLocator.MainViewModel.SearchKeyword, true, true);
                 }
             }
             await Dispatcher.UIThread.InvokeAsync(() => { _browser.Opacity = 1; });
