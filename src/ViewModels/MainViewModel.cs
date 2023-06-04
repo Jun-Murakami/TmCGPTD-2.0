@@ -45,6 +45,8 @@ namespace TmCGPTD.ViewModels
 
             CopyToClipboardCommand = new AsyncRelayCommand(async () => await CopyToClipboard());
 
+            ResetSeparatorCommand = new RelayCommand(ResetSeparator);
+
             HotKeyDisplayCommand = new AsyncRelayCommand(HotKeyDisplayAsync);
 
             ShowDatabaseSettingsCommand = new AsyncRelayCommand(ShowDatabaseSettingsAsync);
@@ -70,6 +72,7 @@ namespace TmCGPTD.ViewModels
         public ICommand Editor5Clear { get; }
         public ICommand EditorAllClear { get; }
         public ICommand CopyToClipboardCommand { get; }
+        public ICommand ResetSeparatorCommand { get; }
         public IAsyncRelayCommand ShowDatabaseSettingsCommand { get; }
         public IAsyncRelayCommand HotKeyDisplayCommand { get; }
 
@@ -625,6 +628,11 @@ namespace TmCGPTD.ViewModels
             }
             await Task.Delay(500);
             IsCopyButtonClicked = false;
+        }
+
+        private void ResetSeparator()
+        {
+            VMLocator.EditorViewModel.SeparatorReset();
         }
 
         private async Task ShowDatabaseSettingsAsync()

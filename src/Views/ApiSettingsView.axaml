@@ -50,7 +50,7 @@
 		<Slider Grid.Row="3" Grid.Column="1" IsSnapToTickEnabled="True" Minimum="1" Maximum="32768" TickFrequency="1" Value="{Binding ApiMaxTokens}"/>
 		<local:CustomNumericUpDown Grid.Row="3" Grid.Column="2" FormatString="{}{0:#0}" Minimum="1" Maximum="32768" Increment="1" Value="{Binding ApiMaxTokens}" />
 		<ToggleSwitch Grid.Row="3" Grid.Column="3" IsChecked="{Binding ApiMaxTokensIsEnable}"/>
-		<TextBlock Grid.Row="3" Grid.Column="4" Text="2048" />
+		<TextBlock Grid.Row="3" Grid.Column="4" Text="inf" />
 
 		<TextBlock Grid.Row="4" Grid.Column="0" Text="temperature" TextAlignment="Right" />
 		<Slider Grid.Row="4" Grid.Column="1" IsSnapToTickEnabled="True" TickFrequency="0.1" Minimum="0" Maximum="2" Value="{Binding ApiTemperature}" />

@@ -137,6 +137,17 @@
 							</ItemsPanelTemplate>
 						</ListBox.ItemsPanel>
 					</ListBox>
+					<Button ToolTip.Tip="Reset separator"
+							HorizontalAlignment="Right"
+							VerticalAlignment="Center"
+							BorderThickness="0"
+							Width="28"
+							Height="28"
+							Margin="0,0,60,0"
+							Command="{Binding ResetSeparatorCommand}">
+						<Image Source="/Assets/iconSeparator.png"
+								VerticalAlignment="Center" />
+					</Button>
 					<Button ToolTip.Tip="Database settings"
 							HorizontalAlignment="Right"
 							VerticalAlignment="Center"

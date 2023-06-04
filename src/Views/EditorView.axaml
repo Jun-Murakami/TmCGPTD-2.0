@@ -8,15 +8,15 @@
 		<Grid VerticalAlignment="Stretch" Name="EditorGrid">
 			<Grid.RowDefinitions>
 				<RowDefinition Height="50" />
-				<RowDefinition Height="0.21*" />
+				<RowDefinition Height="{Binding EditorHeight1,Mode=TwoWay}" />
 				<RowDefinition Height="2"/>
-				<RowDefinition Height="0.30*" />
+				<RowDefinition Height="{Binding EditorHeight2,Mode=TwoWay}" />
 				<RowDefinition Height="2"/>
-				<RowDefinition Height="0.17*" />
+				<RowDefinition Height="{Binding EditorHeight3,Mode=TwoWay}" />
 				<RowDefinition Height="2"/>
-				<RowDefinition Height="0.24*" />
+				<RowDefinition Height="{Binding EditorHeight4,Mode=TwoWay}" />
 				<RowDefinition Height="2"/>
-				<RowDefinition Height="0.08*" />
+				<RowDefinition Height="{Binding EditorHeight5,Mode=TwoWay}" />
 				<RowDefinition Height="50" />
 			</Grid.RowDefinitions>
 			<Border Grid.Row="0" BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}" BorderThickness="0,0,0,1">
@@ -83,27 +83,27 @@
 					 AcceptsReturn="True"
 					 Text="{Binding Editor1Text, Mode=TwoWay}"
 					 FontSize="{Binding EditorCommonFontSize}" />
-			<GridSplitter Grid.Row="2" Height="2" Background="rgb(52, 53, 65)" Focusable="False"/>
+			<GridSplitter Grid.Row="2" Height="2" Background="rgb(57, 58, 70)" Focusable="False"/>
 			<TransitioningContentControl Grid.Row="3"
 										 Content="{Binding SelectedEditor2View}">
 				<TransitioningContentControl.PageTransition>
 					<PageSlide Duration="0:00:00.050" Orientation="Horizontal"/>
 				</TransitioningContentControl.PageTransition>
 			</TransitioningContentControl>
-			<GridSplitter Grid.Row="4" Height="2" Background="rgb(52, 53, 65)" Focusable="False"/>
+			<GridSplitter Grid.Row="4" Height="2" Background="rgb(57, 58, 70)" Focusable="False"/>
 			<TextBox Grid.Row="5"
 					 Name="Editor3"
 					 AcceptsReturn="True"
 					 Text="{Binding Editor3Text, Mode=TwoWay}"
 					 FontSize="{Binding EditorCommonFontSize}" />
-			<GridSplitter Grid.Row="6" Height="2" Background="rgb(52, 53, 65)" Focusable="False" />
+			<GridSplitter Grid.Row="6" Height="2" Background="rgb(57, 58, 70)" Focusable="False" />
 			<TransitioningContentControl Grid.Row="7"
 										 Content="{Binding SelectedEditor4View}">
 				<TransitioningContentControl.PageTransition>
 					<PageSlide Duration="0:00:00.050" Orientation="Horizontal"/>
 				</TransitioningContentControl.PageTransition>
 			</TransitioningContentControl>
-			<GridSplitter Grid.Row="8" Height="2" Background="rgb(52, 53, 65)" Focusable="False" />
+			<GridSplitter Grid.Row="8" Height="2" Background="rgb(57, 58, 70)" Focusable="False" />
 			<TextBox Grid.Row="9"
 					 Name="Editor5"
 					 AcceptsReturn="True"

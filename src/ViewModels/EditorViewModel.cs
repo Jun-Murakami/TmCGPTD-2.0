@@ -220,6 +220,36 @@ namespace TmCGPTD.ViewModels
             set => SetProperty(ref _selectedTemplateItemIndex, value);
         }
 
+        private GridLength _editorHeight1;
+        public GridLength EditorHeight1
+        {
+            get => _editorHeight1;
+            set => SetProperty(ref _editorHeight1, value);
+        }
+        private GridLength _editorHeight2;
+        public GridLength EditorHeight2
+        {
+            get => _editorHeight2;
+            set => SetProperty(ref _editorHeight2, value);
+        }
+        private GridLength _editorHeight3;
+        public GridLength EditorHeight3
+        {
+            get => _editorHeight3;
+            set => SetProperty(ref _editorHeight3, value);
+        }
+        private GridLength _editorHeight4;
+        public GridLength EditorHeight4
+        {
+            get => _editorHeight4;
+            set => SetProperty(ref _editorHeight4, value);
+        }
+        private GridLength _editorHeight5;
+        public GridLength EditorHeight5
+        {
+            get => _editorHeight5;
+            set => SetProperty(ref _editorHeight5, value);
+        }
 
         private async Task SaveTemplateAsync()
         {
@@ -436,6 +466,15 @@ namespace TmCGPTD.ViewModels
                     await VMLocator.MainViewModel.ContentDialogShowAsync(cdialog);
                 }
             }
+        }
+
+        public void SeparatorReset()
+        {
+            EditorHeight1 = new GridLength(0.21, GridUnitType.Star);
+            EditorHeight2 = new GridLength(0.30, GridUnitType.Star);
+            EditorHeight3 = new GridLength(0.17, GridUnitType.Star);
+            EditorHeight4 = new GridLength(0.24, GridUnitType.Star);
+            EditorHeight5 = new GridLength(0.08, GridUnitType.Star);
         }
 
         public void TextInput_TextChanged()
