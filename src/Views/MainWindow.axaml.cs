@@ -45,7 +45,7 @@ namespace TmCGPTD.Views
 
         private async void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
-            var settings = LoadAppSettings();
+            var settings = await LoadAppSettingsAsync();
 
             if (File.Exists(Path.Combine(settings.AppDataPath, "settings.json")))
             {
@@ -60,8 +60,8 @@ namespace TmCGPTD.Views
                 var workingArea = screen.WorkingArea;
 
                 double dpiScaling = screen.PixelDensity;
-                this.Width = 1300;
-                this.Height = 840;
+                this.Width = 1300 * dpiScaling;
+                this.Height = 840 * dpiScaling;
 
                 this.Position = new PixelPoint(5, 0);
             }
@@ -140,7 +140,7 @@ namespace TmCGPTD.Views
             if (string.IsNullOrWhiteSpace(VMLocator.MainWindowViewModel.ApiKey))
             {
                 var dialog = new ContentDialog() { Title = $"Please enter your API key.", PrimaryButtonText = "OK" };
-                await ContentDialogShowAsync(dialog);
+                await VMLocator.MainViewModel.ContentDialogShowAsync(dialog);
                 VMLocator.ChatViewModel.OpenApiSettings();
             }
         }
@@ -169,7 +169,7 @@ namespace TmCGPTD.Views
             }
         }
 
-        private AppSettings LoadAppSettings()
+        private async Task<AppSettings> LoadAppSettingsAsync()
         {
             var settings = AppSettings.Instance;
 
@@ -177,15 +177,21 @@ namespace TmCGPTD.Views
 
             if (File.Exists(Path.Combine(settings.AppDataPath, "settings.json")))
             {
-                var options = new JsonSerializerOptions();
-                options.Converters.Add(new GridLengthConverter());
+                try
+                {
+                    var options = new JsonSerializerOptions();
+                    options.Converters.Add(new GridLengthConverter());
 
-                var jsonString = File.ReadAllText(Path.Combine(settings.AppDataPath, "settings.json"));
-                settings = JsonSerializer.Deserialize<AppSettings>(jsonString, options);
-
+                    var jsonString = File.ReadAllText(Path.Combine(settings.AppDataPath, "settings.json"));
+                    settings = JsonSerializer.Deserialize<AppSettings>(jsonString, options);
+                }
+                catch (Exception)
+                {
+                    var dialog = new ContentDialog() { Title = $"Invalid setting file. Reset to default values.", PrimaryButtonText = "OK" };
+                    await VMLocator.MainViewModel.ContentDialogShowAsync(dialog);
+                    File.Delete(Path.Combine(settings.AppDataPath, "settings.json"));
+                }
             }
-
-            return settings;
         }
 
         public void SaveWindowSizeAndPosition()
@@ -230,17 +236,6 @@ namespace TmCGPTD.Views
                     new Uri($"avares://TmCGPTD/Assets/Lang/{targetLanguage}.axaml")
                     )
                 );
-        }
-
-
-        private async Task<ContentDialogResult> ContentDialogShowAsync(ContentDialog dialog)
-        {
-            VMLocator.ChatViewModel.ChatViewIsVisible = false;
-            VMLocator.WebChatViewModel.WebChatViewIsVisible = false;
-            var dialogResult = await dialog.ShowAsync();
-            VMLocator.ChatViewModel.ChatViewIsVisible = true;
-            VMLocator.WebChatViewModel.WebChatViewIsVisible = true;
-            return dialogResult;
         }
     }
 }
