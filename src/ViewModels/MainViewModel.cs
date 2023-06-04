@@ -616,7 +616,8 @@ namespace TmCGPTD.ViewModels
 
         private async Task CopyToClipboard()
         {
-            if (string.IsNullOrWhiteSpace(VMLocator.EditorViewModel.RecentText)) {
+            if (string.IsNullOrWhiteSpace(VMLocator.EditorViewModel.RecentText))
+            {
                 return;
             }
 
@@ -629,7 +630,6 @@ namespace TmCGPTD.ViewModels
 
                 await _dbProcess.GetEditorLogDatabaseAsync();
                 VMLocator.EditorViewModel.SelectedEditorLogIndex = -1;
-
             }
             await Task.Delay(500);
             IsCopyButtonClicked = false;
