@@ -115,6 +115,12 @@ namespace TmCGPTD.Views
             VMLocator.MainWindowViewModel.ApiLogitBiasIsEnable = settings.ApiLogitBiasIsEnable;
             VMLocator.MainWindowViewModel.MaxContentLengthIsEnable = settings.MaxContentLengthIsEnable;
 
+            VMLocator.EditorViewModel.EditorHeight1 = settings.EditorHeight1;
+            VMLocator.EditorViewModel.EditorHeight2 = settings.EditorHeight2;
+            VMLocator.EditorViewModel.EditorHeight3 = settings.EditorHeight3;
+            VMLocator.EditorViewModel.EditorHeight4 = settings.EditorHeight4;
+            VMLocator.EditorViewModel.EditorHeight5 = settings.EditorHeight5;
+
             await Dispatcher.UIThread.InvokeAsync(() => { VMLocator.ChatViewModel.LogPainIsOpened = false; });
             if (this.Width > 1295)
             {
@@ -167,15 +173,18 @@ namespace TmCGPTD.Views
         {
             var settings = AppSettings.Instance;
 
+            settings = new AppSettings();
+
             if (File.Exists(Path.Combine(settings.AppDataPath, "settings.json")))
             {
+                var options = new JsonSerializerOptions();
+                options.Converters.Add(new GridLengthConverter());
+
                 var jsonString = File.ReadAllText(Path.Combine(settings.AppDataPath, "settings.json"));
-                settings = JsonSerializer.Deserialize<AppSettings>(jsonString);
+                settings = JsonSerializer.Deserialize<AppSettings>(jsonString, options);
+
             }
-            else
-            {
-                settings = new AppSettings();
-            }
+
             return settings;
         }
 
@@ -193,6 +202,12 @@ namespace TmCGPTD.Views
             settings.PhrasePreset = VMLocator.MainViewModel.SelectedPhraseItem;
             settings.SyntaxHighlighting = VMLocator.EditorViewModel.SelectedLangIndex;
             settings.PhraseExpanderMode = VMLocator.MainViewModel.PhraseExpanderIsOpened;
+
+            settings.EditorHeight1 = VMLocator.EditorViewModel.EditorHeight1;
+            settings.EditorHeight2 = VMLocator.EditorViewModel.EditorHeight2;
+            settings.EditorHeight3 = VMLocator.EditorViewModel.EditorHeight3;
+            settings.EditorHeight4 = VMLocator.EditorViewModel.EditorHeight4;
+            settings.EditorHeight5 = VMLocator.EditorViewModel.EditorHeight5;
 
             SaveAppSettings(settings);
         }
