@@ -88,8 +88,7 @@ namespace TmCGPTD.ViewModels
                 jsCode = $@"var wrapper = document.getElementById('scrollableWrapper');
                         var newAssistantElement = document.createElement('div');
                         newAssistantElement.innerHTML = `{htmlToAdd}`;
-                        wrapper.appendChild(newAssistantElement);
-                        window.scrollTo({{top: document.body.scrollHeight, behavior: 'smooth' }});";
+                        wrapper.appendChild(newAssistantElement);";
                 _browser.ExecuteJavaScript(jsCode);
 
                 var resText = await _htmlProcess.PostChatAsync(postText);
@@ -97,6 +96,10 @@ namespace TmCGPTD.ViewModels
 
                 await _databaseProcess.InsertDatabaseChatAsync(postDate, postText, resDate, resText);
 
+                await Task.Delay(100);
+
+                jsCode = $@"window.scrollTo({{top: document.body.scrollHeight, behavior: 'smooth' }});";
+                _browser.ExecuteJavaScript(jsCode);
             }
             catch (Exception ex)
             {
