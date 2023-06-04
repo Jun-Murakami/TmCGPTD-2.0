@@ -627,6 +627,7 @@ namespace TmCGPTD.ViewModels
                 await _dbProcess.InserEditorLogDatabasetAsync();
 
                 await Avalonia.Application.Current.Clipboard.SetTextAsync(VMLocator.EditorViewModel.RecentText);
+
                 await _dbProcess.GetEditorLogDatabaseAsync();
                 VMLocator.EditorViewModel.SelectedEditorLogIndex = -1;
             }
