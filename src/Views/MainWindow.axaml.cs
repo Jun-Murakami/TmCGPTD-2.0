@@ -192,6 +192,8 @@ namespace TmCGPTD.Views
                     File.Delete(Path.Combine(settings.AppDataPath, "settings.json"));
                 }
             }
+
+            return settings;
         }
 
         public void SaveWindowSizeAndPosition()
