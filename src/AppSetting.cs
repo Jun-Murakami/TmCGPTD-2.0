@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Avalonia.Controls;
+using System;
 using System.IO;
 
 namespace TmCGPTD
@@ -33,6 +34,11 @@ namespace TmCGPTD
         public int SyntaxHighlighting { get; set; }
         public string PhrasePreset { get; set; }
         public bool PhraseExpanderMode { get; set; }
+        public GridLength EditorHeight1 { get; set; }
+        public GridLength EditorHeight2 { get; set; }
+        public GridLength EditorHeight3 { get; set; }
+        public GridLength EditorHeight4 { get; set; }
+        public GridLength EditorHeight5 { get; set; }
 
         // ChatGPT API接続設定
         public int ApiMaxTokens { get; set; }
@@ -72,10 +78,16 @@ namespace TmCGPTD
             PhrasePreset = "";
             PhraseExpanderMode = true;
 
+            EditorHeight1 = new GridLength(0.21, GridUnitType.Star);
+            EditorHeight2 = new GridLength(0.30, GridUnitType.Star);
+            EditorHeight3 = new GridLength(0.17, GridUnitType.Star);
+            EditorHeight4 = new GridLength(0.24, GridUnitType.Star);
+            EditorHeight5 = new GridLength(0.08, GridUnitType.Star);
+
             AppDataPath = GetAppDataDirectory();
             DbPath = Path.Combine(AppDataPath, "log_database.db");
 
-            ApiMaxTokens = 4000;
+            ApiMaxTokens = 2048;
             ApiTemperature = 1;
             ApiTopP = 1.0;
             ApiN = 1;
@@ -90,7 +102,7 @@ namespace TmCGPTD
             ApiKey = "";
             MaxContentLength = 3072;
 
-            ApiMaxTokensIsEnable = true;
+            ApiMaxTokensIsEnable = false;
             ApiTemperatureIsEnable = false;
             ApiTopPIsEnable = false;
             ApiNIsEnable = false;
