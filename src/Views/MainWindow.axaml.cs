@@ -188,10 +188,7 @@ namespace TmCGPTD.Views
                 settings = JsonSerializer.Deserialize<AppSettings>(jsonString, options);
 
             }
-            else
-            {
-                settings = new AppSettings();
-            }
+
             return settings;
         }
 
