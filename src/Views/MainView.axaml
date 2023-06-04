@@ -189,7 +189,7 @@
 									Spacing="5"
 									Orientation="Horizontal">
 							<Button Command="{Binding CopyToClipboardCommand}"
-									ToolTip.Tip="Copy to clipboard (Ctrl + S)"
+									ToolTip.Tip="Copy to Clipboard + Save log (Ctrl + S)"
 									HotKey="Ctrl+S" >
 								<Button.Styles>
 									<Style Selector="Button[IsEnabled=True][Tag=True]">

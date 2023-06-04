@@ -32,6 +32,13 @@ namespace TmCGPTD
             set => _webChatViewModel = value;
         }
 
+        private static WebChatBardViewModel _webChatBardViewModel;
+        public static WebChatBardViewModel WebChatBardViewModel
+        {
+            get => _webChatBardViewModel ??= new WebChatBardViewModel();
+            set => _webChatBardViewModel = value;
+        }
+
         private static DataGridViewModel _dataGridViewModel;
         public static DataGridViewModel DataGridViewModel
         {

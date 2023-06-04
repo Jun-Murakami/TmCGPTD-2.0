@@ -21,6 +21,7 @@ namespace TmCGPTD.ViewModels
         DatabaseProcess _dbProcess = new DatabaseProcess();
         public EditorViewModel()
         {
+            EditorCommonFontSize = 16;
             EditorModeIsChecked = true;
 
             TextClear();
@@ -230,7 +231,7 @@ namespace TmCGPTD.ViewModels
                 if (SelectedTemplateItemIndex > -1)
                 {
                     dialog = new ContentDialog() { Title = $"Overwrite '{SelectedTemplateItem.Title}' prompt template?", PrimaryButtonText = "Overwrite", SecondaryButtonText = "New", CloseButtonText = "Cancel" };
-                    dialogResult = await ContentDialogShowAsync(dialog);
+                    dialogResult = await VMLocator.MainViewModel.ContentDialogShowAsync(dialog);
                     if (dialogResult == ContentDialogResult.Primary)
                     {
                         await _dbProcess.UpdateTemplateAsync(SelectedTemplateItem.Title);
@@ -259,7 +260,7 @@ namespace TmCGPTD.ViewModels
                     DataContext = viewModel
                 };
 
-                dialogResult = await ContentDialogShowAsync(dialog);
+                dialogResult = await VMLocator.MainViewModel.ContentDialogShowAsync(dialog);
                 if (dialogResult != ContentDialogResult.Primary || string.IsNullOrWhiteSpace(viewModel.UserInput))
                 {
                     return;
@@ -274,7 +275,7 @@ namespace TmCGPTD.ViewModels
             catch (Exception ex)
             {
                 dialog = new ContentDialog() { Title = $"Error: {ex.Message}", PrimaryButtonText = "OK" };
-                await ContentDialogShowAsync(dialog);
+                await VMLocator.MainViewModel.ContentDialogShowAsync(dialog);
             }
         }
 
@@ -298,7 +299,7 @@ namespace TmCGPTD.ViewModels
                 DataContext = viewModel
             };
 
-            var contentDialogResult = await ContentDialogShowAsync(dialog);
+            var contentDialogResult = await VMLocator.MainViewModel.ContentDialogShowAsync(dialog);
             if (contentDialogResult != ContentDialogResult.Primary || string.IsNullOrWhiteSpace(viewModel.UserInput))
             {
                 return;
@@ -311,7 +312,7 @@ namespace TmCGPTD.ViewModels
             catch (Exception ex)
             {
                 dialog = new ContentDialog() { Title = $"Error: {ex.Message}", PrimaryButtonText = "OK" };
-                await ContentDialogShowAsync(dialog);
+                await VMLocator.MainViewModel.ContentDialogShowAsync(dialog);
             }
             await _dbProcess.GetTemplateItemsAsync();
         }
@@ -330,7 +331,7 @@ namespace TmCGPTD.ViewModels
                 CloseButtonText = "Cancel"
             };
 
-            var contentDialogResult = await ContentDialogShowAsync(dialog);
+            var contentDialogResult = await VMLocator.MainViewModel.ContentDialogShowAsync(dialog);
             if (contentDialogResult != ContentDialogResult.Primary)
             {
                 return;
@@ -343,7 +344,7 @@ namespace TmCGPTD.ViewModels
             catch (Exception ex)
             {
                 dialog = new ContentDialog() { Title = $"Error: {ex.Message}", PrimaryButtonText = "OK" };
-                await ContentDialogShowAsync(dialog);
+                await VMLocator.MainViewModel.ContentDialogShowAsync(dialog);
             }
             SelectedTemplateItemIndex = -1;
             await _dbProcess.GetTemplateItemsAsync();
@@ -379,7 +380,7 @@ namespace TmCGPTD.ViewModels
                 catch (Exception ex)
                 {
                     var cdialog = new ContentDialog() { Title = $"Error: {ex.Message}", PrimaryButtonText = "OK" };
-                    await ContentDialogShowAsync(cdialog);
+                    await VMLocator.MainViewModel.ContentDialogShowAsync(cdialog);
                 }
             }
         }
@@ -427,12 +428,12 @@ namespace TmCGPTD.ViewModels
                     await File.WriteAllTextAsync(selectedFilePath, finalText);
 
                     var cdialog = new ContentDialog() { Title = $"Successfully exported prompt template.", PrimaryButtonText = "OK" };
-                    await ContentDialogShowAsync(cdialog);
+                    await VMLocator.MainViewModel.ContentDialogShowAsync(cdialog);
                 }
                 catch (Exception ex)
                 {
                     var cdialog = new ContentDialog() { Title = $"Error: {ex.Message}", PrimaryButtonText = "OK" };
-                    await ContentDialogShowAsync(cdialog);
+                    await VMLocator.MainViewModel.ContentDialogShowAsync(cdialog);
                 }
             }
         }
@@ -512,17 +513,6 @@ namespace TmCGPTD.ViewModels
             get => _editor5Text;
             set => SetProperty(ref _editor5Text, value);
         }
-
-        private async Task<ContentDialogResult> ContentDialogShowAsync(ContentDialog dialog)
-        {
-            VMLocator.ChatViewModel.ChatViewIsVisible = false;
-            VMLocator.WebChatViewModel.WebChatViewIsVisible = false;
-            var dialogResult = await dialog.ShowAsync();
-            VMLocator.ChatViewModel.ChatViewIsVisible = true;
-            VMLocator.WebChatViewModel.WebChatViewIsVisible = true;
-            return dialogResult;
-        }
-
     }
 
 }

@@ -83,6 +83,10 @@ namespace TmCGPTD.ViewModels
                 if (SetProperty(ref _searchLogKeyword, value))
                 {
                     LoadChatListCommand.Execute(value);
+                    if (string.IsNullOrWhiteSpace(value))
+                    {
+                        VMLocator.ChatViewModel.SearchKeyword = string.Empty;
+                    }
                 }
             }
         }
@@ -111,7 +115,8 @@ namespace TmCGPTD.ViewModels
         public List<string> LeftPanes { get; } = new List<string>
         {
             "API Chat",
-            "Web Chat"
+            "Web Chat",
+            "Bard"
         };
 
 
@@ -198,6 +203,10 @@ namespace TmCGPTD.ViewModels
                 {
                     await VMLocator.WebChatViewModel.PostWebChat();
                 }
+                else if (SelectedLeftPane == "Bard")
+                {
+                    await VMLocator.WebChatBardViewModel.PostWebChat();
+                }
                 else
                 {
                     await VMLocator.ChatViewModel.GoChatAsync();
@@ -214,8 +223,8 @@ namespace TmCGPTD.ViewModels
             catch (Exception ex)
             {
                 VMLocator.ChatViewModel.ChatIsRunning = false;
-                var cdialog = new ContentDialog() { Title = "Error: " + ex.Message, PrimaryButtonText = "OK" };
-                await ContentDialogShowAsync(cdialog);
+                //var cdialog = new ContentDialog() { Title = "Error: " + ex.Message, PrimaryButtonText = "OK" };
+                //await ContentDialogShowAsync(cdialog);
             }
         }
 
@@ -607,7 +616,12 @@ namespace TmCGPTD.ViewModels
             IsCopyButtonClicked = true;
             if (ApplicationExtensions.GetTopLevel(Avalonia.Application.Current!)!.Clipboard != null)
             {
+                await _dbProcess.InserEditorLogDatabasetAsync();
+
                 await ApplicationExtensions.GetTopLevel(Avalonia.Application.Current!)!.Clipboard!.SetTextAsync(VMLocator.EditorViewModel.RecentText);
+
+                await _dbProcess.GetEditorLogDatabaseAsync();
+                VMLocator.EditorViewModel.SelectedEditorLogIndex = -1;
             }
             await Task.Delay(500);
             IsCopyButtonClicked = false;
@@ -638,13 +652,15 @@ namespace TmCGPTD.ViewModels
             await ContentDialogShowAsync(dialog);
         }
 
-        private async Task<ContentDialogResult> ContentDialogShowAsync(ContentDialog dialog)
+        public async Task<ContentDialogResult> ContentDialogShowAsync(ContentDialog dialog)
         {
             VMLocator.ChatViewModel.ChatViewIsVisible = false;
             VMLocator.WebChatViewModel.WebChatViewIsVisible = false;
+            VMLocator.WebChatBardViewModel.WebChatBardViewIsVisible = false;
             var dialogResult = await dialog.ShowAsync();
             VMLocator.ChatViewModel.ChatViewIsVisible = true;
             VMLocator.WebChatViewModel.WebChatViewIsVisible = true;
+            VMLocator.WebChatBardViewModel.WebChatBardViewIsVisible = true;
             return dialogResult;
         }
 

@@ -73,6 +73,10 @@ namespace TmCGPTD.Views
                 case 1:
                     _leftPane.Navigate(typeof(WebChatView), null, new SuppressNavigationTransitionInfo());
                     break;
+
+                case 2:
+                    _leftPane.Navigate(typeof(WebChatBardView), null, new SuppressNavigationTransitionInfo());
+                    break;
             }
         }
 

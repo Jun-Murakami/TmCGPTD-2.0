@@ -7,29 +7,29 @@ using Xilium.CefGlue.Common.Events;
 
 namespace TmCGPTD.Views
 {
-    public partial class WebChatView : UserControl
+    public partial class WebChatBardView : UserControl
     {
         private AvaloniaCefBrowser browser;
         private TextBox _searchBox;
-        public WebChatViewModel WebChatViewModel { get; } = new WebChatViewModel();
+        public WebChatBardViewModel WebChatBardViewModel { get; } = new WebChatBardViewModel();
 
-        public WebChatView()
+        public WebChatBardView()
         {
             InitializeComponent();
 
-            DataContext = WebChatViewModel;
-            VMLocator.WebChatViewModel = WebChatViewModel;
+            DataContext = WebChatBardViewModel;
+            VMLocator.WebChatBardViewModel = WebChatBardViewModel;
 
-            var browserWrapper = this.FindControl<Decorator>("WebChatBrowserWrapper");
+            var browserWrapper = this.FindControl<Decorator>("WebChatBardBrowserWrapper");
 
             browser = new AvaloniaCefBrowser
             {
                 LifeSpanHandler = new CustomLifeSpanHandler(),
             };
-            browser.Address = "https://chat.openai.com/";
+            browser.Address = "https://bard.google.com/";
             browser.ContextMenuHandler = new CustomContextMenuHandler();
             browserWrapper.Child = browser;
-            WebChatViewModel.SetBrowser(browser);
+            WebChatBardViewModel.SetBrowser(browser);
             //browser.Focusable = false;
             browser.LoadEnd += Browser_LoadEnd;
 
@@ -38,7 +38,7 @@ namespace TmCGPTD.Views
 
         private void FocusSearchBox(object sender, RoutedEventArgs e)
         {
-            if (VMLocator.MainViewModel.SelectedLeftPane == "Web Chat")
+            if (VMLocator.MainViewModel.SelectedLeftPane == "Bard")
             {
                 _searchBox.Focus();
             }
@@ -59,16 +59,16 @@ namespace TmCGPTD.Views
             string addElementsCode = @"
                                     const button = document.createElement('button');
                                     button.id = 'floatingCopyButton';
-                                    button.innerHTML = 'Copy to clipboard';
+                                    button.textContent = 'Copy to clipboard';
                                     document.body.appendChild(button);
 
                                     const style = document.createElement('style');
-                                    style.type = 'text/css';
-                                    style.innerHTML = `
+                                    style.textContent = `
                                     #floatingCopyButton {
                                         position: absolute;
                                         display: none;
                                         background: #343541;
+                                        color: #dcdcdc;
                                         border-width: 1px;
                                         border: #545563 solid;
                                         cursor: pointer;
@@ -76,6 +76,7 @@ namespace TmCGPTD.Views
                                         line-height: 1.0em;
                                         font-size: 0.8em;
                                         border-radius: 6px;
+                                        z-index: 999999;
                                     }
 
                                     #floatingCopyButton:hover {
@@ -86,11 +87,10 @@ namespace TmCGPTD.Views
                                 ";
             browser.ExecuteJavaScript(addElementsCode);
 
-            string scriptCode = @"
-                                const floatingButton = document.getElementById('floatingCopyButton');
-                                let savedSelection = null;
+            string scriptCode = @"let savedSelection = null;
 
                                 document.body.addEventListener('mousedown', (event) => {
+                                    const floatingButton = document.getElementById('floatingCopyButton');
                                     // Check if right-click or Ctrl + click (Mac)
                                     if (event.button === 2 || (event.ctrlKey && event.button === 0)) {
                                         // Save the current selection

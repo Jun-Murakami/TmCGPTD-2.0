@@ -199,7 +199,7 @@ namespace TmCGPTD.ViewModels
             catch(Exception ex)
             {
                 var dialog = new ContentDialog() { Title = $"Error: {ex.Message}", PrimaryButtonText = "OK" };
-                await ContentDialogShowAsync(dialog);
+                await VMLocator.MainViewModel.ContentDialogShowAsync(dialog);
             }
         }
 
@@ -229,7 +229,7 @@ namespace TmCGPTD.ViewModels
             catch (Exception ex)
             {
                 var dialog = new ContentDialog() { Title = $"Error: {ex.Message}", PrimaryButtonText = "OK" };
-                await ContentDialogShowAsync(dialog);
+                await VMLocator.MainViewModel.ContentDialogShowAsync(dialog);
             }
             return;
         }
@@ -332,16 +332,6 @@ namespace TmCGPTD.ViewModels
         {
             get => _logPainButtonIsVisible;
             set => SetProperty(ref _logPainButtonIsVisible, value);
-        }
-
-        private async Task<ContentDialogResult> ContentDialogShowAsync(ContentDialog dialog)
-        {
-            VMLocator.ChatViewModel.ChatViewIsVisible = false;
-            VMLocator.WebChatViewModel.WebChatViewIsVisible = false;
-            var dialogResult = await dialog.ShowAsync();
-            VMLocator.ChatViewModel.ChatViewIsVisible = true;
-            VMLocator.WebChatViewModel.WebChatViewIsVisible = true;
-            return dialogResult;
         }
     }
 }

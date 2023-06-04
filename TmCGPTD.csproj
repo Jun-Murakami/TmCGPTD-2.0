@@ -21,10 +21,15 @@
 
 	<ItemGroup>
     <AvaloniaResource Include="Assets\**" />
+    <AvaloniaXaml Remove="Helper\**" />
+    <Compile Remove="Helper\**" />
+    <EmbeddedResource Remove="Helper\**" />
+    <None Remove="Helper\**" />
     <AvaloniaResource Remove="Assets\CustomDataGridStyles.axaml" />
     <AvaloniaResource Include="Assets\Styles.axaml" />
     <None Remove=".gitignore" />
     <None Remove="Assets\TmCGPTD.ico" />
+    <None Remove="src\Views\WebChatBardView.xaml" />
     <None Remove="src\Views\WebChatView.xaml" />
     <AvaloniaResource Include="Assets\Lato-Regular.ttf" />
     <AvaloniaResource Include="Assets\TmCGPTD.ico" />
@@ -35,6 +40,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <AvaloniaXaml Include="src\Views\WebChatBardView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </AvaloniaXaml>
     <AvaloniaXaml Include="src\Views\WebChatView.xaml" />
   </ItemGroup>
 

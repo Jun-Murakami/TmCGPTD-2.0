@@ -14,8 +14,7 @@ using TiktokenSharp;
 using System.Diagnostics;
 using Avalonia;
 using Avalonia.Controls;
-using System.Reactive.Joins;
-using TextMateSharp.Internal.Oniguruma;
+using FluentAvalonia.UI.Controls;
 
 namespace TmCGPTD.Models
 {
@@ -24,9 +23,9 @@ namespace TmCGPTD.Models
         // 表示用HTML初期化--------------------------------------------------------------
         public async Task<string> InitializeChatLogToHtml()
         {
-            using var streamReader = new StreamReader(AvaloniaLocator.Current.GetService<IAssetLoader>().Open(new Uri("avares://TmCGPTD/Assets/ChatTemplete.html")));
-            using var chatCssStreamReader = new StreamReader(AvaloniaLocator.Current.GetService<IAssetLoader>().Open(new Uri("avares://TmCGPTD/Assets/ChatStyles.css")));
-            using var cssStreamReader = new StreamReader(AvaloniaLocator.Current.GetService<IAssetLoader>().Open(new Uri("avares://TmCGPTD/Assets/vs2015.min.css")));
+            using var streamReader = new StreamReader(AssetLoader.Open(new Uri("avares://TmCGPTD/Assets/ChatTemplete.html")));
+            using var chatCssStreamReader = new StreamReader(AssetLoader.Open(new Uri("avares://TmCGPTD/Assets/ChatStyles.css")));
+            using var cssStreamReader = new StreamReader(AssetLoader.Open(new Uri("avares://TmCGPTD/Assets/vs2015.min.css")));
 
 
             string chatCssContent = await chatCssStreamReader.ReadToEndAsync();
@@ -50,9 +49,9 @@ namespace TmCGPTD.Models
         public async Task<string> ConvertChatLogToHtml(string plainTextChatLog)
         {
             plainTextChatLog = Regex.Replace(plainTextChatLog, @"\r\n|\r|\n", Environment.NewLine);
-            using var streamReader = new StreamReader(AvaloniaLocator.Current.GetService<IAssetLoader>().Open(new Uri("avares://TmCGPTD/Assets/ChatTemplete.html")));
-            using var chatCssStreamReader = new StreamReader(AvaloniaLocator.Current.GetService<IAssetLoader>().Open(new Uri("avares://TmCGPTD/Assets/ChatStyles.css")));
-            using var cssStreamReader = new StreamReader(AvaloniaLocator.Current.GetService<IAssetLoader>().Open(new Uri("avares://TmCGPTD/Assets/vs2015.min.css")));
+            using var streamReader = new StreamReader(AssetLoader.Open(new Uri("avares://TmCGPTD/Assets/ChatTemplete.html")));
+            using var chatCssStreamReader = new StreamReader(AssetLoader.Open(new Uri("avares://TmCGPTD/Assets/ChatStyles.css")));
+            using var cssStreamReader = new StreamReader(AssetLoader.Open(new Uri("avares://TmCGPTD/Assets/vs2015.min.css")));
 
 
             string chatCssContent = await chatCssStreamReader.ReadToEndAsync();
@@ -393,7 +392,19 @@ namespace TmCGPTD.Models
                 bool isDeleteHistory = false;
                 string chatTextRes = "";
                 string currentTitle = VMLocator.ChatViewModel.ChatTitle;
-                int MAX_CONTENT_LENGTH = VMLocator.MainWindowViewModel.MaxContentLength;
+
+                int maxTokens = VMLocator.MainWindowViewModel.ApiMaxTokens;
+                if (!VMLocator.MainWindowViewModel.ApiMaxTokensIsEnable)
+                {
+                    maxTokens = 0;
+                }
+
+                int maxContentLength = VMLocator.MainWindowViewModel.MaxContentLength;
+                if (!VMLocator.MainWindowViewModel.MaxContentLengthIsEnable)
+                {
+                    maxContentLength = 3072;
+                }
+
                 TikToken tokenizer = TikToken.EncodingForModel("gpt-3.5-turbo");
 
                 // 過去の会話履歴と現在の入力を結合する前に、過去の会話履歴に含まれるcontent文字列のトークン数を取得
@@ -409,20 +420,29 @@ namespace TmCGPTD.Models
                 // 入力文字列のトークン数を取得
                 int inputTokenCount = tokenizer.Encode(chatTextPost).Count;
 
-                // 入力文字列のトークン数が制限トークン数「MAX_CONTENT_LENGTH」を超えた場合
-                if (inputTokenCount > MAX_CONTENT_LENGTH)
+                // 入力文字列 + maxTokensが4096を超えた場合
+                if ((inputTokenCount + maxTokens) > 4096)
                 {
-                    throw new Exception($"The input text ({inputTokenCount}) exceeds the maximum token limit ({MAX_CONTENT_LENGTH}). Please remove {inputTokenCount - MAX_CONTENT_LENGTH} tokens.{Environment.NewLine}");
+                    if (VMLocator.MainWindowViewModel.ApiMaxTokensIsEnable)
+                    {
+                        throw new Exception($"The values for input text ({inputTokenCount}) + max_tokens ({maxTokens}) exceeds 4097 tokens. Please reduce by at least {(inputTokenCount + maxTokens) - 4097} tokens.{Environment.NewLine}");
+                    }
+                    else
+                    {
+                        throw new Exception($"The values for input text ({inputTokenCount}) exceeds 4097 tokens. Please reduce by at least {inputTokenCount - 4096} tokens.{Environment.NewLine}");
+                    }
                 }
 
-                // 過去の履歴＋ユーザーの新規入力が制限トークン数「MAX_CONTENT_LENGTH」を超えた場合
-                if (historyContentTokenCount + inputTokenCount > MAX_CONTENT_LENGTH)
+                // 制限文字数の計算
+                int limitLength = VMLocator.MainWindowViewModel.ApiMaxTokensIsEnable ? inputTokenCount + maxTokens + 400 : maxContentLength;
+
+                // 過去の履歴＋ユーザーの新規入力＋maxTokensがmaxContentLengthを超えた場合の要約処理
+                if (historyContentTokenCount + inputTokenCount + maxTokens > maxContentLength)
                 {
                     int historyTokenCount = 0;
                     int messagesToSelect = 0;
                     int messageStart = 0;
                     string forCompMes = "";
-
 
                     // 会話履歴の最新のものからトークン数を数えて一時変数「historyTokenCount」に足していく
                     for (int i = 0; i < reversedHistoryList.Count; i += 1)
@@ -431,22 +451,19 @@ namespace TmCGPTD.Models
                         int messageTokenCount = tokenizer.Encode(mes).Count;
                         historyTokenCount += messageTokenCount;
 
-                        if (i <= 4 && historyTokenCount < MAX_CONTENT_LENGTH / 5) //直近の会話が短ければそのまま生かす
+                        if (i <= 4 && historyTokenCount < limitLength / 5) //直近の会話が短ければそのまま生かす
                         {
                             messageStart += 1;
                         }
 
-                        if (historyTokenCount > MAX_CONTENT_LENGTH)
+                        if (historyTokenCount > limitLength) // トークン数が制限文字数を超えたらブレイク
                         {
                             messagesToSelect = i + 1; // 最後に処理した次のインデックスを記録
                             break;
                         }
                     }
 
-                    foreach (var dict in reversedHistoryList)
-                    {
-                        string dictString = string.Join(", ", dict.Select(pair => $"{pair.Key}: {pair.Value}"));
-                    }
+                    //string debugStr = string.Join(Environment.NewLine, reversedHistoryList.Select(dict => string.Join(", ", dict.Select(pair => $"{pair.Key}: {pair.Value}")))); // デバッグ用
 
                     // 会話履歴から適切な数だけをセレクトする
                     int rangeLength = Math.Min(messagesToSelect - messageStart, reversedHistoryList.Count - messageStart);
@@ -489,10 +506,13 @@ namespace TmCGPTD.Models
                     }
                     else
                     {
-                        conversationHistory.Clear();
-                        isDeleteHistory = true;
+                        // 直近の履歴削除の必要がある場合、会話履歴が空でなければ、会話履歴を削除
+                        if (conversationHistory.Count() > 0)
+                        {
+                            conversationHistory.Clear();
+                            isDeleteHistory = true;
+                        }
                     }
-
                 }
 
                 // 現在のユーザーの入力を表すディクショナリ
@@ -639,6 +659,7 @@ namespace TmCGPTD.Models
                 throw new Exception($"{ex.Message}");
             }
         }
+
         public class ResponseChunkData
         {
             public string id { get; set; }
@@ -707,7 +728,7 @@ namespace TmCGPTD.Models
         //タイトル命名メソッド--------------------------------------------------------------
         public async Task<string> GetTitleAsync(string forTitleMes)
         {
-            string summary;
+            string title;
 
             forTitleMes = VMLocator.ChatViewModel.ConversationHistory.Select(message => message["content"].ToString()).Reverse().Aggregate((a, b) => a + b);
 
@@ -723,7 +744,7 @@ namespace TmCGPTD.Models
                         {
                             new Dictionary<string, object> { { "role", "system" }, { "content",
                                     "あなたはプロの編集者です。これから送るチャットログにチャットタイトルをつけてそれだけを回答してください。\n" +
-                                    "- チャットで使われている言語でタイトルを考えてください。\n" +
+                                    "- チャットの会話で使われている言語でタイトルを考えてください。\n" +
                                     "- ログは冒頭に行くほど重要な情報です。\n" +
                                     "# 制約条件\n" +
                                     "- 「」や\"\'などの記号を使わないこと。\n" +
@@ -748,19 +769,21 @@ namespace TmCGPTD.Models
                     string responseBody = await response.Content.ReadAsStringAsync();
                     var responseJson = JsonSerializer.Deserialize<JsonElement>(responseBody);
                     char[] charsToTrim = { ' ', '\"', '\'', '[', ']', '「', '」' };
-                    summary = responseJson.GetProperty("choices")[0].GetProperty("message").GetProperty("content").GetString().Trim();
+                    title = responseJson.GetProperty("choices")[0].GetProperty("message").GetProperty("content").GetString().Trim();
                 }
                 else
                 {
                     string errorBody = await response.Content.ReadAsStringAsync();
+                    var cdialog = new ContentDialog() { Title = $"Title Naming Error: Response status code does not indicate success: {response.StatusCode} ({response.ReasonPhrase}). Response body: {errorBody}", PrimaryButtonText = "OK" };
+                    await VMLocator.MainViewModel.ContentDialogShowAsync(cdialog);
                     return $"Error in title naming";
                 }
             }
 
-            return summary;
+            return title;
         }
 
-        // 表示用チャットログHTML変換--------------------------------------------------------------
+        // ストリーム表示用チャットログHTML変換--------------------------------------------------------------
         public async Task<string> ConvertAddLogToHtml(string plainTextChatLog, DateTime resDate)
         {
             plainTextChatLog = Regex.Replace(plainTextChatLog, @"\r\n|\r|\n", Environment.NewLine);
@@ -790,6 +813,19 @@ namespace TmCGPTD.Models
 
             var content = WebUtility.HtmlEncode(plainTextChatLog); // エスケープを適用
             content = codeSnippetRegex.Replace(content, WrapCodeSnippet);
+
+            string pattern = @"\[\!\[(.*?)\]\((.*?)\)\]\((.*?)\)";
+            content = Regex.Replace(content, pattern, @"<a href=""$3"" target=""_blank"" rel=""noopener noreferrer""><img src=""$2"" alt=""$1""></a>");
+
+            Regex linkRegex = new Regex(@"\[([^\]]+?)\]\(([^\)]+?)\)");
+            content = linkRegex.Replace(content, m => $"<a href=\"{m.Groups[2].Value}\" target=\"_blank\" rel=\"noopener noreferrer\">{m.Groups[1].Value}</a>");
+
+            Regex imgRegex = new Regex(@"!\[([^\]]*?)\]\(([^\)]+?)\)");
+            content = imgRegex.Replace(content, m => $"<img src=\"{m.Groups[2].Value}\" alt=\"{m.Groups[1].Value}\">");
+
+            Regex strongRegex = new Regex(@"\*\*(.+?)\*\*");
+            content = strongRegex.Replace(content, m => $"<strong>{m.Groups[1].Value}</strong>");
+
             var usageMatch = usageRegex.Match(content);
             if (usageMatch.Success)
             {

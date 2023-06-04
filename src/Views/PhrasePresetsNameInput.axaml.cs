@@ -25,8 +25,7 @@ namespace TmCGPTD.Views
             {
                 Dispatcher.UIThread.InvokeAsync(() =>
                 {
-                    KeyboardDevice.Instance.SetFocusedElement(inputElement, NavigationMethod.Unspecified,
-                        KeyModifiers.None);
+                    inputElement.Focus();
                 });
             }
         }

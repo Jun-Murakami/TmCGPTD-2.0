@@ -8,19 +8,19 @@ using TmCGPTD.Models;
 
 namespace TmCGPTD.ViewModels
 {
-    public class WebChatViewModel : ViewModelBase
+    public class WebChatBardViewModel : ViewModelBase
     {
         private AvaloniaCefBrowser _browser;
         HtmlProcess _htmlProcess = new HtmlProcess();
 
-        public WebChatViewModel()
+        public WebChatBardViewModel()
         {
             SearchPrev = new AsyncRelayCommand(async () => await TextSearch(VMLocator.ChatViewModel.SearchKeyword, false));
             SearchNext = new AsyncRelayCommand(async () => await TextSearch(VMLocator.ChatViewModel.SearchKeyword, true));
 
             ImportWebChatLogCommand = new AsyncRelayCommand(async () => await ImportWebChatLog());
 
-            WebChatViewIsVisible = true;
+            WebChatBardViewIsVisible = true;
         }
 
         public async Task PostWebChat()
@@ -30,16 +30,14 @@ namespace TmCGPTD.ViewModels
                 string escapedString = JsonSerializer.Serialize(VMLocator.EditorViewModel.RecentText);
 
                 string script = @"const mainTag = document.querySelector('main');
-                        const formTag = mainTag.querySelector('form');
-                        const textarea = formTag.querySelector('textarea');"+
+                        const textarea = mainTag.querySelector('textarea');" +
                         $"textarea.value = {escapedString};";
                 await _browser.EvaluateJavaScript<string>(script);
 
                 await Task.Delay(300);
 
                 script = @"const mainTag = document.querySelector('main');
-                        const formTag = mainTag.querySelector('form');
-                        const textarea = formTag.querySelector('textarea');
+                        const textarea = mainTag.querySelector('textarea');
                         var event = new Event('input', { bubbles: true });  // イベントを作成
                         textarea.dispatchEvent(event);  // イベントをディスパッチ";
                 await _browser.EvaluateJavaScript<string>(script);
@@ -47,8 +45,8 @@ namespace TmCGPTD.ViewModels
                 await Task.Delay(300);
 
                 script = @"const mainTag = document.querySelector('main');
-                        const formTag = mainTag.querySelector('form');
-                        const button = formTag.querySelector('button');
+                        const sendDiv = mainTag.querySelector('div.send-button-container');
+                        const button = sendDiv.querySelector('button');
                         button.click();";
                 await _browser.EvaluateJavaScript<string>(script);
             }
@@ -129,6 +127,7 @@ namespace TmCGPTD.ViewModels
 	                        top: 7px;
 	                        right: 57px;
 	                        background: #3a3b47;
+                            color: #dcdcdc;
 	                        border-radius: 6px;
 	                        border-width: 1px;
 	                        border: #545563 solid;
@@ -292,11 +291,11 @@ namespace TmCGPTD.ViewModels
         public IAsyncRelayCommand SearchNext { get; }
         public IAsyncRelayCommand ImportWebChatLogCommand { get; }
 
-        private bool _webChatViewIsVisible;
-        public bool WebChatViewIsVisible//ダイアログ表示用
+        private bool _webChatBardViewIsVisible;
+        public bool WebChatBardViewIsVisible//ダイアログ表示用
         {
-            get => _webChatViewIsVisible;
-            set => SetProperty(ref _webChatViewIsVisible, value);
+            get => _webChatBardViewIsVisible;
+            set => SetProperty(ref _webChatBardViewIsVisible, value);
         }
     }
 }
