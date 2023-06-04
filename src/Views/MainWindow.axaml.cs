@@ -177,6 +177,8 @@ namespace TmCGPTD.Views
         {
             var settings = AppSettings.Instance;
 
+            settings = new AppSettings();
+
             if (File.Exists(Path.Combine(settings.AppDataPath, "settings.json")))
             {
                 var options = new JsonSerializerOptions();
