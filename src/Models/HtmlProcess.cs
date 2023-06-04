@@ -626,6 +626,13 @@ namespace TmCGPTD.Models
                         // 応答を受け取った後、conversationHistory に追加
                         conversationHistory.Add(new Dictionary<string, object>() { { "role", "assistant" }, { "content", chatTextRes } });
 
+                        // ビューモデルを更新
+                        VMLocator.ChatViewModel.ConversationHistory = conversationHistory;
+
+                        // デバッグ
+                        //var cdialog = new ContentDialog() { Title = string.Join("\n", conversationHistory.Select(d => string.Join(", ", d.Select(pair => $"{pair.Key}: {pair.Value}")))), PrimaryButtonText = "OK" };
+                        //await VMLocator.MainViewModel.ContentDialogShowAsync(cdialog);
+
                         // usageを計算
                         chatTextRes += $"usage={{\"prompt_tokens\":{inputConversationTokenCount},\"completion_tokens\":{responseTokenCount},\"total_tokens\":{inputConversationTokenCount + responseTokenCount}}}" + Environment.NewLine;
 
