@@ -616,6 +616,10 @@ namespace TmCGPTD.ViewModels
 
         private async Task CopyToClipboard()
         {
+            if (string.IsNullOrWhiteSpace(VMLocator.EditorViewModel.RecentText)) {
+                return;
+            }
+
             IsCopyButtonClicked = true;
             if (ApplicationExtensions.GetTopLevel(Avalonia.Application.Current!)!.Clipboard != null)
             {
@@ -625,6 +629,10 @@ namespace TmCGPTD.ViewModels
 
                 await _dbProcess.GetEditorLogDatabaseAsync();
                 VMLocator.EditorViewModel.SelectedEditorLogIndex = -1;
+<<<<<<< HEAD
+=======
+                VMLocator.EditorViewModel.SelectedTemplateItemIndex = -1;
+>>>>>>> 14cac8368a08a0a4e4b176b481276c8071dcd61a
             }
             await Task.Delay(500);
             IsCopyButtonClicked = false;

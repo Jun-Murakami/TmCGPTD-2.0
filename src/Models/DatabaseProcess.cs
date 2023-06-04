@@ -1129,7 +1129,11 @@ namespace TmCGPTD.Models
                         string sqlLastRowId = "SELECT last_insert_rowid();";
                         using (var command = new SQLiteCommand(sqlLastRowId, connection))
                         {
+<<<<<<< HEAD
                             long insertedId = Convert.ToInt64(command.ExecuteScalar());
+=======
+                            var insertedId = Convert.ToInt64(command.ExecuteScalar());
+>>>>>>> 14cac8368a08a0a4e4b176b481276c8071dcd61a
                             if (insertedId != VMLocator.ChatViewModel.LastId)
                             {
                                 VMLocator.ChatViewModel.LastId = insertedId;
