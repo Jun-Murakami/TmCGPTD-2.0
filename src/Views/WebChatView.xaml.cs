@@ -3,6 +3,7 @@ using Avalonia.Markup.Xaml;
 using Xilium.CefGlue.Avalonia;
 using TmCGPTD.ViewModels;
 using Avalonia.Interactivity;
+using Avalonia.Threading;
 using Xilium.CefGlue.Common.Events;
 
 namespace TmCGPTD.Views

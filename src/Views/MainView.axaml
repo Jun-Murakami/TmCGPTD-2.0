@@ -42,7 +42,7 @@
 						<RowDefinition Height="*"/>
 					</Grid.RowDefinitions>
 					<ListBox Grid.Row="0"
-							 ItemsSource="{Binding LogPanes}"
+							 Items="{Binding LogPanes}"
 							 SelectedItem="{Binding SelectedLogPain}">
 						<ListBox.ItemsPanel>
 							<ItemsPanelTemplate>
@@ -117,7 +117,7 @@
 				</Grid.ColumnDefinitions>
 				<ListBox Grid.Row="0" Grid.Column="0"
 							Name="LeftPaneList"
-							ItemsSource="{Binding LeftPanes}"
+							Items="{Binding LeftPanes}"
 							SelectedItem="{Binding SelectedLeftPane}">
 					<ListBox.ItemsPanel>
 						<ItemsPanelTemplate>
@@ -129,7 +129,7 @@
 				<GridSplitter Grid.Row="0" Grid.Column="1" Grid.RowSpan="3" Width="5"/>
 				<Grid Grid.Row="0" Grid.Column="2" >
 					<ListBox Name="RightPaneList"
-								ItemsSource="{Binding RightPanes}"
+								Items="{Binding RightPanes}"
 								SelectedItem="{Binding SelectedRightPane}">
 						<ListBox.ItemsPanel>
 							<ItemsPanelTemplate>
@@ -189,7 +189,7 @@
 									Spacing="5"
 									Orientation="Horizontal">
 							<Button Command="{Binding CopyToClipboardCommand}"
-									ToolTip.Tip="Copy to Clipboard + Save log (Ctrl + S)"
+									ToolTip.Tip="Copy to clipboard + Save log (Ctrl + S)"
 									HotKey="Ctrl+S" >
 								<Button.Styles>
 									<Style Selector="Button[IsEnabled=True][Tag=True]">
@@ -234,7 +234,7 @@
 						<TextBlock Text="{DynamicResource My.Strings.PhrasePresets}"
 									Margin="10,8,5,16"
 									VerticalAlignment="Bottom" />
-						<ComboBox ItemsSource="{Binding PhrasePresetsItems}"
+						<ComboBox Items="{Binding PhrasePresetsItems}"
 									SelectedItem="{Binding SelectedPhraseItem}"
 									Width="200"
 									VerticalAlignment="Bottom"
