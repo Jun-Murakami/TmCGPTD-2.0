@@ -122,11 +122,11 @@ namespace TmCGPTD.Views
             VMLocator.EditorViewModel.EditorHeight4 = settings.EditorHeight4;
             VMLocator.EditorViewModel.EditorHeight5 = settings.EditorHeight5;
 
-            await Dispatcher.UIThread.InvokeAsync(() => { VMLocator.ChatViewModel.LogPainIsOpened = false; });
+            await Dispatcher.UIThread.InvokeAsync(() => { VMLocator.MainViewModel.LogPainIsOpened = false; });
             if (this.Width > 1295)
             {
                 await Task.Delay(1000);
-                await Dispatcher.UIThread.InvokeAsync(() => { VMLocator.ChatViewModel.LogPainIsOpened = true; });
+                await Dispatcher.UIThread.InvokeAsync(() => { VMLocator.MainViewModel.LogPainIsOpened = true; });
             }
 
             this.GetObservable(ClientSizeProperty).Subscribe(size => OnSizeChanged(size));
@@ -153,18 +153,18 @@ namespace TmCGPTD.Views
             {
                 if (newSize.Width <= 1295)
                 {
-                    VMLocator.ChatViewModel.LogPainIsOpened = false;
-                    VMLocator.ChatViewModel.LogPainButtonIsVisible = false;
+                    VMLocator.MainViewModel.LogPainIsOpened = false;
+                    VMLocator.MainViewModel.LogPainButtonIsVisible = false;
                 }
                 else
                 {
-                    if (VMLocator.ChatViewModel.LogPainButtonIsVisible == false)
+                    if (VMLocator.MainViewModel.LogPainButtonIsVisible == false)
                     {
-                        VMLocator.ChatViewModel.LogPainButtonIsVisible = true;
+                        VMLocator.MainViewModel.LogPainButtonIsVisible = true;
                     }
                     if (newSize.Width > _previousWidth)
                     {
-                        VMLocator.ChatViewModel.LogPainIsOpened = true;
+                        VMLocator.MainViewModel.LogPainIsOpened = true;
                     }
                 }
                 _previousWidth = newSize.Width;

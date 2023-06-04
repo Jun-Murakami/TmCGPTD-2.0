@@ -30,8 +30,8 @@ namespace TmCGPTD.ViewModels
             InitializeChatCommand = new AsyncRelayCommand(async () => await InitializeChatAsync());
             OpenApiSettingsCommand = new RelayCommand(OpenApiSettings);
 
-            SearchPrev = new AsyncRelayCommand(async () => await TextSearch(SearchKeyword, false));
-            SearchNext = new AsyncRelayCommand(async () => await TextSearch(SearchKeyword, true));
+            SearchPrev = new AsyncRelayCommand(async () => await TextSearch(VMLocator.MainViewModel.SearchKeyword, false));
+            SearchNext = new AsyncRelayCommand(async () => await TextSearch(VMLocator.MainViewModel.SearchKeyword, true));
 
             LastId = default;
         }
@@ -217,7 +217,7 @@ namespace TmCGPTD.ViewModels
         // テキスト検索--------------------------------------------------------------
         public async Task TextSearch(string searchKeyword, bool searchDirection, bool searchReset = false)
         {
-            if (_browser == null || string.IsNullOrEmpty(SearchKeyword))
+            if (_browser == null || string.IsNullOrEmpty(VMLocator.MainViewModel.SearchKeyword))
             {
                 return;
             }
@@ -256,13 +256,6 @@ namespace TmCGPTD.ViewModels
         public void SetButtonWrite(Button button)
         {
             _button = button;
-        }
-
-        private string _searchKeyword;
-        public string SearchKeyword
-        {
-            get => _searchKeyword;
-            set => SetProperty(ref _searchKeyword, value);
         }
 
         private string _htmlContent;
@@ -323,26 +316,6 @@ namespace TmCGPTD.ViewModels
         {
             get => _chatViewFontSize;
             set => SetProperty(ref _chatViewFontSize, value);
-        }
-
-        private bool _logPainIsOpened;
-        public bool LogPainIsOpened
-        {
-            get => _logPainIsOpened;
-            set
-            {
-                if (SetProperty(ref _logPainIsOpened, value))
-                {
-                    VMLocator.MainViewModel.LogPainIsOpened = _logPainIsOpened;
-                }
-            }
-        }
-
-        private bool _logPainButtonIsVisible;
-        public bool LogPainButtonIsVisible
-        {
-            get => _logPainButtonIsVisible;
-            set => SetProperty(ref _logPainButtonIsVisible, value);
         }
     }
 }
