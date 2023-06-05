@@ -2,9 +2,9 @@ body {
   background: #343541;
   color: #dcdcdc;
   margin: 10px 10px 50px 0px;
-  font-size: 11pt;
-  line-height: 1.8em;
-  font-family: Menlo, Hiragino Sans, "BIZ UDゴシック", "Migu 1M", Noto Mono, Osaka, Consolas, Lucida Console, sans-serif;
+  font-size: 12pt;
+  line-height: 1.7em;
+  font-family: Söhne,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif,Helvetica Neue,Arial,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol,Noto Color Emoji;
 }
 
 ::selection {
@@ -28,13 +28,14 @@ a:active {
 }
 
 img {
-    width: 100%;
-    height: auto;
-    margin: 10px 0;
+  width: 100%;
+  height: auto;
+  margin: 1.2em 0px 1.2em 0px;
 }
 
 strong {
   font-weight: 700;
+  color: #eeeeee;
 }
 
 ::-webkit-scrollbar {
@@ -97,8 +98,19 @@ code#headerOn {
   border-radius: 0px 0px 6px 6px;
 }
 
+code.inline {
+  font-family: Söhne,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif,Helvetica Neue,Arial,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol,Noto Color Emoji;
+  font-weight: 700;
+  color: #eeeeee;
+}
+
 pre {
-  margin: 1.8em 0px 2.5em 0px
+  margin: 1.8em 0px 2.5em 0px;
+}
+
+pre code {
+  font-size: 11pt;
+  line-height: 1.5em;
 }
 
 pre#headerOn {
@@ -117,8 +129,8 @@ div.codeHeader {
 
 div.usage {
   color: #aeaeae;
-  margin: 1.8em 0px 0px 0px;
-  font-size: 0.8em
+  margin: 0px;
+  font-size: 0.85em
 }
 
 #scrollToBottomBtn {
