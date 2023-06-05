@@ -53,7 +53,7 @@ namespace TmCGPTD.Models
         public async Task<string> ConvertChatLogToHtml(string plainTextChatLog)
         {
             plainTextChatLog = Regex.Replace(plainTextChatLog, @"\r\n|\r|\n", Environment.NewLine);
-            using var streamReader = new StreamReader(AvaloniaLocator.Current.GetService<IAssetLoader>().Open(new Uri("avares://TmCGPTD/Assets/ChatTempleteLogo.html")));
+            using var streamReader = new StreamReader(AvaloniaLocator.Current.GetService<IAssetLoader>().Open(new Uri("avares://TmCGPTD/Assets/ChatTemplete.html")));
             using var chatCssStreamReader = new StreamReader(AvaloniaLocator.Current.GetService<IAssetLoader>().Open(new Uri("avares://TmCGPTD/Assets/ChatStyles.css")));
             using var cssStreamReader = new StreamReader(AvaloniaLocator.Current.GetService<IAssetLoader>().Open(new Uri("avares://TmCGPTD/Assets/vs2015.min.css")));
 
