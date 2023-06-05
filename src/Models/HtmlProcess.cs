@@ -15,6 +15,10 @@ using System.Diagnostics;
 using Avalonia;
 using Avalonia.Controls;
 using FluentAvalonia.UI.Controls;
+using CommunityToolkit.Mvvm.DependencyInjection;
+using System.Reflection.Metadata;
+using ReverseMarkdown.Converters;
+using System.Reactive.Joins;
 
 namespace TmCGPTD.Models
 {
@@ -124,6 +128,10 @@ namespace TmCGPTD.Models
                 Regex strongRegex = new Regex(@"\*\*(.+?)\*\*");
                 content = strongRegex.Replace(content, m => $"<strong>{m.Groups[1].Value}</strong>");
 
+                pattern = @"`(.*?)`";
+                string replacement = "<code class=\"inline\">`$1`</code>";
+                content = Regex.Replace(content, pattern, replacement);
+
                 var usageMatch = usageRegex.Match(content);
                 if (usageMatch.Success)
                 {
@@ -143,11 +151,19 @@ namespace TmCGPTD.Models
             {
                 foreach (var documentDiv in documentDivs)
                 {
-                    foreach (var textNode in documentDiv.ChildNodes)
+                    // ノードの先頭と末尾のテキストノードのみをトリム
+                    if (documentDiv.HasChildNodes)
                     {
-                        if (textNode.NodeType == HtmlNodeType.Text)
+                        var firstNode = documentDiv.ChildNodes.First();
+                        if (firstNode.NodeType == HtmlNodeType.Text)
                         {
-                            textNode.InnerHtml = textNode.InnerHtml.Trim('\r', '\n');
+                            firstNode.InnerHtml = firstNode.InnerHtml.TrimStart('\r', '\n');
+                        }
+
+                        var lastNode = documentDiv.ChildNodes.Last();
+                        if (lastNode.NodeType == HtmlNodeType.Text)
+                        {
+                            lastNode.InnerHtml = lastNode.InnerHtml.TrimEnd('\r', '\n');
                         }
                     }
                 }
@@ -262,6 +278,31 @@ namespace TmCGPTD.Models
                     {
                         role = "assistant";
 
+                        var nodes = div.DescendantsAndSelf().ToList();
+
+                        foreach (var node in nodes)
+                        {
+                            if (node.Name == "code" && !IsInsidePreTag(node))
+                            {
+                                var textNode = htmlDoc.CreateTextNode("`" + node.InnerHtml + "`");
+                                node.ParentNode.ReplaceChild(textNode, node);
+                            }
+                        }
+
+                        bool IsInsidePreTag(HtmlNode node)
+                        {
+                            var currentNode = node;
+                            while (currentNode.ParentNode != null)
+                            {
+                                if (currentNode.ParentNode.Name == "pre")
+                                {
+                                    return true;
+                                }
+                                currentNode = currentNode.ParentNode;
+                            }
+                            return false;
+                        }
+
                         string htmlString = div.InnerHtml;
 
                         // 正規表現パターンに基づいて置換・削除
@@ -287,8 +328,11 @@ namespace TmCGPTD.Models
                         Regex _favconRegex = new Regex("<img[^>]*?src=\"[^>]*?\"[^>]*?alt=\"Favicon\"?[^>]*?>");
                         htmlString = _favconRegex.Replace(htmlString, "");
 
-                        Regex _regex = new Regex("<img.+?src=\"(.*?)\".*?>");
-                        htmlString = _regex.Replace(htmlString, $"{br}![]($1)");
+                        Regex _regex = new Regex("<p><img.+?src=\"(.*?)\".*?></p>");
+                        htmlString = _regex.Replace(htmlString, $"![]($1)");
+
+                        _regex = new Regex("<img.+?src=\"(.*?)\".*?>");
+                        htmlString = _regex.Replace(htmlString, $"![]($1)");
 
                         pattern = @"![[]]\([^)]*.ico\)";
                         htmlString = Regex.Replace(htmlString, pattern, "");
@@ -298,7 +342,12 @@ namespace TmCGPTD.Models
 
                         pattern = "<span class=[^>]+?>[0-9]+? / [0-9]+?</span>";
                         htmlString = Regex.Replace(htmlString, pattern, "");
+
+                        pattern = @"(?<=<pre>[^<]*?)(?<code><code>|<\/code>)(?=[^<]*?<\/pre>)";
+                        htmlString = Regex.Replace(htmlString, pattern, "`", RegexOptions.Singleline);
+
                         Debug.WriteLine(htmlString);
+
                         // 置換処理
                         htmlString = htmlString.Replace("<pre class=\"\">", $"{br}{br}```")
                                                .Replace("<pre>", $"{br}{br}```")
@@ -306,23 +355,37 @@ namespace TmCGPTD.Models
                                                .Replace("Copy code", $"{br}")
                                                .Replace("<strong>", $"**")
                                                .Replace("</strong>", $"**")
-                                               .Replace("<hr>", $"{br}{br}")
+                                               .Replace("<hr>", $"{br}")
                                                .Replace("<h2>", $"{br}")
                                                .Replace("</h2>", $"{br}")
                                                .Replace("<h3>", $"{br}")
                                                .Replace("</h3>", $"{br}")
                                                .Replace("<h4>", $"{br}")
                                                .Replace("</h4>", $"{br}")
-                                               .Replace("<ol>", $"")
-                                               .Replace("</ol>", $"")
+                                               .Replace("<ol>", $"{br}")
+                                               .Replace("</ol>", $"{br}")
                                                .Replace("<ul>", $"{br}")
                                                .Replace("</ul>", $"{br}")
                                                .Replace("<li><p>", $"- ")
                                                .Replace("</p></li>", $"{br}{br}")
                                                .Replace("<li>", $"- ")
                                                .Replace("</li>", $"{br}")
-                                               .Replace("<p>", "")
-                                               .Replace("</p>", $"{br}{br}");
+                                               .Replace($"::before", "`")
+                                               .Replace($"::after", "`")
+                                                .Replace("<tr>", $"- ")
+                                                .Replace("</tr>", $"{br}")
+                                                .Replace("<td>", $"")
+                                                .Replace("</td>", $" ")
+                                                .Replace("<th>", $"")
+                                                .Replace("</th>", $" ")
+                                               .Replace("<p>", $"")
+                                               .Replace("</p>", $"{br}{br}")
+                                               .Replace($"{br}{br}{br}", $"{br}{br}");
+
+                        pattern = "(\r\n|\n|\r){3,}";
+                        htmlString = Regex.Replace(htmlString, pattern, $"{br}{br}");
+
+
 
                         // 置換処理が完了した後、再度HTMLドキュメントに戻す
                         var modifiedHtmlDoc = new HtmlAgilityPack.HtmlDocument();
@@ -380,6 +443,237 @@ namespace TmCGPTD.Models
                 input = input.Replace(kvp.Key, kvp.Value);
             }
             return input;
+        }
+
+        // Webチャットログインポート(Bard)--------------------------------------------------------------
+        public async Task<string> GetWebChatLogBardAsync(string htmlSource)
+        {
+            try
+            {
+                string webChatTitle;
+                List<Dictionary<string, object>> webConversationHistory = new List<Dictionary<string, object>>();
+                string webLog = "";
+
+                // HtmlAgilityPackを使ってHTMLを解析
+                HtmlAgilityPack.HtmlDocument htmlDoc = new HtmlAgilityPack.HtmlDocument();
+                htmlDoc.LoadHtml(htmlSource);
+
+                Application.Current!.TryFindResource("My.Strings.ChatScreenInfo", out object resource1);
+                string resourceString = resource1.ToString();
+
+                HtmlNode titleNode = htmlDoc.DocumentNode.SelectSingleNode("//title");
+
+                if (titleNode != null)
+                {
+                    string titleText = titleNode.InnerText;
+                    if (titleText != "Bard")
+                    {
+                        return resourceString;
+                    }
+                    else
+                    {
+                        webChatTitle = "Bard: " + DateTime.Now;
+                    }
+                }
+                else
+                {
+                    return resourceString;
+                }
+
+                // mainタグをサーチ
+                var mainTag = htmlDoc.DocumentNode.SelectSingleNode("//main");
+                if (mainTag == null)
+                {
+                    return resourceString;
+                }
+
+                var conversationContainers = mainTag.Descendants("div")
+                                                    .Where(div => div.GetAttributeValue("class", "").Contains("conversation-container"));
+
+                string br = Environment.NewLine;
+                int count = 0;
+
+                foreach (var conversationContainer in conversationContainers)
+                {
+                    var userQueryContainer = conversationContainer.Descendants("div")
+                                                                  .FirstOrDefault(div => div.GetAttributeValue("class", "").Contains("user-query-container"));
+                    if (userQueryContainer != null)
+                    {
+                        var converter = new ReverseMarkdown.Converter();
+                        string markdown = converter.Convert(userQueryContainer.InnerHtml.Trim());
+
+                        string pattern = "<user-profile-picture.*>.*</user-profile-picture>";
+                        markdown = Regex.Replace(markdown, pattern, "");
+
+                        pattern = "<button.*?>.*?</button>";
+                        markdown = Regex.Replace(markdown, pattern, "", RegexOptions.Singleline);
+
+                        pattern = "^## ";
+                        markdown = Regex.Replace(markdown, pattern, "", RegexOptions.Multiline);
+
+                        // 置換処理が完了した後、再度HTMLドキュメントに戻す
+                        var modifiedHtmlDoc = new HtmlAgilityPack.HtmlDocument();
+                        modifiedHtmlDoc.LoadHtml(markdown);
+
+                        // InnerText要素を結合して、宣言済みの変数contentに文字列として代入
+                        StringBuilder contentBuilder = new StringBuilder();
+                        foreach (var node in modifiedHtmlDoc.DocumentNode.ChildNodes)
+                        {
+                            if (!string.IsNullOrWhiteSpace(node.InnerText))
+                            {
+                                contentBuilder.Append(ReplaceEntities(node.InnerText));
+                            }
+                        }
+
+                        string content = contentBuilder.ToString();
+                        content = content.Trim();
+
+                        if (!string.IsNullOrWhiteSpace(content))
+                        {
+                            webConversationHistory.Add(new Dictionary<string, object>
+                            {
+                                { "role", "user" },
+                                { "content", content }
+                            });
+                            webLog += $"[Web Chat] by You{br}{br}{content}{br}{br}{br}";
+                            count++;
+                        }
+                    }
+
+                    var responseContainer = conversationContainer.Descendants("div")
+                                                                  .FirstOrDefault(div => div.GetAttributeValue("class", "").Contains("response-container"));
+                    if (responseContainer != null)
+                    {
+                        var nodes = responseContainer.DescendantsAndSelf().ToList();
+
+                        foreach (var node in nodes)
+                        {
+                            if (node.Name == "code" && !IsInsidePreTag(node))
+                            {
+                                var textNode = htmlDoc.CreateTextNode("`" + node.InnerHtml + "`");
+                                node.ParentNode.ReplaceChild(textNode, node);
+                            }
+                        }
+
+                        bool IsInsidePreTag(HtmlNode node)
+                        {
+                            var currentNode = node;
+                            while (currentNode.ParentNode != null)
+                            {
+                                if (currentNode.ParentNode.Name == "pre")
+                                {
+                                    return true;
+                                }
+                                currentNode = currentNode.ParentNode;
+                            }
+                            return false;
+                        }
+
+                        var converter = new ReverseMarkdown.Converter();
+                        string markdown = converter.Convert(responseContainer.InnerHtml.Trim());
+                        //string markdown = responseContainer.InnerHtml.Trim();
+
+                        string pattern = "<user-profile-picture.*>.*</user-profile-picture>";
+                        markdown = Regex.Replace(markdown, pattern, "");
+
+                        pattern = "<button[^>]*?>.*?</button>";
+                        markdown = Regex.Replace(markdown, pattern, "", RegexOptions.Singleline);
+
+                        pattern = "<h4[^>]*?>.*?</h4>";
+                        markdown = Regex.Replace(markdown, pattern, "");
+
+                        pattern = "<mat-icon[^>]*?>.*?</mat-icon>";
+                        markdown = Regex.Replace(markdown, pattern, "");
+
+                        pattern = "<a [^>]*?href=\"(http[^\"]*?)\"(.*)</a>";
+                        string replacement = $"[<a $2</a>]($1){br}{br}";
+                        markdown = Regex.Replace(markdown, pattern, replacement);
+
+                        pattern = "<div[^>]*?>コードは慎重に使用してください。.*?</div>";
+                        markdown = Regex.Replace(markdown, pattern, "");
+
+                        pattern = "他の回答案を表示";
+                        markdown = Regex.Replace(markdown, pattern, "");
+
+                        pattern = ">回答案 ([0-9]+?)</span>";
+                        markdown = Regex.Replace(markdown, pattern, $">回答案 $1</span>{br}{br}");
+
+                        pattern = "<div[^>]*?code-block-wrapper[^>]*?header[^>]*?>(.*?)</div>";
+                        markdown = Regex.Replace(markdown, pattern, $"{br}```$1{br}");
+
+                        pattern = "</pre>";
+                        markdown = Regex.Replace(markdown, pattern, $"```</pre>");
+
+                        pattern = @"^!\[\]\(http[^)]*?(.gif|.svg)\)";
+                        markdown = Regex.Replace(markdown, pattern, "",RegexOptions.Multiline);
+
+                        markdown = markdown.Replace("<p>", $"")
+                                            .Replace("</p>", $"{br}{br}")
+                                            .Replace("<ol>", $"{br}")
+                                            .Replace("</ol>", $"{br}")
+                                            .Replace("<ul>", $"{br}")
+                                            .Replace("</ul>", $"{br}")
+                                            .Replace("<li><p>", "- ")
+                                            .Replace("</p></li>", $"{br}{br}")
+                                            .Replace("<li>", "- ")
+                                            .Replace("</li>", $"{br}")
+                                            .Replace("<tr>", "- ")
+                                            .Replace("</tr>", $"{br}")
+                                            .Replace("<td>", "")
+                                            .Replace("</td>", " ")
+                                            .Replace("<th>", "")
+                                            .Replace("</th>", " ")
+                                            .Replace("```コード スニペット", "```")
+                                            .Replace($"{br}{br}{br}", $"{br}{br}");
+
+                        pattern = "(\r\n|\n|\r){3,}";
+                        markdown = Regex.Replace(markdown, pattern, $"{br}{br}");
+
+                        Debug.WriteLine(markdown);
+
+                        // 置換処理が完了した後、再度HTMLドキュメントに戻す
+                        var modifiedHtmlDoc = new HtmlAgilityPack.HtmlDocument();
+                        modifiedHtmlDoc.LoadHtml(markdown);
+
+                        // InnerText要素を結合して、宣言済みの変数contentに文字列として代入
+                        StringBuilder contentBuilder = new StringBuilder();
+                        foreach (var node in modifiedHtmlDoc.DocumentNode.ChildNodes)
+                        {
+                            if (!string.IsNullOrWhiteSpace(node.InnerText))
+                            {
+                                contentBuilder.Append(ReplaceEntities(node.InnerText));
+                            }
+                        }
+                        string content = contentBuilder.ToString();
+                        content = content.Trim();
+
+                        if (!string.IsNullOrWhiteSpace(markdown))
+                        {
+                            webConversationHistory.Add(new Dictionary<string, object>
+                            {
+                                { "role", "assistant" },
+                                { "content", content }
+                            });
+                            webLog += $"[Web Chat] by AI{br}{br}{content}{br}{br}{br}";
+                            count++;
+                        }
+                    }
+                }
+
+                //Debug.WriteLine(webLog);
+
+                DatabaseProcess _dbProcess = new DatabaseProcess();
+                var msg = await _dbProcess.InsertWebChatLogDatabaseAsync(webChatTitle, webConversationHistory, webLog);
+                if (msg == "Cancel")
+                {
+                    return "Cancel";
+                }
+                return $"Successfully imported log:{Environment.NewLine}{Environment.NewLine}'{webChatTitle}' ({count} Messages)";
+            }
+            catch (Exception ex)
+            {
+                return $"Error : {ex.Message}{ex.StackTrace}";
+            }
         }
 
         // APIに接続してレスポンス取得--------------------------------------------------------------
@@ -833,6 +1127,10 @@ namespace TmCGPTD.Models
             Regex strongRegex = new Regex(@"\*\*(.+?)\*\*");
             content = strongRegex.Replace(content, m => $"<strong>{m.Groups[1].Value}</strong>");
 
+            pattern = @"`(.*?)`";
+            string replacement = "<code class=\"inline\">`$1`</code>";
+            content = Regex.Replace(content, pattern, replacement);
+
             var usageMatch = usageRegex.Match(content);
             if (usageMatch.Success)
             {
@@ -851,11 +1149,19 @@ namespace TmCGPTD.Models
             {
                 foreach (var documentDiv in documentDivs)
                 {
-                    foreach (var textNode in documentDiv.ChildNodes)
+                    // ノードの先頭と末尾のテキストノードのみをトリム
+                    if (documentDiv.HasChildNodes)
                     {
-                        if (textNode.NodeType == HtmlNodeType.Text)
+                        var firstNode = documentDiv.ChildNodes.First();
+                        if (firstNode.NodeType == HtmlNodeType.Text)
                         {
-                            textNode.InnerHtml = textNode.InnerHtml.Trim('\r', '\n');
+                            firstNode.InnerHtml = firstNode.InnerHtml.TrimStart('\r', '\n');
+                        }
+
+                        var lastNode = documentDiv.ChildNodes.Last();
+                        if (lastNode.NodeType == HtmlNodeType.Text)
+                        {
+                            lastNode.InnerHtml = lastNode.InnerHtml.TrimEnd('\r', '\n');
                         }
                     }
                 }
