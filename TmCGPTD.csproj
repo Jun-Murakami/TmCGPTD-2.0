@@ -72,6 +72,7 @@
     <PackageReference Include="DialogHost.Avalonia" Version="0.7.3" />
     <PackageReference Include="FluentAvaloniaUI" Version="2.0.0-preview8" />
     <PackageReference Include="HtmlAgilityPack" Version="1.11.46" />
+    <PackageReference Include="ReverseMarkdown" Version="3.25.0" />
     <PackageReference Include="System.Data.SQLite" Version="1.0.117" />
     <PackageReference Include="TiktokenSharp" Version="1.0.5" />
   </ItemGroup>
