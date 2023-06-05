@@ -8,15 +8,15 @@
 		<Grid VerticalAlignment="Stretch" Name="EditorGrid">
 			<Grid.RowDefinitions>
 				<RowDefinition Height="50" />
-				<RowDefinition Height="{Binding EditorHeight1,Mode=TwoWay}" />
+				<RowDefinition Height="{Binding EditorHeight1,Mode=TwoWay}" MinHeight="10" />
 				<RowDefinition Height="2"/>
-				<RowDefinition Height="{Binding EditorHeight2,Mode=TwoWay}" />
+				<RowDefinition Height="{Binding EditorHeight2,Mode=TwoWay}" MinHeight="10" />
 				<RowDefinition Height="2"/>
-				<RowDefinition Height="{Binding EditorHeight3,Mode=TwoWay}" />
+				<RowDefinition Height="{Binding EditorHeight3,Mode=TwoWay}" MinHeight="10" />
 				<RowDefinition Height="2"/>
-				<RowDefinition Height="{Binding EditorHeight4,Mode=TwoWay}" />
+				<RowDefinition Height="{Binding EditorHeight4,Mode=TwoWay}" MinHeight="10" />
 				<RowDefinition Height="2"/>
-				<RowDefinition Height="{Binding EditorHeight5,Mode=TwoWay}" />
+				<RowDefinition Height="{Binding EditorHeight5,Mode=TwoWay}" MinHeight="10" />
 				<RowDefinition Height="50" />
 			</Grid.RowDefinitions>
 			<Border Grid.Row="0" BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}" BorderThickness="0,0,0,1">
