@@ -49,6 +49,7 @@ namespace TmCGPTD.Views
 
             if (File.Exists(Path.Combine(settings.AppDataPath, "settings.json")))
             {
+                this.Width = settings.Width - 1;
                 this.Width = settings.Width;
                 this.Height = settings.Height;
                 this.Position = new PixelPoint(settings.X, settings.Y);
