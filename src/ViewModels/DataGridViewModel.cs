@@ -2,11 +2,18 @@ using System.Text.Json;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using TmCGPTD.Models;
+using Avalonia.Collections;
+using Avalonia.Platform;
 
 namespace TmCGPTD.ViewModels
 {
     public class DataGridViewModel : ViewModelBase
     {
+        public DataGridViewModel()
+        {
+            DataGridCollection = null;
+        }
+
 
         private int _selectedItemIndex;
         public int SelectedItemIndex
@@ -15,11 +22,31 @@ namespace TmCGPTD.ViewModels
             set => SetProperty(ref _selectedItemIndex, value);
         }
 
+        private DataGridCollectionView _dataGridCollection;
+        public DataGridCollectionView DataGridCollection
+        {
+            get => _dataGridCollection;
+            set => SetProperty(ref _dataGridCollection, value);
+        }
+
         private ObservableCollection<ChatList> _chatList;
         public ObservableCollection<ChatList> ChatList
         {
             get => _chatList;
-            set => SetProperty(ref _chatList, value);
+            set
+            {
+                if (SetProperty(ref _chatList, value))
+                {
+                    if (DataGridCollection == null)
+                    {
+                        DataGridCollection = new DataGridCollectionView(ChatList);
+                        DataGridCollection.GroupDescriptions.Add(new DataGridPathGroupDescription("Date"));
+                    }
+
+                    DataGridCollection.Refresh();
+                    SelectedItemIndex = -1;
+                }
+            }
         }
 
         private ChatList _selectedItem;
