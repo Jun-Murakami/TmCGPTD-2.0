@@ -10,6 +10,9 @@ using Xilium.CefGlue.Common.Events;
 using System.Threading.Tasks;
 using System.Text;
 using Avalonia.Interactivity;
+using HarfBuzzSharp;
+using System.Reflection;
+using System.Diagnostics;
 
 namespace TmCGPTD.Views
 {
@@ -17,6 +20,7 @@ namespace TmCGPTD.Views
     {
         private AvaloniaCefBrowser _browser;
         private Button _button;
+        private Button _button2;
         private TextBox _searchBox;
 
         public ChatViewModel ChatViewModel { get; } = new ChatViewModel();
@@ -28,6 +32,7 @@ namespace TmCGPTD.Views
             VMLocator.ChatViewModel = ChatViewModel;
 
             var browserWrapper = this.FindControl<Decorator>("ChatBrowserWrapper");
+
             _browser = new AvaloniaCefBrowser
             {
                 LifeSpanHandler = new CustomLifeSpanHandler(),
@@ -43,6 +48,8 @@ namespace TmCGPTD.Views
             _button = this.FindControl<Button>("ButtonWrite");
             ChatViewModel.SetButtonWrite(_button);
 
+            _button2 = this.FindControl<Button>("ButtonWrite2");
+            ChatViewModel.SetButtonWrite2(_button2);
 
             _searchBox = this.FindControl<TextBox>("SearchBox");
         }
