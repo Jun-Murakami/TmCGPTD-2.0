@@ -10,11 +10,11 @@ namespace TmCGPTD
         {
             if (value is DateTime date)
             {
-                var dateFormatInfo = culture.DateTimeFormat;
-                var separator = dateFormatInfo.DateSeparator;
+                var dateFormatInfo = (DateTimeFormatInfo)culture.DateTimeFormat.Clone();
+                dateFormatInfo.DateSeparator = ".";
 
                 var shortPattern = dateFormatInfo.ShortDatePattern.Replace("yyyy", "yy");
-                return date.ToString(shortPattern, culture);
+                return date.ToString(shortPattern, dateFormatInfo);
             }
             return value;
         }
@@ -24,6 +24,7 @@ namespace TmCGPTD
             return null;
         }
     }
+
 
 
 }

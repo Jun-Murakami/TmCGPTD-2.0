@@ -56,12 +56,16 @@
             <Setter Property="BorderBrush" Value="rgb(106, 108, 125)" />
         </Style>
 
+        <Style Selector="Grid Button.Post:disabled /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="rgb(100, 90, 165)" />
+        </Style>
+
         <Style Selector="Grid#PhrasePresets Button">
             <Setter Property="Width" Value="40" />
             <Setter Property="Margin" Value="0,2,2,2" />
             <Setter Property="Transitions">
                 <Transitions>
-                    <BrushTransition Property="Background" Duration="0:0:0.01" />
+                    <BrushTransition Property="Background" Duration="0:0:0.00" />
                 </Transitions>
             </Setter>
         </Style>
