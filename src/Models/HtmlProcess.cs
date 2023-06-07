@@ -419,7 +419,7 @@ namespace TmCGPTD.Models
                 }
 
                 DatabaseProcess _dbProcess = new DatabaseProcess();
-                var msg = await _dbProcess.InsertWebChatLogDatabaseAsync(webChatTitle, webConversationHistory, webLog, "from Web Chat");
+                var msg = await _dbProcess.InsertWebChatLogDatabaseAsync(webChatTitle, webConversationHistory, webLog, "Web Chat");
                 if (msg == "Cancel")
                 {
                     return "Cancel";
@@ -674,7 +674,7 @@ namespace TmCGPTD.Models
                 //Debug.WriteLine(webLog);
 
                 DatabaseProcess _dbProcess = new DatabaseProcess();
-                var msg = await _dbProcess.InsertWebChatLogDatabaseAsync(webChatTitle, webConversationHistory, webLog, "from Bard");
+                var msg = await _dbProcess.InsertWebChatLogDatabaseAsync(webChatTitle, webConversationHistory, webLog, "Bard");
                 if (msg == "Cancel")
                 {
                     return "Cancel";
