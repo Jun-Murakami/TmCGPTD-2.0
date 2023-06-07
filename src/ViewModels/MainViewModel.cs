@@ -663,11 +663,11 @@ namespace TmCGPTD.ViewModels
             }
 
             IsCopyButtonClicked = true;
-            if (ApplicationExtensions.GetTopLevel(Avalonia.Application.Current!)!.Clipboard != null)
+            if (Avalonia.Application.Current.Clipboard != null)
             {
                 await _dbProcess.InserEditorLogDatabasetAsync();
 
-                await ApplicationExtensions.GetTopLevel(Avalonia.Application.Current!)!.Clipboard!.SetTextAsync(VMLocator.EditorViewModel.RecentText);
+                await Avalonia.Application.Current.Clipboard.SetTextAsync(VMLocator.EditorViewModel.RecentText);
 
                 await _dbProcess.GetEditorLogDatabaseAsync();
                 VMLocator.EditorViewModel.SelectedEditorLogIndex = -1;
