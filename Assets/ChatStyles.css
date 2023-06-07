@@ -187,10 +187,41 @@ button {
   padding: 0 1em 0 0;
   background: transparent;
   font-size: 0.9em;
-  font-family: Menlo, Hiragino Sans, "BIZ UDゴシック", "Migu 1M", Noto Mono, Osaka, Consolas, Lucida Console, sans-serif;
   cursor: pointer;
 }
 
+    button.editButton {
+        border: 0;
+        color: #aeaeae;
+        padding: 10px 10px 8px 22px;
+        background-image: url('data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHN2ZyBpZD0iYSIgZGF0YS1uYW1lPSJMYXllciIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB3aWR0aD0iOC44Nm1tIiBoZWlnaHQ9IjguOTFtbSIgdmlld0JveD0iMCAwIDI1LjEgMjUuMjUiPgogIDxwb2x5Z29uIHBvaW50cz0iMTkuODQgMS40MSAyMy42OSA1LjI3IDEwLjA1IDE4LjkxIDUuODMgMTkuMjcgNi4yIDE1LjA1IDE5Ljg0IDEuNDEiIHN0eWxlPSJmaWxsOiBub25lOyBzdHJva2U6ICNkYmRiZGI7IHN0cm9rZS1taXRlcmxpbWl0OiAxMDsgc3Ryb2tlLXdpZHRoOiAycHg7Ii8+CiAgPGxpbmUgeDE9IjcuOTciIHkxPSIxOS4wOCIgeDI9IjYuMDIiIHkyPSIxNy4xMyIgc3R5bGU9ImZpbGw6IG5vbmU7IHN0cm9rZTogI2RiZGJkYjsgc3Ryb2tlLW1pdGVybGltaXQ6IDEwOyBzdHJva2Utd2lkdGg6IDJweDsiLz4KICA8bGluZSB4MT0iMjAuODgiIHkxPSI4LjA4IiB4Mj0iMTcuMDMiIHkyPSI0LjIzIiBzdHlsZT0iZmlsbDogbm9uZTsgc3Ryb2tlOiAjZGJkYmRiOyBzdHJva2UtbWl0ZXJsaW1pdDogMTA7IHN0cm9rZS13aWR0aDogMnB4OyIvPgogIDxwb2x5bGluZSBwb2ludHM9IjE0LjEgNC4xOSAxIDQuMTkgMSAyNC4yNSAyMS4wNiAyNC4yNSAyMS4wNiAxMS4xNCIgc3R5bGU9ImZpbGw6IG5vbmU7IHN0cm9rZTogI2RiZGJkYjsgc3Ryb2tlLW1pdGVybGltaXQ6IDEwOyBzdHJva2Utd2lkdGg6IDJweDsiLz4KPC9zdmc+');
+        background-repeat: no-repeat;
+        background-position: left;
+        background-size: 16px;
+        background-color: transparent;
+        font-size: 0.8em;
+        cursor: pointer;
+        border-radius: 6px;
+    }
+
+    button.editButtonEditting {
+        border: 0;
+        color: #dcdcdc;
+        padding: 10px 10px 8px 22px;
+        background-image: url('data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHN2ZyBpZD0iYSIgZGF0YS1uYW1lPSJMYXllciIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB3aWR0aD0iOC44Nm1tIiBoZWlnaHQ9IjguOTFtbSIgdmlld0JveD0iMCAwIDI1LjEgMjUuMjUiPgogIDxwb2x5Z29uIHBvaW50cz0iMTkuODQgMS40MSAyMy42OSA1LjI3IDEwLjA1IDE4LjkxIDUuODMgMTkuMjcgNi4yIDE1LjA1IDE5Ljg0IDEuNDEiIHN0eWxlPSJmaWxsOiBub25lOyBzdHJva2U6ICNkYmRiZGI7IHN0cm9rZS1taXRlcmxpbWl0OiAxMDsgc3Ryb2tlLXdpZHRoOiAycHg7Ii8+CiAgPGxpbmUgeDE9IjcuOTciIHkxPSIxOS4wOCIgeDI9IjYuMDIiIHkyPSIxNy4xMyIgc3R5bGU9ImZpbGw6IG5vbmU7IHN0cm9rZTogI2RiZGJkYjsgc3Ryb2tlLW1pdGVybGltaXQ6IDEwOyBzdHJva2Utd2lkdGg6IDJweDsiLz4KICA8bGluZSB4MT0iMjAuODgiIHkxPSI4LjA4IiB4Mj0iMTcuMDMiIHkyPSI0LjIzIiBzdHlsZT0iZmlsbDogbm9uZTsgc3Ryb2tlOiAjZGJkYmRiOyBzdHJva2UtbWl0ZXJsaW1pdDogMTA7IHN0cm9rZS13aWR0aDogMnB4OyIvPgogIDxwb2x5bGluZSBwb2ludHM9IjE0LjEgNC4xOSAxIDQuMTkgMSAyNC4yNSAyMS4wNiAyNC4yNSAyMS4wNiAxMS4xNCIgc3R5bGU9ImZpbGw6IG5vbmU7IHN0cm9rZTogI2RiZGJkYjsgc3Ryb2tlLW1pdGVybGltaXQ6IDEwOyBzdHJva2Utd2lkdGg6IDJweDsiLz4KPC9zdmc+');
+        background-repeat: no-repeat;
+        background-position: left;
+        background-size: 16px;
+        background-color: #6e64af;
+        font-size: 0.8em;
+        cursor: pointer;
+        border-radius: 6px;
+    }
+
+    button.editButton:hover, button.editButtonEditting:hover {
+        background-color: #444654;
+        color: #dcdcdc;
+    }
 
 #floatingCopyButton {
   position: absolute;
