@@ -2,6 +2,7 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using System;
+using System.Diagnostics;
 using TmCGPTD.ViewModels;
 
 namespace TmCGPTD.Views
@@ -14,6 +15,61 @@ namespace TmCGPTD.Views
             InitializeComponent();
             DataContext = PhrasePresetsViewModel;
             VMLocator.PhrasePresetsViewModel = PhrasePresetsViewModel;
+
+            PhrasePresetsViewModel.PropertyChanged += ViewModel_PropertyChanged;
+        }
+
+        private void ViewModel_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(PhrasePresetsViewModel.CtrlKeyIsDown))
+            {
+                if (PhrasePresetsViewModel.CtrlKeyIsDown)
+                {
+                    //1から10まで繰り返してTextBoxのインスタンスを取得
+                    for (int i = 1; i <= 10; i++)
+                    {
+                        TextBox textBox = this.FindControl<TextBox>($"TextBox{i}");
+                        textBox.Classes.Add("KeyDown");
+                        Button　button = this.FindControl<Button>($"Button{i}");
+                        button.Classes.Add("KeyDown");
+
+                    }
+                }
+                else
+                {
+                    for (int i = 1; i <= 10; i++)
+                    {
+                        TextBox textBox = this.FindControl<TextBox>($"TextBox{i}");
+                        textBox.Classes.Remove("KeyDown");
+                        Button button = this.FindControl<Button>($"Button{i}");
+                        button.Classes.Remove("KeyDown");
+                    }
+                }
+            }
+            else if (e.PropertyName == nameof(PhrasePresetsViewModel.AltKeyIsDown))
+            {
+                if (PhrasePresetsViewModel.AltKeyIsDown)
+                {
+                    //11から20まで繰り返してTextBoxのインスタンスを取得
+                    for (int i = 11; i <= 20; i++)
+                    {
+                        TextBox textBox = this.FindControl<TextBox>($"TextBox{i}");
+                        textBox.Classes.Add("KeyDown");
+                        Button button = this.FindControl<Button>($"Button{i}");
+                        button.Classes.Add("KeyDown");
+                    }
+                }
+                else
+                {
+                    for (int i = 11; i <= 20; i++)
+                    {
+                        TextBox textBox = this.FindControl<TextBox>($"TextBox{i}");
+                        textBox.Classes.Remove("KeyDown");
+                        Button button = this.FindControl<Button>($"Button{i}");
+                        button.Classes.Remove("KeyDown");
+                    }
+                }
+            }
         }
 
         private void OnButtonClick(object sender, RoutedEventArgs e)

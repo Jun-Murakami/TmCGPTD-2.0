@@ -8,6 +8,9 @@ namespace TmCGPTD.ViewModels
         public PhrasePresetsViewModel()
         {
             Phrases = new ObservableCollection<string>(Enumerable.Repeat("", 20));
+
+            CtrlKeyIsDown = false;
+            AltKeyIsDown = false;
         }
 
         private ObservableCollection<string> _phrases;
@@ -15,6 +18,20 @@ namespace TmCGPTD.ViewModels
         {
             get => _phrases;
             set => SetProperty(ref _phrases, value);
+        }
+
+        private bool _ctrlKeyIsDown;
+        public bool CtrlKeyIsDown
+        {
+            get => _ctrlKeyIsDown;
+            set => SetProperty(ref _ctrlKeyIsDown, value);
+        }
+
+        private bool _altKeyIsDown;
+        public bool AltKeyIsDown
+        {
+            get => _altKeyIsDown;
+            set => SetProperty(ref _altKeyIsDown, value);
         }
     }
 
