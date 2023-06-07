@@ -419,7 +419,7 @@ namespace TmCGPTD.Models
             else
             {
                 columnEnd = 6;
-                columnNames = "date, title, json, text, category, lastprompt";
+                columnNames = "date, title, json, text, category, lastprompt, jsonprev";
             }
 
             try
@@ -445,7 +445,7 @@ namespace TmCGPTD.Models
 
                             // データを取得
                             var rowData = new List<string>();
-                            for (int i = 1, loopTo = columnEnd; i <= loopTo; i++) // 2列目から7列目まで
+                            for (int i = 1, loopTo = columnEnd; i <= loopTo; i++) // 2列目から8列目まで
                                 rowData.Add(csvReader.GetField(i));
                             // INSERT文を作成
                             string values = string.Join(", ", Enumerable.Range(0, rowData.Count).Select(i => $"@value{i}"));
