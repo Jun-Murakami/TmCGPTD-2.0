@@ -10,6 +10,9 @@ using TmCGPTD.Models;
 using System.Text.Json;
 using System.Diagnostics;
 using Avalonia.Threading;
+using System.Reflection;
+using Tmds.DBus.Protocol;
+using System.Reflection.Metadata;
 
 namespace TmCGPTD.ViewModels
 {
@@ -17,6 +20,7 @@ namespace TmCGPTD.ViewModels
     {
         private AvaloniaCefBrowser _browser;
         private Button _button;
+        private Button _button2;
         DatabaseProcess _databaseProcess = new DatabaseProcess();
         HtmlProcess _htmlProcess = new HtmlProcess();
 
@@ -27,16 +31,18 @@ namespace TmCGPTD.ViewModels
             ChatViewIsVisible = true;
 
             TitleUpdateCommand = new AsyncRelayCommand(async () => await TitleUpdateAsync());
+            CategoryUpdateCommand = new AsyncRelayCommand(async () => await CategoryUpdateAsync());
             InitializeChatCommand = new AsyncRelayCommand(async () => await InitializeChatAsync());
             OpenApiSettingsCommand = new RelayCommand(OpenApiSettings);
 
             SearchPrev = new AsyncRelayCommand(async () => await TextSearch(VMLocator.MainViewModel.SearchKeyword, false));
             SearchNext = new AsyncRelayCommand(async () => await TextSearch(VMLocator.MainViewModel.SearchKeyword, true));
 
-            LastId = default;
+            _ = InitializeChatAsync();
         }
 
         public IAsyncRelayCommand TitleUpdateCommand { get; }
+        public IAsyncRelayCommand CategoryUpdateCommand { get; }
         public IAsyncRelayCommand InitializeChatCommand { get; }
         public ICommand OpenApiSettingsCommand { get; }
         public IAsyncRelayCommand SearchPrev { get; }
@@ -59,6 +65,22 @@ namespace TmCGPTD.ViewModels
 
             try
             {
+                if(ReEditIsOn)
+                {
+                    string Code = @"var userDivs = document.querySelectorAll('.user'); // userクラスのdiv要素を取得
+                                    for (var i = 0; i < userDivs.length; i++) {
+                                      var editDiv = userDivs[i].querySelector('.editDiv'); // editDivクラスのdiv要素を取得
+                                      if (editDiv) { // editDivが存在する場合
+                                        var assistantDiv = userDivs[i].nextElementSibling; // userクラスの次の兄弟要素（assistantクラスのdiv要素）を取得
+                                        userDivs[i].parentElement.removeChild(userDivs[i]); // editDivの親要素を含めて削除
+                                        assistantDiv.parentElement.removeChild(assistantDiv); // assistantクラスのdiv要素を削除
+                                      }
+                                    }";
+                    _browser.ExecuteJavaScript(Code);
+                }
+
+                await Task.Delay(100);
+
                 string postText = VMLocator.EditorViewModel.RecentText.Trim().Trim('\r', '\n');
                 string escapedString = JsonSerializer.Serialize(postText);
 
@@ -83,6 +105,13 @@ namespace TmCGPTD.ViewModels
                         wrapper.appendChild(newUserElement);";
                 _browser.ExecuteJavaScript(jsCode);
 
+                await Task.Delay(100);
+
+                jsCode = $@"window.scrollTo({{top: document.body.scrollHeight, behavior: 'smooth' }});";
+                _browser.ExecuteJavaScript(jsCode);
+
+                await Task.Delay(100);
+
                 htmlToAdd = $"<div class=\"assistant\"><span class=\"thinkingHeader\">Now thinking...</span></div>";
 
                 jsCode = $@"var wrapper = document.getElementById('scrollableWrapper');
@@ -91,8 +120,15 @@ namespace TmCGPTD.ViewModels
                         wrapper.appendChild(newAssistantElement);";
                 _browser.ExecuteJavaScript(jsCode);
 
+                jsCode = $@"window.scrollTo({{top: document.body.scrollHeight, behavior: 'smooth' }});";
+                _browser.ExecuteJavaScript(jsCode);
+
+                await Task.Delay(100);
+
                 var resText = await _htmlProcess.PostChatAsync(postText);
                 var resDate = DateTime.Now;
+
+                await Task.Delay(100);
 
                 await _databaseProcess.InsertDatabaseChatAsync(postDate, postText, resDate, resText);
 
@@ -121,7 +157,7 @@ namespace TmCGPTD.ViewModels
                         window.scrollTo({{top: document.body.scrollHeight, behavior: 'smooth' }});";
                 _browser.ExecuteJavaScript(jsCode);
                 ChatIsRunning = false;
-                throw;
+                //throw;
             }
 
             ChatIsRunning = false;
@@ -138,11 +174,12 @@ namespace TmCGPTD.ViewModels
 
             if (message == "[DONE]")
             {
+                await Task.Delay(100);
                 // 'thinkingHeader'を削除し、受信中フラグをオフにする
                 string removeThinkingHeaderScript = @"
                     var thinkingHeader = document.querySelector('.thinkingHeader');
                     thinkingHeader.parentNode.removeChild(thinkingHeader);
-                    window.scrollTo({{top: document.body.scrollHeight, behavior: 'smooth' }});
+                    window.scrollTo({top: document.body.scrollHeight, behavior: 'smooth' });
                 ";
                 _browser.ExecuteJavaScript(removeThinkingHeaderScript);
                 isReceiving = false;
@@ -154,21 +191,28 @@ namespace TmCGPTD.ViewModels
                     // 受信中フラグをオンにし、新しいdivを作成
                     isReceiving = true;
                     string createDivScript = $@"
-                    var newDiv = document.createElement('div');
-                    newDiv.id = 'receivingDiv';
-                    var thinkingHeader = document.querySelector('.thinkingHeader');
-                    thinkingHeader.parentNode.insertBefore(newDiv, thinkingHeader.nextSibling);
-                ";
+                        var newDiv = document.createElement('div');
+                        newDiv.id = 'receivingDiv';
+                        var thinkingHeader = document.querySelector('.thinkingHeader');
+                        thinkingHeader.parentNode.insertBefore(newDiv, thinkingHeader.nextSibling);
+                    ";
                     _browser.ExecuteJavaScript(createDivScript);
                 }
                 else
                 {
-                    // 受け取ったメッセージを挿入
+                    // メッセージを受信し、文字挿入前にスクロール位置が一番下にあった場合のみスクロール実行
                     string insertMessageScript = $@"
-                    var receivingDiv = document.getElementById('receivingDiv');
-                    receivingDiv.innerHTML = {escapedString};
-                ";
+                        (() => {{
+                            var isBottom = isAtBottom();
+                            var receivingDiv = document.getElementById('receivingDiv');
+                            {{receivingDiv.innerHTML = {escapedString};}}
+                            if (isBottom) {{
+                                window.scrollTo({{top: document.body.scrollHeight, behavior: 'smooth' }});
+                            }}
+                        }})();
+                    ";
                     _browser.ExecuteJavaScript(insertMessageScript);
+
                 }
 
             }
@@ -178,9 +222,12 @@ namespace TmCGPTD.ViewModels
         // 新しいチャットを初期化--------------------------------------------------------------
         public async Task InitializeChatAsync()
         {
+            ReEditIsOn = false;
             ChatTitle = "";
             ConversationHistory = new List<Dictionary<string, object>>();
-            LastId = default;
+            LastConversationHistory = new List<Dictionary<string, object>>();
+            LastId = -1;
+            LastPrompt = "";
             HtmlContent = await _htmlProcess.InitializeChatLogToHtml();
             VMLocator.DataGridViewModel.SelectedItem = default;
         }
@@ -188,7 +235,7 @@ namespace TmCGPTD.ViewModels
         // タイトル更新--------------------------------------------------------------
         public async Task TitleUpdateAsync()
         {
-            if(string.IsNullOrWhiteSpace(ChatTitle) || LastId == default)
+            if(string.IsNullOrWhiteSpace(ChatTitle) || LastId == -1)
             {
                 return;
             }
@@ -199,15 +246,44 @@ namespace TmCGPTD.ViewModels
             {
                 _button.Classes.Add("AnimeStart");
                 await _databaseProcess.UpdateTitleDatabaseAsync(chatId, ChatTitle);
-                await _databaseProcess.GetChatLogDatabaseAsync(chatId);
                 if(selectedId >= 0)
                 {
+                    VMLocator.DataGridViewModel.DataGridIsFocused = true;
                     VMLocator.DataGridViewModel.SelectedItemIndex = selectedId;
                 }
                 await Task.Delay(TimeSpan.FromSeconds(5));
                 _button.Classes.Remove("AnimeStart");
             }
             catch(Exception ex)
+            {
+                var dialog = new ContentDialog() { Title = $"Error: {ex.Message}", PrimaryButtonText = "OK" };
+                await VMLocator.MainViewModel.ContentDialogShowAsync(dialog);
+            }
+        }
+
+        // カテゴリ更新--------------------------------------------------------------
+        public async Task CategoryUpdateAsync()
+        {
+            if (ChatCategory == null || LastId == -1)
+            {
+                return;
+            }
+
+            var chatId = LastId;
+            var selectedId = VMLocator.DataGridViewModel.SelectedItemIndex;
+            try
+            {
+                _button2.Classes.Add("AnimeStart");
+                await _databaseProcess.UpdateCategoryDatabaseAsync(chatId, ChatCategory);
+                if (selectedId >= 0)
+                {
+                    VMLocator.DataGridViewModel.DataGridIsFocused = true;
+                    VMLocator.DataGridViewModel.SelectedItemIndex = selectedId;
+                }
+                await Task.Delay(TimeSpan.FromSeconds(5));
+                _button2.Classes.Remove("AnimeStart");
+            }
+            catch (Exception ex)
             {
                 var dialog = new ContentDialog() { Title = $"Error: {ex.Message}", PrimaryButtonText = "OK" };
                 await VMLocator.MainViewModel.ContentDialogShowAsync(dialog);
@@ -245,6 +321,36 @@ namespace TmCGPTD.ViewModels
             return;
         }
 
+        public void PromptEditOn()
+        {
+            ReEditIsOn = true;
+            // JavaScriptから呼び出されるメソッドの実装
+            string text = LastPrompt;
+            string[] texts = text.Split(new[] { "<---TMCGPT--->" }, StringSplitOptions.None);
+            for (int i = 0, loopTo = Math.Min(texts.Length - 1, 4); i <= loopTo; i++) // 5要素目までを取得
+            {
+                string propertyName = $"Editor{i + 1}Text";
+                PropertyInfo property = VMLocator.EditorViewModel.GetType().GetProperty(propertyName);
+                if (property != null)
+                {
+                    property.SetValue(VMLocator.EditorViewModel, string.Empty);
+                    if (!string.IsNullOrWhiteSpace(texts[i]))
+                    {
+                        property.SetValue(VMLocator.EditorViewModel, texts[i].Trim()); // 空白を削除して反映
+                    }
+                }
+            }
+
+        }
+
+        public void PromptEditOff()
+        {
+            ReEditIsOn = false;
+            // JavaScriptから呼び出されるメソッドの実装
+            VMLocator.EditorViewModel.TextClear();
+        }
+
+
         // Browserインスタンスを受け取る
         public async void SetBrowser(AvaloniaCefBrowser browser)
         {
@@ -256,6 +362,11 @@ namespace TmCGPTD.ViewModels
         public void SetButtonWrite(Button button)
         {
             _button = button;
+        }
+
+        public void SetButtonWrite2(Button button)
+        {
+            _button2 = button;
         }
 
         private string _htmlContent;
@@ -273,6 +384,7 @@ namespace TmCGPTD.ViewModels
         {
             VMLocator.ChatViewModel.ChatViewIsVisible = false;
             VMLocator.WebChatViewModel.WebChatViewIsVisible = false;
+            VMLocator.WebChatBardViewModel.WebChatBardViewIsVisible = false;
             VMLocator.MainWindowViewModel.ApiSettingIsOpened = true;
         }
 
@@ -297,6 +409,26 @@ namespace TmCGPTD.ViewModels
             set => SetProperty(ref _chatViewIsVisible, value);
         }
 
+        private bool _reEditIsOn;
+        public bool ReEditIsOn //Postボタンの表示切り替え用
+        {
+            get => _reEditIsOn;
+            set
+            {
+                if (SetProperty(ref _reEditIsOn, value))
+                {
+                    if (value)
+                    {
+                        VMLocator.MainViewModel.PostButtonText = "Edit";
+                    }
+                    else
+                    {
+                        VMLocator.MainViewModel.PostButtonText = "Post";
+                    }
+                }
+            }
+        }
+
         private string _chatTitle;
         public string ChatTitle
         {
@@ -304,11 +436,32 @@ namespace TmCGPTD.ViewModels
             set => SetProperty(ref _chatTitle, value);
         }
 
+        private string _chatCategory;
+        public string ChatCategory
+        {
+            get => _chatCategory;
+            set => SetProperty(ref _chatCategory, value);
+        }
+
+        private string _lastPrompt;
+        public string LastPrompt
+        {
+            get => _lastPrompt;
+            set => SetProperty(ref _lastPrompt, value);
+        }
+
         private List<Dictionary<string, object>> _conversationHistory;
         public List<Dictionary<string, object>> ConversationHistory
         {
             get => _conversationHistory;
             set => SetProperty(ref _conversationHistory, value);
+        }
+
+        private List<Dictionary<string, object>> _lastConversationHistory;
+        public List<Dictionary<string, object>> LastConversationHistory
+        {
+            get => _lastConversationHistory;
+            set => SetProperty(ref _lastConversationHistory, value);
         }
 
         private double _chatViewFontSize;

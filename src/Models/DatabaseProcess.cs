@@ -14,7 +14,11 @@ using System.Linq;
 using System.Threading.Tasks;
 using TmCGPTD.ViewModels;
 using TmCGPTD.Views;
+using Avalonia;
 using System.Reflection;
+using Avalonia.Controls;
+using System.Diagnostics;
+using System.Text.RegularExpressions;
 
 namespace TmCGPTD.Models
 {
@@ -39,7 +43,7 @@ namespace TmCGPTD.Models
             command.ExecuteNonQuery();
 
             // chatlogテーブル作成
-            sql = "CREATE TABLE chatlog (id INTEGER PRIMARY KEY AUTOINCREMENT, date DATE, title TEXT NOT NULL DEFAULT '', json TEXT NOT NULL DEFAULT '', text TEXT NOT NULL DEFAULT '');";
+            sql = "CREATE TABLE chatlog (id INTEGER PRIMARY KEY AUTOINCREMENT, date DATE, title TEXT NOT NULL DEFAULT '', json TEXT NOT NULL DEFAULT '', text TEXT NOT NULL DEFAULT '', category TEXT NOT NULL DEFAULT '', lastprompt TEXT NOT NULL DEFAULT '', jsonprev TEXT NOT NULL DEFAULT '');";
             command.CommandText = sql;
             command.ExecuteNonQuery();
 
@@ -69,6 +73,108 @@ namespace TmCGPTD.Models
             command.ExecuteNonQuery();
         }
 
+        // データベースのチャットログをバージョンアップ--------------------------------------------------------------
+        public async Task UpdateChatLogDatabaseAsync()
+        {
+            try
+            {
+                // SQLiteデータベースに接続
+                using SQLiteConnection connection = new SQLiteConnection($"Data Source={AppSettings.Instance.DbPath}");
+                await connection.OpenAsync();
+
+                bool categoryExists = false;
+                bool lastPromptExists = false;
+                bool jsonPrevExists = false;
+
+                using (var command = new SQLiteCommand(connection))
+                {
+                    // Check 'category' column
+                    command.CommandText = "PRAGMA table_info(chatlog)";
+                    using (var reader = await command.ExecuteReaderAsync())
+                    {
+                        while (reader.Read())
+                        {
+                            var columnName = reader["name"].ToString();
+                            if (columnName == "category")
+                            {
+                                categoryExists = true;
+                            }
+                            else if (columnName == "lastprompt")
+                            {
+                                lastPromptExists = true;
+                            }
+                            else if (columnName == "jsonprev")
+                            {
+                                jsonPrevExists = true;
+                            }
+                        }
+                    }
+
+                    // Backup database
+                    if (!categoryExists || !lastPromptExists || !jsonPrevExists)
+                    {
+                        string sourceFile = AppSettings.Instance.DbPath;
+                        string backupFile = AppSettings.Instance.DbPath + ".backup";
+
+                        // Ensure the target does not exist.
+                        if (File.Exists(backupFile))
+                        {
+                            File.Delete(backupFile);
+                        }
+
+                        // Copy the file.
+                        File.Copy(sourceFile, backupFile);
+                    }
+
+                    // Add 'category' column
+                    if (!categoryExists)
+                    {
+                        command.CommandText = "ALTER TABLE chatlog ADD COLUMN category TEXT NOT NULL DEFAULT ''";
+                        await command.ExecuteNonQueryAsync();
+                    }
+
+                    // Add 'lastprompt' column
+                    if (!lastPromptExists)
+                    {
+                        command.CommandText = "ALTER TABLE chatlog ADD COLUMN lastprompt TEXT NOT NULL DEFAULT ''";
+                        await command.ExecuteNonQueryAsync();
+                    }
+
+                    // Add 'jsonprev' column
+                    if (!jsonPrevExists)
+                    {
+                        command.CommandText = "ALTER TABLE chatlog ADD COLUMN jsonprev TEXT NOT NULL DEFAULT ''";
+                        await command.ExecuteNonQueryAsync();
+                    }
+                }
+
+                if (!categoryExists || !lastPromptExists)
+                {
+                    Application.Current!.TryFindResource("My.Strings.DatabaseUpdate", out object resource1);
+                    var dialog = new ContentDialog()
+                    {
+                        Title = $"{resource1}{Environment.NewLine}{Environment.NewLine}{AppSettings.Instance.DbPath}.backup",
+                        PrimaryButtonText = "OK"
+                    };
+                    await VMLocator.MainViewModel.ContentDialogShowAsync(dialog);
+                }
+            }
+            catch (Exception ex)
+            {
+                var dialog = new ContentDialog()
+                {
+                    Title = $"Error: {ex}",
+                    PrimaryButtonText = "OK"
+                };
+                await VMLocator.MainViewModel.ContentDialogShowAsync(dialog);
+                throw;
+            }
+            // インメモリをいったん閉じてまた開く
+            await memoryConnection.CloseAsync();
+            await DbLoadToMemoryAsync();
+        }
+
+
         // SQL dbファイルをメモリにロード--------------------------------------------------------------
         public async Task DbLoadToMemoryAsync()
         {
@@ -89,7 +195,7 @@ namespace TmCGPTD.Models
                     Title = $"Error: {ex}",
                     PrimaryButtonText = "Ok"
                 };
-                await ContentDialogShowAsync(dialog);
+                await VMLocator.MainViewModel.ContentDialogShowAsync(dialog);
             }
             fileConnection.Close();
         }
@@ -312,8 +418,8 @@ namespace TmCGPTD.Models
             }
             else
             {
-                columnEnd = 4;
-                columnNames = "date, title, json, text";
+                columnEnd = 6;
+                columnNames = "date, title, json, text, category, lastprompt";
             }
 
             try
@@ -339,7 +445,7 @@ namespace TmCGPTD.Models
 
                             // データを取得
                             var rowData = new List<string>();
-                            for (int i = 1, loopTo = columnEnd; i <= loopTo; i++) // 2列目から5列目まで
+                            for (int i = 1, loopTo = columnEnd; i <= loopTo; i++) // 2列目から7列目まで
                                 rowData.Add(csvReader.GetField(i));
                             // INSERT文を作成
                             string values = string.Join(", ", Enumerable.Range(0, rowData.Count).Select(i => $"@value{i}"));
@@ -447,11 +553,11 @@ namespace TmCGPTD.Models
             string query;
             if (string.IsNullOrEmpty(searchKey))
             {
-                query = "SELECT id, date, title FROM chatlog ORDER BY date DESC;";
+                query = "SELECT id, date, title, category FROM chatlog ORDER BY date DESC;";
             }
             else
             {
-                query = "SELECT id, date, title FROM chatlog WHERE LOWER(text) LIKE LOWER(@searchKey) ORDER BY date DESC;";
+                query = "SELECT id, date, title, category FROM chatlog WHERE LOWER(text) LIKE LOWER(@searchKey) ORDER BY date DESC;";
             }
 
             var chatList = new ObservableCollection<ChatList>();
@@ -478,6 +584,7 @@ namespace TmCGPTD.Models
                     }
                     chatItem.Date = reader.GetDateTime(1);
                     chatItem.Title = reader.GetString(2);
+                    chatItem.Category = reader.GetString(3);
                     chatList.Add(chatItem);
                 }
             }
@@ -487,7 +594,7 @@ namespace TmCGPTD.Models
         // データベースから表示用チャットログを取得--------------------------------------------------------------
         public async Task<List<string>> GetChatLogDatabaseAsync(long chatId)
         {
-            string query = $"SELECT title, json, text FROM chatlog WHERE id = {chatId}";
+            string query = $"SELECT title, json, text, category, lastprompt, jsonprev FROM chatlog WHERE id = {chatId}";
             var result = new List<string>();
             using (var cmd = new SQLiteCommand(query, memoryConnection))
             {
@@ -497,6 +604,9 @@ namespace TmCGPTD.Models
                     result.Add(reader.GetString(0));
                     result.Add(reader.GetString(1));
                     result.Add(reader.GetString(2));
+                    result.Add(reader.GetString(3));
+                    result.Add(reader.GetString(4));
+                    result.Add(reader.GetString(5));
                 }
             }
             return result;
@@ -537,8 +647,35 @@ namespace TmCGPTD.Models
                 using var connection = new SQLiteConnection($"Data Source={AppSettings.Instance.DbPath}");
                 await connection.OpenAsync();
 
-                string query = $"UPDATE chatlog SET title = '{title}' WHERE id = {chatId}";
+                string query = $"UPDATE chatlog SET title=@title WHERE id = {chatId}";
                 using var command = new SQLiteCommand(query, connection);
+                command.Parameters.AddWithValue("@title", title);
+
+                await command.ExecuteNonQueryAsync();
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+            // インメモリをいったん閉じてまた開く
+            await memoryConnection.CloseAsync();
+            await DbLoadToMemoryAsync();
+            VMLocator.DataGridViewModel.ChatList = await SearchChatDatabaseAsync();
+        }
+
+        // カテゴリの更新--------------------------------------------------------------
+        public async Task UpdateCategoryDatabaseAsync(long chatId, string category)
+        {
+            try
+            {
+                using var connection = new SQLiteConnection($"Data Source={AppSettings.Instance.DbPath}");
+                await connection.OpenAsync();
+
+                string query = $"UPDATE chatlog SET category=@category WHERE id = {chatId}";
+
+                using var command = new SQLiteCommand(query, connection);
+
+                command.Parameters.AddWithValue("@category", category);
                 await command.ExecuteNonQueryAsync();
             }
             catch (Exception)
@@ -552,7 +689,7 @@ namespace TmCGPTD.Models
         }
 
         // Webチャットログのインポート--------------------------------------------------------------
-        public async Task<string> InsertWebChatLogDatabaseAsync(string webChatTitle, List<Dictionary<string, object>> webConversationHistory, string webLog)
+        public async Task<string> InsertWebChatLogDatabaseAsync(string webChatTitle, List<Dictionary<string, object>> webConversationHistory, string webLog, string chatService)
         {
             if (!string.IsNullOrEmpty(webLog))
             {
@@ -575,10 +712,10 @@ namespace TmCGPTD.Models
                 {
                     Console.WriteLine("Match found. ID: " + matchingId.Value);
                     var dialog = new ContentDialog() { Title = $"A chat log with the same name exists.{Environment.NewLine}Do you want to overwrite it? {Environment.NewLine}{Environment.NewLine}'{webChatTitle}'", PrimaryButtonText = "Overwrite", SecondaryButtonText = "Rename", CloseButtonText = "Cancel" };
-                    var dialogResult = await ContentDialogShowAsync(dialog);
+                    var dialogResult = await VMLocator.MainViewModel.ContentDialogShowAsync(dialog);
                     if (dialogResult == ContentDialogResult.Primary)
                     {
-                        query = $"UPDATE chatlog SET date=@date, title=@title, json=@json, text=@text WHERE id={matchingId.Value}";
+                        query = $"UPDATE chatlog SET date=@date, title=@title, json=@json, text=@text, category=category WHERE id={matchingId.Value}";
                     }
                     else if (dialogResult == ContentDialogResult.Secondary)
                     {
@@ -594,7 +731,7 @@ namespace TmCGPTD.Models
                         {
                             DataContext = viewModel
                         };
-                        dialogResult = await ContentDialogShowAsync(dialog);
+                        dialogResult = await VMLocator.MainViewModel.ContentDialogShowAsync(dialog);
                         if (dialogResult != ContentDialogResult.Primary || string.IsNullOrWhiteSpace(viewModel.UserInput))
                         {
                             return "Cancel";
@@ -602,7 +739,7 @@ namespace TmCGPTD.Models
                         else
                         {
                             webChatTitle = viewModel.UserInput;
-                            var msg = await InsertWebChatLogDatabaseAsync(webChatTitle, webConversationHistory, webLog);
+                            var msg = await InsertWebChatLogDatabaseAsync(webChatTitle, webConversationHistory, webLog, chatService);
                             if (msg == "Cancel")
                             {
                                 return "Cancel";
@@ -617,7 +754,7 @@ namespace TmCGPTD.Models
                 }
                 else
                 {
-                    query = "INSERT INTO chatlog(date, title, json, text) VALUES (@date, @title, @json, @text)";
+                    query = "INSERT INTO chatlog(date, title, json, text, category) VALUES (@date, @title, @json, @text, @category)";
                 }
 
                     DateTime nowDate = DateTime.Now;
@@ -636,6 +773,7 @@ namespace TmCGPTD.Models
                         await Task.Run(() => command.Parameters.AddWithValue("@title", webChatTitle));
                         await Task.Run(() => command.Parameters.AddWithValue("@json", jsonConversationHistory));
                         await Task.Run(() => command.Parameters.AddWithValue("@text", webLog));
+                        await Task.Run(() => command.Parameters.AddWithValue("@category", chatService));
                         await command.ExecuteNonQueryAsync();
                     }
 
@@ -923,7 +1061,7 @@ namespace TmCGPTD.Models
             catch (Exception ex)
             {
                 var dialog = new ContentDialog() { Title = "Error : " + ex.Message, PrimaryButtonText = "OK" };
-                _ = ContentDialogShowAsync(dialog);
+                _ = VMLocator.MainViewModel.ContentDialogShowAsync(dialog);
             }
         }
 
@@ -1011,9 +1149,8 @@ namespace TmCGPTD.Models
                 if (reader.Read())
                 {
                     // textカラムの値を取得して、区切り文字で分割する
-                    string[] texts;
                     string text = reader.GetString(0);
-                    texts = text.Split(new[] { "<---TMCGPT--->" }, StringSplitOptions.None);
+                    string[] texts = text.Split(new[] { "<---TMCGPT--->" }, StringSplitOptions.None);
                     for (int i = 0, loopTo = Math.Min(texts.Length - 1, 4); i <= loopTo; i++) // 5要素目までを取得
                     {
                         string propertyName = $"Editor{i+1}Text";
@@ -1032,7 +1169,7 @@ namespace TmCGPTD.Models
             catch (Exception ex)
             {
                 var dialog = new ContentDialog() { Title = "Error : " + ex.Message, PrimaryButtonText = "OK" };
-                _ = ContentDialogShowAsync(dialog);
+                _ = VMLocator.MainViewModel.ContentDialogShowAsync(dialog);
             }
         }
 
@@ -1069,14 +1206,41 @@ namespace TmCGPTD.Models
             {
                 $"[{postDate}] by You" + Environment.NewLine,
                 postText + Environment.NewLine,
+                "(!--editable--)",
                 $"[{resDate}] by AI",
                 resText
             };
 
+            var _editorViewModel = VMLocator.EditorViewModel;
+            List<string> inputText = new()
+            {
+                string.Join(Environment.NewLine, _editorViewModel.Editor1Text),
+                string.Join(Environment.NewLine, _editorViewModel.Editor2Text),
+                string.Join(Environment.NewLine, _editorViewModel.Editor3Text),
+                string.Join(Environment.NewLine, _editorViewModel.Editor4Text),
+                string.Join(Environment.NewLine, _editorViewModel.Editor5Text)
+            };
+            string promptTextForSave = string.Join(Environment.NewLine + "<---TMCGPT--->" + Environment.NewLine, inputText);
+
             long lastRowId = VMLocator.ChatViewModel.LastId;
             string titleText = VMLocator.ChatViewModel.ChatTitle;
+            if (string.IsNullOrWhiteSpace(titleText))
+            {
+                titleText = "";
+            }
+
+            string categoryText = VMLocator.ChatViewModel.ChatCategory;
+            if (string.IsNullOrWhiteSpace(categoryText))
+            {
+                categoryText = "";
+            }
 
             string jsonConversationHistory = JsonSerializer.Serialize(VMLocator.ChatViewModel.ConversationHistory);
+            string jsonLastConversationHistory = JsonSerializer.Serialize(VMLocator.ChatViewModel.LastConversationHistory);
+            if (string.IsNullOrWhiteSpace(jsonLastConversationHistory))
+            {
+                jsonLastConversationHistory = "";
+            }
 
             using (var connection = new SQLiteConnection($"Data Source={AppSettings.Instance.DbPath}"))
             {
@@ -1085,7 +1249,7 @@ namespace TmCGPTD.Models
                 using var transaction = connection.BeginTransaction();
                 try
                 {
-                    if (lastRowId != default)
+                    if (lastRowId != -1)
                     {
                         // 指定されたIDのデータを取得する
                         string currentText = "";
@@ -1099,16 +1263,63 @@ namespace TmCGPTD.Models
                             }
                         }
 
+                        currentText = Regex.Replace(currentText, @"\r\n|\r|\n", Environment.NewLine);
+
+                        string searchText = $"(!--editable--){Environment.NewLine}";
+                        string byYouText = "] by You";
+
+                        if (VMLocator.ChatViewModel.ReEditIsOn)
+                        {
+                            // 既存のテキストに(!--editable--)を見つけたら、直前の[*] by Youから最後までを削除する
+                            if (currentText.Contains(searchText))
+                            {
+                                int editableIndex = currentText.IndexOf(searchText);
+                                string textBeforeEditable = currentText.Substring(0, editableIndex);
+                                int lastByYouIndex = textBeforeEditable.LastIndexOf(byYouText);
+                                if (lastByYouIndex >= 0)
+                                {
+                                    int lastNewLineIndex = textBeforeEditable.LastIndexOf('\n', lastByYouIndex);
+                                    if (lastNewLineIndex >= 0)
+                                    {
+                                        currentText = textBeforeEditable.Substring(0, lastNewLineIndex).Trim();
+                                    }
+                                    else
+                                    {
+                                        // lastByYouIndex以前に'\n'が存在しない場合は初回メッセージと判断
+                                        currentText = "";
+                                    }
+                                }
+                                else
+                                {
+                                    // [*] by Youが存在しない場合の処理をここに書く
+                                    throw new Exception("Error : Incorrect log data. [*] by You ");
+                                }
+                            }
+                        }
+                        else
+                        {
+                            // 既存のテキストの(!--editable--)を削除する
+                            if (currentText.Contains(searchText))
+                            {
+                                currentText = currentText.Replace(searchText, "");
+                            }
+                        }
+
+
+
                         // 既存のテキストに新しいメッセージを追加する
-                        string newText = currentText + Environment.NewLine + string.Join(Environment.NewLine, insertText);
+                        string newText = ( currentText + Environment.NewLine + string.Join(Environment.NewLine, insertText) ).Trim();
 
                         // 指定されたIDに対してデータを更新する
-                        using (var command = new SQLiteCommand("UPDATE chatlog SET date=@date, title=@title, json=@json, text=@text WHERE id=@id", connection))
+                        using (var command = new SQLiteCommand("UPDATE chatlog SET date=@date, title=@title, json=@json, text=@text, category=@category, lastprompt=@lastprompt, jsonprev=@jsonprev WHERE id=@id", connection))
                         {
                             await Task.Run(() => command.Parameters.AddWithValue("@date", resDate));
                             await Task.Run(() => command.Parameters.AddWithValue("@title", titleText));
                             await Task.Run(() => command.Parameters.AddWithValue("@json", jsonConversationHistory));
                             await Task.Run(() => command.Parameters.AddWithValue("@text", newText));
+                            await Task.Run(() => command.Parameters.AddWithValue("@category", categoryText));
+                            await Task.Run(() => command.Parameters.AddWithValue("@lastprompt", promptTextForSave));
+                            await Task.Run(() => command.Parameters.AddWithValue("@jsonprev", jsonLastConversationHistory));
                             await Task.Run(() => command.Parameters.AddWithValue("@id", lastRowId));
                             await command.ExecuteNonQueryAsync();
                         }
@@ -1116,12 +1327,15 @@ namespace TmCGPTD.Models
                     else
                     {
                         // logテーブルにデータをインサートする
-                        using (var command = new SQLiteCommand("INSERT INTO chatlog(date, title, json, text) VALUES (@date, @title, @json, @text)", connection))
+                        using (var command = new SQLiteCommand("INSERT INTO chatlog(date, title, json, text, category, lastprompt, jsonprev) VALUES (@date, @title, @json, @text, @category, @lastprompt, @jsonprev)", connection))
                         {
                             await Task.Run(() => command.Parameters.AddWithValue("@date", resDate));
                             await Task.Run(() => command.Parameters.AddWithValue("@title", titleText));
                             await Task.Run(() => command.Parameters.AddWithValue("@json", jsonConversationHistory));
                             await Task.Run(() => command.Parameters.AddWithValue("@text", string.Join(Environment.NewLine, insertText)));
+                            await Task.Run(() => command.Parameters.AddWithValue("@category", categoryText));
+                            await Task.Run(() => command.Parameters.AddWithValue("@lastprompt", promptTextForSave));
+                            await Task.Run(() => command.Parameters.AddWithValue("@jsonprev", jsonLastConversationHistory));
                             await command.ExecuteNonQueryAsync();
                         }
 
@@ -1139,12 +1353,13 @@ namespace TmCGPTD.Models
                     // トランザクションをコミットする
                     await Task.Run(() => transaction.Commit());
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     // エラーが発生した場合、トランザクションをロールバックする
                     transaction.Rollback();
-                    var dialog = new ContentDialog() { Title = "Error : " + ex.Message, PrimaryButtonText = "OK" };
-                    await ContentDialogShowAsync(dialog);
+                    //var dialog = new ContentDialog() { Title = "Error : " + ex.Message, PrimaryButtonText = "OK" };
+                    //await VMLocator.MainViewModel.ContentDialogShowAsync(dialog);
+                    throw;
                 }
             }
             // インメモリをいったん閉じてまた開く
@@ -1194,15 +1409,5 @@ namespace TmCGPTD.Models
                 throw;
             }
          }
-
-        private static async Task<ContentDialogResult> ContentDialogShowAsync(ContentDialog dialog)
-        {
-            VMLocator.ChatViewModel.ChatViewIsVisible = false;
-            VMLocator.WebChatViewModel.WebChatViewIsVisible = false;
-            var dialogResult = await dialog.ShowAsync();
-            VMLocator.ChatViewModel.ChatViewIsVisible = true;
-            VMLocator.WebChatViewModel.WebChatViewIsVisible = true;
-            return dialogResult;
-        }
     }
 }

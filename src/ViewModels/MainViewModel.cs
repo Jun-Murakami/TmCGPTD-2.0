@@ -22,6 +22,8 @@ namespace TmCGPTD.ViewModels
         DatabaseProcess _dbProcess = new DatabaseProcess();
         public MainViewModel()
         {
+            PostButtonText = "Post";
+
             Editor1Clear = new RelayCommand(() => ExecuteClear(1));
             Editor2Clear = new RelayCommand(() => ExecuteClear(2));
             Editor3Clear = new RelayCommand(() => ExecuteClear(3));
@@ -46,11 +48,9 @@ namespace TmCGPTD.ViewModels
             CopyToClipboardCommand = new AsyncRelayCommand(async () => await CopyToClipboard());
 
             ResetSeparatorCommand = new RelayCommand(ResetSeparator);
-
             HotKeyDisplayCommand = new AsyncRelayCommand(HotKeyDisplayAsync);
-
+            OpenApiSettingsCommand = new RelayCommand(OpenApiSettings);
             ShowDatabaseSettingsCommand = new AsyncRelayCommand(ShowDatabaseSettingsAsync);
-
             PhrasePresetsItems = new ObservableCollection<string>();
         }
 
@@ -73,6 +73,7 @@ namespace TmCGPTD.ViewModels
         public ICommand EditorAllClear { get; }
         public ICommand CopyToClipboardCommand { get; }
         public ICommand ResetSeparatorCommand { get; }
+        public ICommand OpenApiSettingsCommand { get; }
         public IAsyncRelayCommand ShowDatabaseSettingsCommand { get; }
         public IAsyncRelayCommand HotKeyDisplayCommand { get; }
 
@@ -204,6 +205,13 @@ namespace TmCGPTD.ViewModels
             set => SetProperty(ref _isCopyButtonClicked, value);
         }
 
+        private string _postButtonText;
+        public string PostButtonText
+        {
+            get => _postButtonText;
+            set => SetProperty(ref _postButtonText, value);
+        }
+
 
         private async Task PostAsync()
         {
@@ -212,8 +220,19 @@ namespace TmCGPTD.ViewModels
                 return;
             }
 
+            List<Dictionary<string, object>>? backupConversationHistory = null;
+
             try
             {
+                if(VMLocator.ChatViewModel.ReEditIsOn && SelectedLeftPane == "API Chat")
+                {
+                    string? jsonCopy = System.Text.Json.JsonSerializer.Serialize(VMLocator.ChatViewModel.ConversationHistory);
+                    backupConversationHistory = System.Text.Json.JsonSerializer.Deserialize<List<Dictionary<string, object>>>(jsonCopy);
+
+                    jsonCopy = System.Text.Json.JsonSerializer.Serialize(VMLocator.ChatViewModel.LastConversationHistory);
+                    VMLocator.ChatViewModel.ConversationHistory = System.Text.Json.JsonSerializer.Deserialize<List<Dictionary<string, object>>>(jsonCopy);
+
+                }
                 await _dbProcess.InserEditorLogDatabasetAsync();
 
                 if (SelectedLeftPane == "Web Chat")
@@ -228,6 +247,7 @@ namespace TmCGPTD.ViewModels
                 {
                     await VMLocator.ChatViewModel.GoChatAsync();
                     VMLocator.DataGridViewModel.ChatList = await _dbProcess.SearchChatDatabaseAsync();
+                    VMLocator.DataGridViewModel.DataGridIsFocused = true;
                     VMLocator.DataGridViewModel.SelectedItemIndex = 0;
                 }
 
@@ -240,8 +260,14 @@ namespace TmCGPTD.ViewModels
             catch (Exception ex)
             {
                 VMLocator.ChatViewModel.ChatIsRunning = false;
-                //var cdialog = new ContentDialog() { Title = "Error: " + ex.Message, PrimaryButtonText = "OK" };
-                //await ContentDialogShowAsync(cdialog);
+                var cdialog = new ContentDialog() { Title = "Error: " + ex.Message, PrimaryButtonText = "OK" };
+                await ContentDialogShowAsync(cdialog);
+
+                if (backupConversationHistory != null)
+                {
+                    VMLocator.ChatViewModel.ConversationHistory = backupConversationHistory;
+                }
+                //throw;
             }
         }
 
@@ -653,6 +679,14 @@ namespace TmCGPTD.ViewModels
         private void ResetSeparator()
         {
             VMLocator.EditorViewModel.SeparatorReset();
+        }
+
+        public void OpenApiSettings()
+        {
+            VMLocator.ChatViewModel.ChatViewIsVisible = false;
+            VMLocator.WebChatViewModel.WebChatViewIsVisible = false;
+            VMLocator.WebChatBardViewModel.WebChatBardViewIsVisible = false;
+            VMLocator.MainWindowViewModel.ApiSettingIsOpened = true;
         }
 
         private async Task ShowDatabaseSettingsAsync()

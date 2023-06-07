@@ -132,6 +132,10 @@ namespace TmCGPTD.Models
                 string replacement = "<code class=\"inline\">`$1`</code>";
                 content = Regex.Replace(content, pattern, replacement);
 
+                pattern = @"\(\!--editable--\)";
+                content = Regex.Replace(content, pattern, @"<div class=""editDiv""><button class=""editButton"">Edit</button></div>");
+
+
                 var usageMatch = usageRegex.Match(content);
                 if (usageMatch.Success)
                 {
@@ -415,7 +419,7 @@ namespace TmCGPTD.Models
                 }
 
                 DatabaseProcess _dbProcess = new DatabaseProcess();
-                var msg = await _dbProcess.InsertWebChatLogDatabaseAsync(webChatTitle, webConversationHistory, webLog);
+                var msg = await _dbProcess.InsertWebChatLogDatabaseAsync(webChatTitle, webConversationHistory, webLog, "from Web Chat");
                 if (msg == "Cancel")
                 {
                     return "Cancel";
@@ -541,11 +545,12 @@ namespace TmCGPTD.Models
                     }
 
                     var responseContainer = conversationContainer.Descendants("div")
-                                                                  .FirstOrDefault(div => div.GetAttributeValue("class", "").Contains("response-container"));
+                                                                  .FirstOrDefault(div => div.GetAttributeValue("class", "").Contains("presented-response-container"));
                     if (responseContainer != null)
                     {
-                        var nodes = responseContainer.DescendantsAndSelf().ToList();
 
+                        // 'code'タグをMarkdownのコードブロックに変換
+                        var nodes = responseContainer.DescendantsAndSelf().ToList();
                         foreach (var node in nodes)
                         {
                             if (node.Name == "code" && !IsInsidePreTag(node))
@@ -554,7 +559,7 @@ namespace TmCGPTD.Models
                                 node.ParentNode.ReplaceChild(textNode, node);
                             }
                         }
-
+                        // ヘルパー関数
                         bool IsInsidePreTag(HtmlNode node)
                         {
                             var currentNode = node;
@@ -569,9 +574,9 @@ namespace TmCGPTD.Models
                             return false;
                         }
 
-                        var converter = new ReverseMarkdown.Converter();
-                        string markdown = converter.Convert(responseContainer.InnerHtml.Trim());
-                        //string markdown = responseContainer.InnerHtml.Trim();
+                        string markdown = responseContainer.InnerHtml.Trim();
+
+                        //Debug.WriteLine(markdown);
 
                         string pattern = "<user-profile-picture.*>.*</user-profile-picture>";
                         markdown = Regex.Replace(markdown, pattern, "");
@@ -585,27 +590,32 @@ namespace TmCGPTD.Models
                         pattern = "<mat-icon[^>]*?>.*?</mat-icon>";
                         markdown = Regex.Replace(markdown, pattern, "");
 
-                        pattern = "<a [^>]*?href=\"(http[^\"]*?)\"(.*)</a>";
-                        string replacement = $"[<a $2</a>]($1){br}{br}";
-                        markdown = Regex.Replace(markdown, pattern, replacement);
+                        Debug.WriteLine(markdown);
 
                         pattern = "<div[^>]*?>コードは慎重に使用してください。.*?</div>";
                         markdown = Regex.Replace(markdown, pattern, "");
 
-                        pattern = "他の回答案を表示";
+                        pattern = "<div[^>]*?(code-block-wrapper header|code-block-decoration header)[^>]*?>(.*?)</div>";
+                        markdown = Regex.Replace(markdown, pattern, $"{br}```$2{br}");
+
+                        pattern = "<pre[^>]*?>";
                         markdown = Regex.Replace(markdown, pattern, "");
 
-                        pattern = ">回答案 ([0-9]+?)</span>";
-                        markdown = Regex.Replace(markdown, pattern, $">回答案 $1</span>{br}{br}");
-
-                        pattern = "<div[^>]*?code-block-wrapper[^>]*?header[^>]*?>(.*?)</div>";
-                        markdown = Regex.Replace(markdown, pattern, $"{br}```$1{br}");
-
                         pattern = "</pre>";
-                        markdown = Regex.Replace(markdown, pattern, $"```</pre>");
+                        markdown = Regex.Replace(markdown, pattern, $"```");
+
+                        //Debug.WriteLine(markdown);
+
+                        var converter = new ReverseMarkdown.Converter();
+                        markdown = converter.Convert(markdown);
+
+
+                        pattern = "<a [^>]*?href=\"(http[^\"]*?)\"(.*)</a>";
+                        string replacement = $"[<a $2</a>]($1){br}{br}";
+                        markdown = Regex.Replace(markdown, pattern, replacement);
 
                         pattern = @"^!\[\]\(http[^)]*?(.gif|.svg)\)";
-                        markdown = Regex.Replace(markdown, pattern, "",RegexOptions.Multiline);
+                        markdown = Regex.Replace(markdown, pattern, "", RegexOptions.Multiline);
 
                         markdown = markdown.Replace("<p>", $"")
                                             .Replace("</p>", $"{br}{br}")
@@ -623,13 +633,14 @@ namespace TmCGPTD.Models
                                             .Replace("</td>", " ")
                                             .Replace("<th>", "")
                                             .Replace("</th>", " ")
-                                            .Replace("```コード スニペット", "```")
+                                            .Replace("```コード スニペット", "```コードスニペット")
                                             .Replace($"{br}{br}{br}", $"{br}{br}");
 
                         pattern = "(\r\n|\n|\r){3,}";
                         markdown = Regex.Replace(markdown, pattern, $"{br}{br}");
 
-                        Debug.WriteLine(markdown);
+
+                        //Debug.WriteLine(markdown);
 
                         // 置換処理が完了した後、再度HTMLドキュメントに戻す
                         var modifiedHtmlDoc = new HtmlAgilityPack.HtmlDocument();
@@ -663,7 +674,7 @@ namespace TmCGPTD.Models
                 //Debug.WriteLine(webLog);
 
                 DatabaseProcess _dbProcess = new DatabaseProcess();
-                var msg = await _dbProcess.InsertWebChatLogDatabaseAsync(webChatTitle, webConversationHistory, webLog);
+                var msg = await _dbProcess.InsertWebChatLogDatabaseAsync(webChatTitle, webConversationHistory, webLog, "from Bard");
                 if (msg == "Cancel")
                 {
                     return "Cancel";
@@ -681,7 +692,8 @@ namespace TmCGPTD.Models
         {
             try
             {
-                List<Dictionary<string, object>> conversationHistory = VMLocator.ChatViewModel.ConversationHistory;
+                List<Dictionary<string, object>>? conversationHistory = VMLocator.ChatViewModel.ConversationHistory;
+                List<Dictionary<string, object>>? postedConversationHistory = new List<Dictionary<string, object>>();
 
                 bool isDeleteHistory = false;
                 string chatTextRes = "";
@@ -708,7 +720,7 @@ namespace TmCGPTD.Models
                 int preSummarizedHistoryTokenCount = historyContentTokenCount;
 
                 // 履歴を逆順にする
-                List<Dictionary<string, object>> reversedHistoryList = conversationHistory;
+                List<Dictionary<string, object>> reversedHistoryList = new List<Dictionary<string, object>>(conversationHistory);
                 reversedHistoryList.Reverse();
 
                 // 入力文字列のトークン数を取得
@@ -812,6 +824,10 @@ namespace TmCGPTD.Models
                 // 現在のユーザーの入力を表すディクショナリ
                 var userInput = new Dictionary<string, object>() { { "role", "user" }, { "content", chatTextPost } };
 
+                // 圧縮済みの会話履歴をpostedConversationHistoryにディープコピー
+                string jsonCopy = System.Text.Json.JsonSerializer.Serialize(conversationHistory);
+                postedConversationHistory = System.Text.Json.JsonSerializer.Deserialize<List<Dictionary<string, object>>>(jsonCopy);
+
                 // 過去の会話履歴と現在の入力を結合
                 conversationHistory.Add(userInput);
 
@@ -879,7 +895,7 @@ namespace TmCGPTD.Models
                         // レスポンスのStreamを取得
                         using var stream = await response.Content.ReadAsStreamAsync();
                         using var reader = new StreamReader(stream);
-                        string line;
+                        string? line;
 
                         // レスポンスを行ごとに読み込む
                         while ((line = await reader.ReadLineAsync()) != null)
@@ -917,6 +933,9 @@ namespace TmCGPTD.Models
                         // レス本文
                         chatTextRes = Environment.NewLine + chatTextRes + Environment.NewLine + Environment.NewLine;
 
+                        // 応答に成功したconversationHistoryを保存
+                        VMLocator.ChatViewModel.LastConversationHistory = postedConversationHistory;
+
                         // 応答を受け取った後、conversationHistory に追加
                         conversationHistory.Add(new Dictionary<string, object>() { { "role", "assistant" }, { "content", chatTextRes } });
 
@@ -931,7 +950,7 @@ namespace TmCGPTD.Models
                         chatTextRes += $"usage={{\"prompt_tokens\":{inputConversationTokenCount},\"completion_tokens\":{responseTokenCount},\"total_tokens\":{inputConversationTokenCount + responseTokenCount}}}" + Environment.NewLine;
 
                         // 要約が実行された場合、メソッドの戻り値の最後に要約前のトークン数と要約後のトークン数をメッセージとして付け加える
-                        string postConversation = conversationHistory.Select(d => d["content"].ToString()).Aggregate((a, b) => a + b);
+                        string? postConversation = conversationHistory.Select(d => d["content"].ToString()).Aggregate((a, b) => a + b);
                         if (preSummarizedHistoryTokenCount > tokenizer.Encode(postConversation).Count)
                         {
                             chatTextRes += $"-Conversation history has been summarized. before: {preSummarizedHistoryTokenCount}, after: {tokenizer.Encode(postConversation).Count}.{Environment.NewLine}";
@@ -974,13 +993,13 @@ namespace TmCGPTD.Models
         {
             public Message delta { get; set; }
             public int index { get; set; }
-            public object finish_reason { get; set; }
+            public object? finish_reason { get; set; }
         }
 
         public class Message
         {
-            public string role { get; set; }
-            public string content { get; set; }
+            public string? role { get; set; }
+            public string? content { get; set; }
         }
 
         //文章要約圧縮メソッド--------------------------------------------------------------
