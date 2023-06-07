@@ -2,6 +2,7 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using System;
+using System.Diagnostics;
 using TmCGPTD.ViewModels;
 
 namespace TmCGPTD.Views
@@ -14,13 +15,68 @@ namespace TmCGPTD.Views
             InitializeComponent();
             DataContext = PhrasePresetsViewModel;
             VMLocator.PhrasePresetsViewModel = PhrasePresetsViewModel;
+
+            PhrasePresetsViewModel.PropertyChanged += ViewModel_PropertyChanged;
+        }
+
+        private void ViewModel_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(PhrasePresetsViewModel.CtrlKeyIsDown))
+            {
+                if (PhrasePresetsViewModel.CtrlKeyIsDown)
+                {
+                    //1‚©‚ç10‚Ü‚ÅŒJ‚è•Ô‚µ‚ÄTextBox‚ÌƒCƒ“ƒXƒ^ƒ“ƒX‚ğæ“¾
+                    for (int i = 1; i <= 10; i++)
+                    {
+                        TextBox textBox = this.FindControl<TextBox>($"TextBox{i}");
+                        textBox.Classes.Add("KeyDown");
+                        Button@button = this.FindControl<Button>($"Button{i}");
+                        button.Classes.Add("KeyDown");
+
+                    }
+                }
+                else
+                {
+                    for (int i = 1; i <= 10; i++)
+                    {
+                        TextBox textBox = this.FindControl<TextBox>($"TextBox{i}");
+                        textBox.Classes.Remove("KeyDown");
+                        Button button = this.FindControl<Button>($"Button{i}");
+                        button.Classes.Remove("KeyDown");
+                    }
+                }
+            }
+            else if (e.PropertyName == nameof(PhrasePresetsViewModel.AltKeyIsDown))
+            {
+                if (PhrasePresetsViewModel.AltKeyIsDown)
+                {
+                    //11‚©‚ç20‚Ü‚ÅŒJ‚è•Ô‚µ‚ÄTextBox‚ÌƒCƒ“ƒXƒ^ƒ“ƒX‚ğæ“¾
+                    for (int i = 11; i <= 20; i++)
+                    {
+                        TextBox textBox = this.FindControl<TextBox>($"TextBox{i}");
+                        textBox.Classes.Add("KeyDown");
+                        Button button = this.FindControl<Button>($"Button{i}");
+                        button.Classes.Add("KeyDown");
+                    }
+                }
+                else
+                {
+                    for (int i = 11; i <= 20; i++)
+                    {
+                        TextBox textBox = this.FindControl<TextBox>($"TextBox{i}");
+                        textBox.Classes.Remove("KeyDown");
+                        Button button = this.FindControl<Button>($"Button{i}");
+                        button.Classes.Remove("KeyDown");
+                    }
+                }
+            }
         }
 
         private void OnButtonClick(object sender, RoutedEventArgs e)
         {
             if (sender is Button button)
             {
-                int buttonNumber = int.Parse(button.Name.Substring(6)); // "Button"ï¿½ÌŒï¿½Ì”Ôï¿½ï¿½ï¿½ï¿½æ“¾
+                int buttonNumber = int.Parse(button.Name.Substring(6)); // "Button"‚ÌŒã‚Ì”Ô†‚ğæ“¾
                 TextBox textBox = this.FindControl<TextBox>($"TextBox{buttonNumber}");
 
                 if (textBox.Text == null )
@@ -28,7 +84,7 @@ namespace TmCGPTD.Views
                     return;
                 }
 
-                // ãƒ•ã‚©ãƒ¼ã‚«ã‚¹ãŒã‚ã‚‹ã‚³ãƒ³ãƒˆãƒ­ãƒ¼ãƒ«ã‚’å–å¾—
+                // ƒtƒH[ƒJƒX‚ª‚ ‚éƒRƒ“ƒgƒ[ƒ‹‚ğæ“¾
                 var focusedControl = FocusManager.Instance.Current;
 
                 if (focusedControl is TextBox focusedTextBox)
@@ -36,7 +92,7 @@ namespace TmCGPTD.Views
                     int start = focusedTextBox.SelectionStart;
                     int length = focusedTextBox.SelectionEnd - focusedTextBox.SelectionStart;
                     //Debug.WriteLine("start:" + start + " length:" + length);
-                    // ãƒ†ã‚­ã‚¹ãƒˆãŒnullã®å ´åˆã€ç©ºæ–‡å­—åˆ—ã«è¨­å®š
+                    // ƒeƒLƒXƒg‚ªnull‚Ìê‡A‹ó•¶š—ñ‚Éİ’è
                     if (focusedTextBox.Text == null)
                     {
                         focusedTextBox.Text = string.Empty;
@@ -49,11 +105,11 @@ namespace TmCGPTD.Views
                             length = Math.Abs(length);
                             start = start - length;
                         }
-                        // ãƒ†ã‚­ã‚¹ãƒˆé¸æŠç¯„å›²ãŒã‚ã‚‹å ´åˆã€ä¸Šæ›¸ã
+                        // ƒeƒLƒXƒg‘I‘ğ”ÍˆÍ‚ª‚ ‚éê‡Aã‘‚«
                         focusedTextBox.Text = focusedTextBox.Text.Remove(start, length);
                     }
 
-                    // ãƒ•ã‚©ãƒ¼ã‚«ã‚¹ãŒã‚ã‚‹TextBoxã«ãƒ†ã‚­ã‚¹ãƒˆã‚’æŒ¿å…¥
+                    // ƒtƒH[ƒJƒX‚ª‚ ‚éTextBox‚ÉƒeƒLƒXƒg‚ğ‘}“ü
                     focusedTextBox.Text = focusedTextBox.Text.Insert(start, textBox.Text);
                     focusedTextBox.CaretIndex = start + textBox.Text.Length;
                 }

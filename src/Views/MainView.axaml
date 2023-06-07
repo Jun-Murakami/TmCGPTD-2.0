@@ -143,7 +143,7 @@
 							BorderThickness="0"
 							Width="28"
 							Height="28"
-							Margin="0,0,60,0"
+							Margin="0,0,90,0"
 							Command="{Binding ResetSeparatorCommand}">
 						<Image Source="/Assets/iconSeparator.png"
 								VerticalAlignment="Center" />
@@ -234,6 +234,7 @@
 										HorizontalAlignment="Center"
 										Command="{Binding PostCommand}"
 										ToolTip.Tip="Post text (Ctrl + Enter)"
+										Classes="Post"
 										HotKey="Ctrl+Enter" />
 								<Image Source="/Assets/iconPost.png"
 										VerticalAlignment="Center"
