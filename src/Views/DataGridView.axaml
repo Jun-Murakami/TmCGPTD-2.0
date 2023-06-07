@@ -18,7 +18,10 @@
 				SelectedIndex="{Binding SelectedItemIndex}">
 		  <DataGrid.Columns>
 			  <DataGridTextColumn Binding="{Binding Id}" IsVisible="False"/>
-			  <DataGridTextColumn Foreground="rgb(155,155,155)" FontSize="12" Binding="{Binding Date, Converter={StaticResource CustomDateConverter}, Mode=OneWay}" IsReadOnly="True" />
+			  <DataGridTextColumn Foreground="rgb(155,155,155)"
+								  FontSize="12"
+								  Binding="{Binding Date, Converter={StaticResource CustomDateConverter}, Mode=OneWay}"
+								  IsReadOnly="True" />
 			  <DataGridTextColumn Binding="{Binding Title}" IsReadOnly="True" />
 		  </DataGrid.Columns>
 	  </DataGrid>

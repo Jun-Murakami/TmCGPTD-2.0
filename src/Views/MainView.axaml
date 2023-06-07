@@ -143,9 +143,20 @@
 							BorderThickness="0"
 							Width="28"
 							Height="28"
-							Margin="0,0,60,0"
+							Margin="0,0,90,0"
 							Command="{Binding ResetSeparatorCommand}">
 						<Image Source="/Assets/iconSeparator.png"
+								VerticalAlignment="Center" />
+					</Button>
+					<Button ToolTip.Tip="API settings"
+							HorizontalAlignment="Right"
+							VerticalAlignment="Center"
+							BorderThickness="0"
+							Width="28"
+							Height="28"
+							Margin="0,0,60,0"
+							Command="{Binding OpenApiSettingsCommand}">
+						<Image Source="/Assets/iconSetting.png"
 								VerticalAlignment="Center" />
 					</Button>
 					<Button ToolTip.Tip="Database settings"
@@ -215,7 +226,7 @@
 										Name="CopyToClipboard" />
 							</Button>
 							<Grid>
-								<Button Content="Post"
+								<Button Content="{Binding PostButtonText}"
 										Height="38"
 										Width="110"
 										Margin="0,0,10,0"

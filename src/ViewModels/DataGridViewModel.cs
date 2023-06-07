@@ -9,17 +9,19 @@ namespace TmCGPTD.ViewModels
 {
     public class DataGridViewModel : ViewModelBase
     {
-        public DataGridViewModel()
-        {
-            DataGridCollection = null;
-        }
-
 
         private int _selectedItemIndex;
         public int SelectedItemIndex
         {
             get => _selectedItemIndex;
             set => SetProperty(ref _selectedItemIndex, value);
+        }
+
+        private bool _dataGridIsFocused;
+        public bool DataGridIsFocused
+        {
+            get => _dataGridIsFocused;
+            set => SetProperty(ref _dataGridIsFocused, value);
         }
 
         private DataGridCollectionView _dataGridCollection;
@@ -37,14 +39,8 @@ namespace TmCGPTD.ViewModels
             {
                 if (SetProperty(ref _chatList, value))
                 {
-                    if (DataGridCollection == null)
-                    {
-                        DataGridCollection = new DataGridCollectionView(ChatList);
-                        DataGridCollection.GroupDescriptions.Add(new DataGridPathGroupDescription("Date"));
-                    }
-
-                    DataGridCollection.Refresh();
-                    SelectedItemIndex = -1;
+                    DataGridCollection = new DataGridCollectionView(ChatList);
+                    DataGridCollection.GroupDescriptions.Add(new DataGridPathGroupDescription("Category"));
                 }
             }
         }
@@ -59,14 +55,15 @@ namespace TmCGPTD.ViewModels
                 {
                     OnPropertyChanged(nameof(SelectedItemId));
 
-                    if (_selectedItem != default)
+                    if (_selectedItem != default && DataGridIsFocused)
                     {
                         VMLocator.ChatViewModel.LastId = _selectedItem.Id;
                         ShowChatLogAsync(_selectedItem.Id);
                     }
                     else
                     {
-                        //VMLocator.ChatViewModel.LastId = -1;
+                        SelectedItemIndex = -1;
+                        VMLocator.ChatViewModel.LastId = -1;
                     }
                 }
             }
@@ -84,9 +81,19 @@ namespace TmCGPTD.ViewModels
             {
                 var result = await _dbProcess.GetChatLogDatabaseAsync(_selectedItem);
 
+                _chatViewModel.ReEditIsOn = false;
                 _chatViewModel.ChatTitle = result[0];
-                _chatViewModel.ConversationHistory = JsonSerializer.Deserialize<List<Dictionary<string, object>>>(result[1]);
+                if (!string.IsNullOrWhiteSpace(result[1]))
+                {
+                    _chatViewModel.ConversationHistory = JsonSerializer.Deserialize<List<Dictionary<string, object>>>(result[1]);
+                }
                 _chatViewModel.HtmlContent = await _htmlProcess.ConvertChatLogToHtml(result[2]);
+                _chatViewModel.ChatCategory = result[3];
+                _chatViewModel.LastPrompt = result[4];
+                if (!string.IsNullOrWhiteSpace(result[5]))
+                {
+                    _chatViewModel.LastConversationHistory = JsonSerializer.Deserialize<List<Dictionary<string, object>>>(result[5]);
+                }
 
                 if (VMLocator.MainViewModel.SelectedLeftPane != "API Chat")
                 {

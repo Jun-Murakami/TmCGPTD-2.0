@@ -7,4 +7,5 @@
 制限トークンに達すると、送信される過去の会話履歴が自動的に圧縮されます。(表示ログには影響しません)</system:String>
     <system:String x:Key="My.Strings.DatabaseInfo">※データベースファイルの保存先をクラウドフォルダ（DropBoxなど）に設定して他のコンピュータから読み込むことで、チャットログと定型句プリセットを同期できます。</system:String>
     <system:String x:Key="My.Strings.ChatScreenInfo">チャット画面を表示した状態で実行してください。</system:String>
+    <system:String x:Key="My.Strings.DatabaseUpdate">データベースファイルがアップデートされました。この操作は一度だけ実行されます。データはバックアップされています。</system:String>
 </ResourceDictionary>

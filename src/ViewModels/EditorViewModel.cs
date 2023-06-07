@@ -251,6 +251,7 @@ namespace TmCGPTD.ViewModels
             set => SetProperty(ref _editorHeight5, value);
         }
 
+
         private async Task SaveTemplateAsync()
         {
             string phrasesText;

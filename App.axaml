@@ -54,5 +54,6 @@
 		<Color x:Key="SystemControlForegroundBaseHighBrush">rgb(220, 220, 220)</Color>
 		<Color x:Key="TextOnAccentFillColorPrimary">rgb(220, 220, 220)</Color>
 		<Color x:Key="TextFillColorPrimary">rgb(220, 220, 220)</Color>
+		<Color x:Key="DataGridRowGroupHeaderBackgroundBrush">rgb(32, 33, 35)</Color>
 	</Application.Resources>
 </Application>
