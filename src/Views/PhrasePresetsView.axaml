@@ -1,73 +1,318 @@
-<UserControl xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             mc:Ignorable="d"
-             x:Class="TmCGPTD.Views.PhrasePresetsView">
-	<Grid Name="PhrasePresets" HorizontalAlignment="Stretch">
-		<Grid.ColumnDefinitions>
-			<ColumnDefinition Width="Auto"/>
-			<ColumnDefinition Width="0.2*"/>
-			<ColumnDefinition Width="Auto"/>
-			<ColumnDefinition Width="0.2*"/>
-			<ColumnDefinition Width="Auto"/>
-			<ColumnDefinition Width="0.2*"/>
-			<ColumnDefinition Width="Auto"/>
-			<ColumnDefinition Width="0.2*"/>
-			<ColumnDefinition Width="Auto"/>
-			<ColumnDefinition Width="0.2*"/>
-		</Grid.ColumnDefinitions>
+<UserControl
+    x:Class="TmCGPTD.Views.PhrasePresetsView"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+    <Grid Name="PhrasePresets" HorizontalAlignment="Stretch">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="0.2*" />
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="0.2*" />
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="0.2*" />
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="0.2*" />
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="0.2*" />
+        </Grid.ColumnDefinitions>
 
-		<Grid.RowDefinitions>
-			<RowDefinition Height="Auto"/>
-			<RowDefinition Height="Auto"/>
-			<RowDefinition Height="Auto"/>
-			<RowDefinition Height="Auto"/>
-		</Grid.RowDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
 
-		<Button Grid.Column="0" Grid.Row="0" Name="Button1" Click="OnButtonClick" Focusable="False" Content="1" HotKey="Ctrl+NumPad1"/>
-		<TextBox Grid.Column="1" Grid.Row="0" Name="TextBox1" Text="{Binding Phrases[0], Mode=TwoWay}" Classes.clearButton="True" />
-		<Button Grid.Column="2" Grid.Row="0" Name="Button2" Click="OnButtonClick" Focusable="False" Content="2" HotKey="Ctrl+NumPad2"/>
-		<TextBox Grid.Column="3" Grid.Row="0" Name="TextBox2" Text="{Binding Phrases[1], Mode=TwoWay}" Classes.clearButton="True" />
-		<Button Grid.Column="4" Grid.Row="0" Name="Button3" Click="OnButtonClick" Focusable="False" Content="3" HotKey="Ctrl+NumPad3"/>
-		<TextBox Grid.Column="5" Grid.Row="0" Name="TextBox3" Text="{Binding Phrases[2], Mode=TwoWay}" Classes.clearButton="True" />
-		<Button Grid.Column="6" Grid.Row="0" Name="Button4" Click="OnButtonClick" Focusable="False" Content="4" HotKey="Ctrl+NumPad4"/>
-		<TextBox Grid.Column="7" Grid.Row="0" Name="TextBox4" Text="{Binding Phrases[3], Mode=TwoWay}" Classes.clearButton="True" />
-		<Button Grid.Column="8" Grid.Row="0" Name="Button5" Click="OnButtonClick" Focusable="False" Content="5" HotKey="Ctrl+NumPad5"/>
-		<TextBox Grid.Column="9" Grid.Row="0" Name="TextBox5" Text="{Binding Phrases[4], Mode=TwoWay}" Classes.clearButton="True" Margin="2,0,3,0" />
+        <Button
+            Name="Button1"
+            Grid.Row="0"
+            Grid.Column="0"
+            Click="OnButtonClick"
+            Content="1"
+            Focusable="False"
+            HotKey="Ctrl+NumPad1" />
+        <TextBox
+            Name="TextBox1"
+            Grid.Row="0"
+            Grid.Column="1"
+            Classes.clearButton="True"
+            Text="{Binding Phrases[0], Mode=TwoWay}" />
+        <Button
+            Name="Button2"
+            Grid.Row="0"
+            Grid.Column="2"
+            Click="OnButtonClick"
+            Content="2"
+            Focusable="False"
+            HotKey="Ctrl+NumPad2" />
+        <TextBox
+            Name="TextBox2"
+            Grid.Row="0"
+            Grid.Column="3"
+            Classes.clearButton="True"
+            Text="{Binding Phrases[1], Mode=TwoWay}" />
+        <Button
+            Name="Button3"
+            Grid.Row="0"
+            Grid.Column="4"
+            Click="OnButtonClick"
+            Content="3"
+            Focusable="False"
+            HotKey="Ctrl+NumPad3" />
+        <TextBox
+            Name="TextBox3"
+            Grid.Row="0"
+            Grid.Column="5"
+            Classes.clearButton="True"
+            Text="{Binding Phrases[2], Mode=TwoWay}" />
+        <Button
+            Name="Button4"
+            Grid.Row="0"
+            Grid.Column="6"
+            Click="OnButtonClick"
+            Content="4"
+            Focusable="False"
+            HotKey="Ctrl+NumPad4" />
+        <TextBox
+            Name="TextBox4"
+            Grid.Row="0"
+            Grid.Column="7"
+            Classes.clearButton="True"
+            Text="{Binding Phrases[3], Mode=TwoWay}" />
+        <Button
+            Name="Button5"
+            Grid.Row="0"
+            Grid.Column="8"
+            Click="OnButtonClick"
+            Content="5"
+            Focusable="False"
+            HotKey="Ctrl+NumPad5" />
+        <TextBox
+            Name="TextBox5"
+            Grid.Row="0"
+            Grid.Column="9"
+            Margin="2,0,3,0"
+            Classes.clearButton="True"
+            Text="{Binding Phrases[4], Mode=TwoWay}" />
 
-		<Button Grid.Column="0" Grid.Row="1" Name="Button6" Click="OnButtonClick" Focusable="False" Content="6" HotKey="Ctrl+NumPad6"/>
-		<TextBox Grid.Column="1" Grid.Row="1" Name="TextBox6" Text="{Binding Phrases[5], Mode=TwoWay}" Classes.clearButton="True" />
-		<Button Grid.Column="2" Grid.Row="1" Name="Button7" Click="OnButtonClick" Focusable="False" Content="7" HotKey="Ctrl+NumPad7"/>
-		<TextBox Grid.Column="3" Grid.Row="1" Name="TextBox7" Text="{Binding Phrases[6], Mode=TwoWay}" Classes.clearButton="True" />
-		<Button Grid.Column="4" Grid.Row="1" Name="Button8" Click="OnButtonClick" Focusable="False" Content="8" HotKey="Ctrl+NumPad8"/>
-		<TextBox Grid.Column="5" Grid.Row="1" Name="TextBox8" Text="{Binding Phrases[7], Mode=TwoWay}" Classes.clearButton="True" />
-		<Button Grid.Column="6" Grid.Row="1" Name="Button9" Click="OnButtonClick" Focusable="False" Content="9" HotKey="Ctrl+NumPad9"/>
-		<TextBox Grid.Column="7" Grid.Row="1" Name="TextBox9" Text="{Binding Phrases[8], Mode=TwoWay}" Classes.clearButton="True" />
-		<Button Grid.Column="8" Grid.Row="1" Name="Button10" Click="OnButtonClick" Focusable="False" Content="10" HotKey="Ctrl+NumPad0"/>
-		<TextBox Grid.Column="9" Grid.Row="1" Name="TextBox10" Text="{Binding Phrases[9], Mode=TwoWay}" Classes.clearButton="True" Margin="2,0,3,0" />
+        <Button
+            Name="Button6"
+            Grid.Row="1"
+            Grid.Column="0"
+            Click="OnButtonClick"
+            Content="6"
+            Focusable="False"
+            HotKey="Ctrl+NumPad6" />
+        <TextBox
+            Name="TextBox6"
+            Grid.Row="1"
+            Grid.Column="1"
+            Classes.clearButton="True"
+            Text="{Binding Phrases[5], Mode=TwoWay}" />
+        <Button
+            Name="Button7"
+            Grid.Row="1"
+            Grid.Column="2"
+            Click="OnButtonClick"
+            Content="7"
+            Focusable="False"
+            HotKey="Ctrl+NumPad7" />
+        <TextBox
+            Name="TextBox7"
+            Grid.Row="1"
+            Grid.Column="3"
+            Classes.clearButton="True"
+            Text="{Binding Phrases[6], Mode=TwoWay}" />
+        <Button
+            Name="Button8"
+            Grid.Row="1"
+            Grid.Column="4"
+            Click="OnButtonClick"
+            Content="8"
+            Focusable="False"
+            HotKey="Ctrl+NumPad8" />
+        <TextBox
+            Name="TextBox8"
+            Grid.Row="1"
+            Grid.Column="5"
+            Classes.clearButton="True"
+            Text="{Binding Phrases[7], Mode=TwoWay}" />
+        <Button
+            Name="Button9"
+            Grid.Row="1"
+            Grid.Column="6"
+            Click="OnButtonClick"
+            Content="9"
+            Focusable="False"
+            HotKey="Ctrl+NumPad9" />
+        <TextBox
+            Name="TextBox9"
+            Grid.Row="1"
+            Grid.Column="7"
+            Classes.clearButton="True"
+            Text="{Binding Phrases[8], Mode=TwoWay}" />
+        <Button
+            Name="Button10"
+            Grid.Row="1"
+            Grid.Column="8"
+            Click="OnButtonClick"
+            Content="10"
+            Focusable="False"
+            HotKey="Ctrl+NumPad0" />
+        <TextBox
+            Name="TextBox10"
+            Grid.Row="1"
+            Grid.Column="9"
+            Margin="2,0,3,0"
+            Classes.clearButton="True"
+            Text="{Binding Phrases[9], Mode=TwoWay}" />
 
-		<Button Grid.Column="0" Grid.Row="2" Name="Button11" Click="OnButtonClick" Focusable="False" Content="11" HotKey="Alt+NumPad1"/>
-		<TextBox Grid.Column="1" Grid.Row="2" Name="TextBox11" Text="{Binding Phrases[10], Mode=TwoWay}" Classes.clearButton="True" />
-		<Button Grid.Column="2" Grid.Row="2" Name="Button12" Click="OnButtonClick" Focusable="False" Content="12" HotKey="Alt+NumPad2"/>
-		<TextBox Grid.Column="3" Grid.Row="2" Name="TextBox12" Text="{Binding Phrases[11], Mode=TwoWay}" Classes.clearButton="True" />
-		<Button Grid.Column="4" Grid.Row="2" Name="Button13" Click="OnButtonClick" Focusable="False" Content="13" HotKey="Alt+NumPad3"/>
-		<TextBox Grid.Column="5" Grid.Row="2" Name="TextBox13" Text="{Binding Phrases[12], Mode=TwoWay}" Classes.clearButton="True" />
-		<Button Grid.Column="6" Grid.Row="2" Name="Button14" Click="OnButtonClick" Focusable="False" Content="14" HotKey="Alt+NumPad4"/>
-		<TextBox Grid.Column="7" Grid.Row="2" Name="TextBox14" Text="{Binding Phrases[13], Mode=TwoWay}" Classes.clearButton="True" />
-		<Button Grid.Column="8" Grid.Row="2" Name="Button15" Click="OnButtonClick" Focusable="False" Content="15" HotKey="Alt+NumPad5"/>
-		<TextBox Grid.Column="9" Grid.Row="2" Name="TextBox15" Text="{Binding Phrases[14], Mode=TwoWay}" Classes.clearButton="True" Margin="2,0,3,0" />
+        <Button
+            Name="Button11"
+            Grid.Row="2"
+            Grid.Column="0"
+            Click="OnButtonClick"
+            Content="11"
+            Focusable="False"
+            HotKey="Alt+NumPad1" />
+        <TextBox
+            Name="TextBox11"
+            Grid.Row="2"
+            Grid.Column="1"
+            Classes.clearButton="True"
+            Text="{Binding Phrases[10], Mode=TwoWay}" />
+        <Button
+            Name="Button12"
+            Grid.Row="2"
+            Grid.Column="2"
+            Click="OnButtonClick"
+            Content="12"
+            Focusable="False"
+            HotKey="Alt+NumPad2" />
+        <TextBox
+            Name="TextBox12"
+            Grid.Row="2"
+            Grid.Column="3"
+            Classes.clearButton="True"
+            Text="{Binding Phrases[11], Mode=TwoWay}" />
+        <Button
+            Name="Button13"
+            Grid.Row="2"
+            Grid.Column="4"
+            Click="OnButtonClick"
+            Content="13"
+            Focusable="False"
+            HotKey="Alt+NumPad3" />
+        <TextBox
+            Name="TextBox13"
+            Grid.Row="2"
+            Grid.Column="5"
+            Classes.clearButton="True"
+            Text="{Binding Phrases[12], Mode=TwoWay}" />
+        <Button
+            Name="Button14"
+            Grid.Row="2"
+            Grid.Column="6"
+            Click="OnButtonClick"
+            Content="14"
+            Focusable="False"
+            HotKey="Alt+NumPad4" />
+        <TextBox
+            Name="TextBox14"
+            Grid.Row="2"
+            Grid.Column="7"
+            Classes.clearButton="True"
+            Text="{Binding Phrases[13], Mode=TwoWay}" />
+        <Button
+            Name="Button15"
+            Grid.Row="2"
+            Grid.Column="8"
+            Click="OnButtonClick"
+            Content="15"
+            Focusable="False"
+            HotKey="Alt+NumPad5" />
+        <TextBox
+            Name="TextBox15"
+            Grid.Row="2"
+            Grid.Column="9"
+            Margin="2,0,3,0"
+            Classes.clearButton="True"
+            Text="{Binding Phrases[14], Mode=TwoWay}" />
 
-		<Button Grid.Column="0" Grid.Row="3" Name="Button16" Click="OnButtonClick" Focusable="False" Content="16" HotKey="Alt+NumPad6"/>
-		<TextBox Grid.Column="1" Grid.Row="3" Name="TextBox16" Text="{Binding Phrases[15], Mode=TwoWay}" Classes.clearButton="True" />
-		<Button Grid.Column="2" Grid.Row="3" Name="Button17" Click="OnButtonClick" Focusable="False" Content="17" HotKey="Alt+NumPad7"/>
-		<TextBox Grid.Column="3" Grid.Row="3" Name="TextBox17" Text="{Binding Phrases[16], Mode=TwoWay}" Classes.clearButton="True" />
-		<Button Grid.Column="4" Grid.Row="3" Name="Button18" Click="OnButtonClick" Focusable="False" Content="18" HotKey="Alt+NumPad8"/>
-		<TextBox Grid.Column="5" Grid.Row="3" Name="TextBox18" Text="{Binding Phrases[17], Mode=TwoWay}" Classes.clearButton="True" />
-		<Button Grid.Column="6" Grid.Row="3" Name="Button19" Click="OnButtonClick" Focusable="False" Content="19" HotKey="Alt+NumPad9"/>
-		<TextBox Grid.Column="7" Grid.Row="3" Name="TextBox19" Text="{Binding Phrases[18], Mode=TwoWay}" Classes.clearButton="True" />
-		<Button Grid.Column="8" Grid.Row="3" Name="Button20" Click="OnButtonClick" Focusable="False" Content="20" HotKey="Alt+NumPad0"/>
-		<TextBox Grid.Column="9" Grid.Row="3" Name="TextBox20" Text="{Binding Phrases[19], Mode=TwoWay}" Classes.clearButton="True" Margin="2,0,3,0" />
+        <Button
+            Name="Button16"
+            Grid.Row="3"
+            Grid.Column="0"
+            Click="OnButtonClick"
+            Content="16"
+            Focusable="False"
+            HotKey="Alt+NumPad6" />
+        <TextBox
+            Name="TextBox16"
+            Grid.Row="3"
+            Grid.Column="1"
+            Classes.clearButton="True"
+            Text="{Binding Phrases[15], Mode=TwoWay}" />
+        <Button
+            Name="Button17"
+            Grid.Row="3"
+            Grid.Column="2"
+            Click="OnButtonClick"
+            Content="17"
+            Focusable="False"
+            HotKey="Alt+NumPad7" />
+        <TextBox
+            Name="TextBox17"
+            Grid.Row="3"
+            Grid.Column="3"
+            Classes.clearButton="True"
+            Text="{Binding Phrases[16], Mode=TwoWay}" />
+        <Button
+            Name="Button18"
+            Grid.Row="3"
+            Grid.Column="4"
+            Click="OnButtonClick"
+            Content="18"
+            Focusable="False"
+            HotKey="Alt+NumPad8" />
+        <TextBox
+            Name="TextBox18"
+            Grid.Row="3"
+            Grid.Column="5"
+            Classes.clearButton="True"
+            Text="{Binding Phrases[17], Mode=TwoWay}" />
+        <Button
+            Name="Button19"
+            Grid.Row="3"
+            Grid.Column="6"
+            Click="OnButtonClick"
+            Content="19"
+            Focusable="False"
+            HotKey="Alt+NumPad9" />
+        <TextBox
+            Name="TextBox19"
+            Grid.Row="3"
+            Grid.Column="7"
+            Classes.clearButton="True"
+            Text="{Binding Phrases[18], Mode=TwoWay}" />
+        <Button
+            Name="Button20"
+            Grid.Row="3"
+            Grid.Column="8"
+            Click="OnButtonClick"
+            Content="20"
+            Focusable="False"
+            HotKey="Alt+NumPad0" />
+        <TextBox
+            Name="TextBox20"
+            Grid.Row="3"
+            Grid.Column="9"
+            Margin="2,0,3,0"
+            Classes.clearButton="True"
+            Text="{Binding Phrases[19], Mode=TwoWay}" />
 
-	</Grid>
+    </Grid>
 </UserControl>
