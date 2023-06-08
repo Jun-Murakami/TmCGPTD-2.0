@@ -127,6 +127,16 @@ div.codeHeader {
   padding: 0px 0px 0px 1em
 }
 
+div.codeHeader2 {
+    display: flex;
+    justify-content: space-between;
+    background: #444654;
+    font-size: 0.8em;
+    border-radius: 6px 6px 0px 0px;
+    margin: 1.8em 0px 0px 0px;
+    padding: 0px 0px 0px 1em
+}
+
 div.usage {
   color: #aeaeae;
   margin: 0px;
