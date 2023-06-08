@@ -26,14 +26,6 @@ namespace TmCGPTD.ViewModels
 
             TextClear();
 
-            PropertyChanged += (sender, e) =>
-            {
-                if (e.PropertyName.StartsWith("Editor"))
-                {
-                    TextInput_TextChanged();
-                }
-            };
-
             _editorLogLists = new ObservableCollection<EditorLogs>();
 
             PrevCommand = new RelayCommand(OnPrevCommand, () => SelectedEditorLogIndex > 0);
@@ -273,7 +265,7 @@ namespace TmCGPTD.ViewModels
                         return;
                     }
                 }
-                else if(string.IsNullOrWhiteSpace(RecentText))
+                else if(string.IsNullOrWhiteSpace(GetRecentText()))
                 {
                     return;
                 }
@@ -418,7 +410,7 @@ namespace TmCGPTD.ViewModels
 
         private async Task ExportTemplateAsync()
         {
-            if (SelectedTemplateItemIndex < 0 || string.IsNullOrWhiteSpace(RecentText))
+            if (SelectedTemplateItemIndex < 0 || string.IsNullOrWhiteSpace(GetRecentText()))
             {
                 return;
             }
@@ -478,10 +470,9 @@ namespace TmCGPTD.ViewModels
             EditorHeight5 = new GridLength(0.08, GridUnitType.Star);
         }
 
-        public void TextInput_TextChanged()
+        public string GetRecentText()
         {
             List<string> inputText = new List<string>();
-            inputText.Clear();
             inputText.Add(string.Join(Environment.NewLine, Editor1Text));
             inputText.Add(string.Join(Environment.NewLine, Editor2Text));
             inputText.Add(string.Join(Environment.NewLine, Editor3Text));
@@ -491,8 +482,9 @@ namespace TmCGPTD.ViewModels
             var outputText = inputText;
             outputText.RemoveAll(s => string.IsNullOrWhiteSpace(s)); // ‹ós‚ðíœ
 
-            RecentText = string.Join(Environment.NewLine + "---" + Environment.NewLine, outputText);
+            return string.Join(Environment.NewLine + "---" + Environment.NewLine, outputText);
         }
+
 
         public void TextClear()
         {
@@ -501,7 +493,6 @@ namespace TmCGPTD.ViewModels
             Editor3Text = string.Empty;
             Editor4Text = string.Empty;
             Editor5Text = string.Empty;
-            RecentText = string.Empty;
             SelectedTemplateItemIndex = -1;
         }
 
@@ -510,13 +501,6 @@ namespace TmCGPTD.ViewModels
         {
             get => _editorCommonFontSize;
             set => SetProperty(ref _editorCommonFontSize, value);
-        }
-
-        private string _recentText;
-        public string RecentText
-        {
-            get => _recentText;
-            set => SetProperty(ref _recentText, value);
         }
 
         private string _editor1Text;

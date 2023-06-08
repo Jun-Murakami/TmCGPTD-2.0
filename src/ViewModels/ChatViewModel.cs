@@ -81,7 +81,7 @@ namespace TmCGPTD.ViewModels
 
                 await Task.Delay(100);
 
-                string postText = VMLocator.EditorViewModel.RecentText.Trim().Trim('\r', '\n');
+                string postText = VMLocator.EditorViewModel.GetRecentText().Trim().Trim('\r', '\n');
                 string escapedString = JsonSerializer.Serialize(postText);
 
                 string jsCode = $@"var element = document.querySelector('.svg-container');
