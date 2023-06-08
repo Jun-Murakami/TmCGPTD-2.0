@@ -472,12 +472,14 @@ namespace TmCGPTD.ViewModels
 
         public string GetRecentText()
         {
-            List<string> inputText = new List<string>();
-            inputText.Add(string.Join(Environment.NewLine, Editor1Text));
-            inputText.Add(string.Join(Environment.NewLine, Editor2Text));
-            inputText.Add(string.Join(Environment.NewLine, Editor3Text));
-            inputText.Add(string.Join(Environment.NewLine, Editor4Text));
-            inputText.Add(string.Join(Environment.NewLine, Editor5Text));
+            List<string> inputText = new List<string>
+            {
+                string.Join(Environment.NewLine, Editor1Text.Trim()),
+                string.Join(Environment.NewLine, Editor2Text.Trim()),
+                string.Join(Environment.NewLine, Editor3Text.Trim()),
+                string.Join(Environment.NewLine, Editor4Text.Trim()),
+                string.Join(Environment.NewLine, Editor5Text.Trim())
+            };
 
             var outputText = inputText;
             outputText.RemoveAll(s => string.IsNullOrWhiteSpace(s)); // ãÛçsÇçÌèú

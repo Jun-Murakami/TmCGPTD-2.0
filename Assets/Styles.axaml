@@ -183,6 +183,21 @@
             <Setter Property="Background" Value="rgb(42, 43, 55)" />
             <Setter Property="BorderThickness" Value="0" />
         </Style>
+
+        <Style Selector="Grid#EditorGrid TextBox.SystemMessageBackground">
+            <Setter Property="Background" Value="rgb(60, 50, 125)" />
+            <Setter Property="BorderThickness" Value="0" />
+        </Style>
+        <Style Selector="Grid#EditorGrid TextBox.SystemMessageBackground:pointerover /template/ Border#PART_BorderElement">
+            <Setter Property="Background" Value="rgb(60, 50, 125)" />
+            <Setter Property="BorderThickness" Value="0" />
+        </Style>
+        <Style Selector="Grid#EditorGrid TextBox.SystemMessageBackground:focus /template/ Border#PART_BorderElement">
+            <Setter Property="Background" Value="rgb(60, 50, 125)" />
+            <Setter Property="BorderThickness" Value="0" />
+        </Style>
+
+
         <Style Selector="Grid TextBox#PreviewTextBox">
             <Setter Property="FontSize" Value="14" />
             <Setter Property="Background" Value="rgb(52, 53, 65)" />

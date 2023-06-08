@@ -48,6 +48,7 @@ namespace TmCGPTD.ViewModels
             CopyToClipboardCommand = new AsyncRelayCommand(async () => await CopyToClipboard());
 
             ResetSeparatorCommand = new RelayCommand(ResetSeparator);
+            SystemMessageCommand = new RelayCommand(InsertSystemMessage);
             HotKeyDisplayCommand = new AsyncRelayCommand(HotKeyDisplayAsync);
             OpenApiSettingsCommand = new RelayCommand(OpenApiSettings);
             ShowDatabaseSettingsCommand = new AsyncRelayCommand(ShowDatabaseSettingsAsync);
@@ -73,6 +74,7 @@ namespace TmCGPTD.ViewModels
         public ICommand EditorAllClear { get; }
         public ICommand CopyToClipboardCommand { get; }
         public ICommand ResetSeparatorCommand { get; }
+        public ICommand SystemMessageCommand { get; }
         public ICommand OpenApiSettingsCommand { get; }
         public IAsyncRelayCommand ShowDatabaseSettingsCommand { get; }
         public IAsyncRelayCommand HotKeyDisplayCommand { get; }
@@ -679,6 +681,12 @@ namespace TmCGPTD.ViewModels
         private void ResetSeparator()
         {
             VMLocator.EditorViewModel.SeparatorReset();
+        }
+
+        private void InsertSystemMessage()
+        {
+            Application.Current!.TryFindResource("My.Strings.SystemMessage", out object resource1);
+            VMLocator.EditorViewModel.Editor1Text = $"#System{Environment.NewLine}{Environment.NewLine}{resource1}";
         }
 
         public void OpenApiSettings()

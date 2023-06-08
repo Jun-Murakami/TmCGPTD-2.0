@@ -129,8 +129,11 @@ namespace TmCGPTD.Models
                 Regex strongRegex = new Regex(@"\*\*(.+?)\*\*");
                 content = strongRegex.Replace(content, m => $"<strong>{m.Groups[1].Value}</strong>");
 
-                pattern = @$"#(\s*)(?i)system{Environment.NewLine}(.*?)---{Environment.NewLine}";
-                content = Regex.Replace(content, pattern, "<div class=\"codeHeader2\"><span class=\"lang\">System Message</span</div><pre style=\"margin:0px 0px 2.5em 0px\"><code id=\"headerOn\" class=\"plaintext\">$2</code></pre>", RegexOptions.Singleline);
+                pattern = @$"#(\s*)(?i)system({Environment.NewLine})*?---({Environment.NewLine})*";
+                content = Regex.Replace(content, pattern, "<div class=\"codeHeader2\"><span class=\"lang\">System Message</span</div><pre style=\"margin:0px 0px 2.5em 0px\"><code id=\"headerOn\" class=\"plaintext\">System messages were turned off.</code></pre>", RegexOptions.Singleline);
+
+                pattern = @$"#(\s*)(?i)system({Environment.NewLine})*(.+?)---({Environment.NewLine})*";
+                content = Regex.Replace(content, pattern, "<div class=\"codeHeader2\"><span class=\"lang\">System Message</span</div><pre style=\"margin:0px 0px 2.5em 0px\"><code id=\"headerOn\" class=\"plaintext\">$3</code></pre>", RegexOptions.Singleline);
 
                 pattern = @"`(.*?)`";
                 string replacement = "<code class=\"inline\">`$1`</code>";
@@ -818,7 +821,9 @@ namespace TmCGPTD.Models
                             }
 
                             // 返ってきた要約文で、conversationHistoryを書き換える
+                            conversationHistory.Reverse();
                             conversationHistory.RemoveRange(messageStart, conversationHistory.Count - messageStart);
+                            conversationHistory.Reverse();
                             conversationHistory.Insert(0, new Dictionary<string, object>() { { "role", "assistant" }, { "content", summary } });
                         }
                         catch (Exception ex)
@@ -872,7 +877,7 @@ namespace TmCGPTD.Models
 
                     var systemInput = new Dictionary<string, object>() { { "role", "system"}, {"content", systemMessage } };
 
-                    // 既存のシステムメッセージを削除
+                    // 既存のシステムメッセージがあれば削除
                     Dictionary<string, object>? itemToRemove = null;
                     foreach (var item in conversationHistory)
                     {
@@ -887,8 +892,12 @@ namespace TmCGPTD.Models
                         conversationHistory.Remove(itemToRemove);
                     }
 
-                    // 会話履歴の先頭にシステムメッセージを追加
-                    conversationHistory.Insert(0, systemInput);
+                    // システムメッセージが空の時はリセットされる扱いにする
+                    if(!string.IsNullOrWhiteSpace(systemMessage))
+                    {
+                        // 会話履歴の先頭にシステムメッセージを追加
+                        conversationHistory.Insert(0, systemInput);
+                    }
                 }
 
                 // 現在のユーザーの入力を表すディクショナリ

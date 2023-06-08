@@ -25,9 +25,9 @@ namespace TmCGPTD.Views
             {
                 if (PhrasePresetsViewModel.CtrlKeyIsDown)
                 {
-                    //1から10まで繰り返してTextBoxのインスタンスを取得
                     for (int i = 1; i <= 10; i++)
                     {
+                        // Get the instance of the control
                         TextBox textBox = this.FindControl<TextBox>($"TextBox{i}");
                         textBox.Classes.Add("KeyDown");
                         Button　button = this.FindControl<Button>($"Button{i}");
@@ -50,7 +50,6 @@ namespace TmCGPTD.Views
             {
                 if (PhrasePresetsViewModel.AltKeyIsDown)
                 {
-                    //11から20まで繰り返してTextBoxのインスタンスを取得
                     for (int i = 11; i <= 20; i++)
                     {
                         TextBox textBox = this.FindControl<TextBox>($"TextBox{i}");
@@ -76,7 +75,7 @@ namespace TmCGPTD.Views
         {
             if (sender is Button button)
             {
-                int buttonNumber = int.Parse(button.Name.Substring(6)); // "Button"の後の番号を取得
+                int buttonNumber = int.Parse(button.Name.Substring(6));
                 TextBox textBox = this.FindControl<TextBox>($"TextBox{buttonNumber}");
 
                 if (textBox.Text == null )
@@ -84,15 +83,15 @@ namespace TmCGPTD.Views
                     return;
                 }
 
-                // フォーカスがあるコントロールを取得
+                // Get the currently focused control
                 var focusedControl = FocusManager.Instance.Current;
 
                 if (focusedControl is TextBox focusedTextBox)
                 {
                     int start = focusedTextBox.SelectionStart;
                     int length = focusedTextBox.SelectionEnd - focusedTextBox.SelectionStart;
-                    //Debug.WriteLine("start:" + start + " length:" + length);
-                    // テキストがnullの場合、空文字列に設定
+
+                    // if text is null, set empty string
                     if (focusedTextBox.Text == null)
                     {
                         focusedTextBox.Text = string.Empty;
@@ -105,11 +104,11 @@ namespace TmCGPTD.Views
                             length = Math.Abs(length);
                             start = start - length;
                         }
-                        // テキスト選択範囲がある場合、上書き
+                        // if selected text is not empty, remove selected text
                         focusedTextBox.Text = focusedTextBox.Text.Remove(start, length);
                     }
 
-                    // フォーカスがあるTextBoxにテキストを挿入
+                    // focus on the end of inserted text
                     focusedTextBox.Text = focusedTextBox.Text.Insert(start, textBox.Text);
                     focusedTextBox.CaretIndex = start + textBox.Text.Length;
                 }

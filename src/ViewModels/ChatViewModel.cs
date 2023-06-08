@@ -105,6 +105,10 @@ namespace TmCGPTD.ViewModels
                     int separatorIndex = escapedString.IndexOf("---");
 
                     systemMessage = escapedString.Substring(0, separatorIndex).Trim();//システムメッセージを取得
+                    if (systemMessage == "")
+                    {
+                        systemMessage = "System messages were turned off.";
+                    }
 
                     escapedString = escapedString.Substring(separatorIndex+3).Trim();//本文だけ残す
                     escapedString = JsonSerializer.Serialize(escapedString);
@@ -113,7 +117,7 @@ namespace TmCGPTD.ViewModels
                 string htmlToAdd = $"<div class=\"user\"><span class=\"userHeader\">[{postDate}] by You</span></div>";
 
                 string systemHtml = $"<div class=\"user\"><span class=\"userHeader\">[{postDate}] by You</span>" +
-                                    "<div class=\"codeHeader2\"><span class=\"lang\">System Message</span</div> +" +
+                                    "<div class=\"codeHeader2\"><span class=\"lang\">System Message</span</div>" +
                                     $"<pre style=\"margin:0px 0px 2.5em 0px\"><code id=\"headerOn\" class=\"plaintext\">{systemMessage}</code></pre></div>";
 
                 if (systemMessage !="")
