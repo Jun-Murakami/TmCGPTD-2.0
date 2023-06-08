@@ -15,7 +15,6 @@ namespace TmCGPTD.Views
             DataContext = PreviewViewModel;
             VMLocator.PreviewViewModel = PreviewViewModel;
 
-            // PreviewTextBoxのインスタンスを取得
             var previewTextBox = this.FindControl<TextBox>("PreviewTextBox");
 
             this.AttachedToVisualTree += (sender, e) =>
@@ -24,7 +23,8 @@ namespace TmCGPTD.Views
                 previewTextBox.Text = VMLocator.EditorViewModel.GetRecentText();
             };
         }
-            private void InitializeComponent()
+
+        private void InitializeComponent()
         {
             AvaloniaXamlLoader.Load(this);
         }

@@ -13,6 +13,9 @@ using Avalonia.Threading;
 using System.Reflection;
 using Tmds.DBus.Protocol;
 using System.Reflection.Metadata;
+using System.Text.RegularExpressions;
+using static TmCGPTD.Models.HtmlProcess;
+using System.Reactive.Joins;
 
 namespace TmCGPTD.ViewModels
 {
@@ -82,17 +85,41 @@ namespace TmCGPTD.ViewModels
                 await Task.Delay(100);
 
                 string postText = VMLocator.EditorViewModel.GetRecentText().Trim().Trim('\r', '\n');
-                string escapedString = JsonSerializer.Serialize(postText);
 
                 string jsCode = $@"var element = document.querySelector('.svg-container');
                                 if (element) {{
                                     element.remove();
                                 }}";
                 _browser.ExecuteJavaScript(jsCode);
-
                 await Task.Delay(100);
 
+                string escapedString = JsonSerializer.Serialize(postText);
+
+                // システムメッセージの処理
+                string systemMessage = "";
+                if (postText.StartsWith("#system", StringComparison.OrdinalIgnoreCase) || postText.StartsWith("# system", StringComparison.OrdinalIgnoreCase))
+                {
+                    escapedString = Regex.Replace(postText, @"^#(\s*?)system", "", RegexOptions.IgnoreCase).Trim();
+
+                    // 最初の"---"の位置を検索
+                    int separatorIndex = escapedString.IndexOf("---");
+
+                    systemMessage = escapedString.Substring(0, separatorIndex).Trim();//システムメッセージを取得
+
+                    escapedString = escapedString.Substring(separatorIndex+3).Trim();//本文だけ残す
+                    escapedString = JsonSerializer.Serialize(escapedString);
+                }
+
                 string htmlToAdd = $"<div class=\"user\"><span class=\"userHeader\">[{postDate}] by You</span></div>";
+
+                string systemHtml = $"<div class=\"user\"><span class=\"userHeader\">[{postDate}] by You</span>" +
+                                    "<div class=\"codeHeader2\"><span class=\"lang\">System Message</span</div> +" +
+                                    $"<pre style=\"margin:0px 0px 2.5em 0px\"><code id=\"headerOn\" class=\"plaintext\">{systemMessage}</code></pre></div>";
+
+                if (systemMessage !="")
+                {
+                    htmlToAdd = systemHtml;
+                }
 
                 jsCode = $@"var wrapper = document.getElementById('scrollableWrapper');
                         var newUserElement = document.createElement('div');
@@ -157,7 +184,7 @@ namespace TmCGPTD.ViewModels
                         window.scrollTo({{top: document.body.scrollHeight, behavior: 'smooth' }});";
                 _browser.ExecuteJavaScript(jsCode);
                 ChatIsRunning = false;
-                //throw;
+                throw;
             }
 
             ChatIsRunning = false;

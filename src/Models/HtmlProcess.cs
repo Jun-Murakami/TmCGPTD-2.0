@@ -19,6 +19,7 @@ using CommunityToolkit.Mvvm.DependencyInjection;
 using System.Reflection.Metadata;
 using ReverseMarkdown.Converters;
 using System.Reactive.Joins;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace TmCGPTD.Models
 {
@@ -128,6 +129,9 @@ namespace TmCGPTD.Models
                 Regex strongRegex = new Regex(@"\*\*(.+?)\*\*");
                 content = strongRegex.Replace(content, m => $"<strong>{m.Groups[1].Value}</strong>");
 
+                pattern = @$"#(\s*)(?i)system{Environment.NewLine}(.*?)---{Environment.NewLine}";
+                content = Regex.Replace(content, pattern, "<div class=\"codeHeader2\"><span class=\"lang\">System Message</span</div><pre style=\"margin:0px 0px 2.5em 0px\"><code id=\"headerOn\" class=\"plaintext\">$2</code></pre>", RegexOptions.Singleline);
+
                 pattern = @"`(.*?)`";
                 string replacement = "<code class=\"inline\">`$1`</code>";
                 content = Regex.Replace(content, pattern, replacement);
@@ -188,7 +192,7 @@ namespace TmCGPTD.Models
                 HtmlAgilityPack.HtmlDocument htmlDoc = new HtmlAgilityPack.HtmlDocument();
                 htmlDoc.LoadHtml(htmlSource);
 
-                Application.Current!.TryFindResource("My.Strings.ChatScreenInfo", out object resource1);
+                Avalonia.Application.Current!.TryFindResource("My.Strings.ChatScreenInfo", out object resource1);
                 string resourceString = resource1.ToString();
 
                 HtmlNode titleNode = htmlDoc.DocumentNode.SelectSingleNode("//title");
@@ -462,7 +466,7 @@ namespace TmCGPTD.Models
                 HtmlAgilityPack.HtmlDocument htmlDoc = new HtmlAgilityPack.HtmlDocument();
                 htmlDoc.LoadHtml(htmlSource);
 
-                Application.Current!.TryFindResource("My.Strings.ChatScreenInfo", out object resource1);
+                Avalonia.Application.Current!.TryFindResource("My.Strings.ChatScreenInfo", out object resource1);
                 string resourceString = resource1.ToString();
 
                 HtmlNode titleNode = htmlDoc.DocumentNode.SelectSingleNode("//title");
@@ -711,6 +715,18 @@ namespace TmCGPTD.Models
                     maxContentLength = 3072;
                 }
 
+                // 既存のシステムメッセージをディープコピー
+                Dictionary<string, object>? recenctSystemMessage = null;
+                foreach (var item in conversationHistory)
+                {
+                    if (item.ContainsKey("role") && item["role"].ToString() == "system" && item.ContainsKey("content"))
+                    {
+                        string json = JsonSerializer.Serialize(item);
+                        recenctSystemMessage = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, object>>(json);
+                        break;
+                    }
+                }
+
                 TikToken tokenizer = TikToken.EncodingForModel("gpt-3.5-turbo");
 
                 // 過去の会話履歴と現在の入力を結合する前に、過去の会話履歴に含まれるcontent文字列のトークン数を取得
@@ -746,14 +762,14 @@ namespace TmCGPTD.Models
                 if (historyContentTokenCount + inputTokenCount + maxTokens > maxContentLength)
                 {
                     int historyTokenCount = 0;
-                    int messagesToSelect = 0;
-                    int messageStart = 0;
-                    string forCompMes = "";
+                    int messagesToSelect = 0; // 会話履歴のどのインデックスまで選択するか
+                    int messageStart = 0; // 会話履歴のどのインデックスから選択するか
+                    string? forCompMes = "";
 
                     // 会話履歴の最新のものからトークン数を数えて一時変数「historyTokenCount」に足していく
                     for (int i = 0; i < reversedHistoryList.Count; i += 1)
                     {
-                        string mes = reversedHistoryList[i]["content"].ToString();
+                        string? mes = reversedHistoryList[i]["content"].ToString();
                         int messageTokenCount = tokenizer.Encode(mes).Count;
                         historyTokenCount += messageTokenCount;
 
@@ -803,7 +819,7 @@ namespace TmCGPTD.Models
 
                             // 返ってきた要約文で、conversationHistoryを書き換える
                             conversationHistory.RemoveRange(messageStart, conversationHistory.Count - messageStart);
-                            conversationHistory.Add(new Dictionary<string, object>() { { "role", "assistant" }, { "content", summary } });
+                            conversationHistory.Insert(0, new Dictionary<string, object>() { { "role", "assistant" }, { "content", summary } });
                         }
                         catch (Exception ex)
                         {
@@ -819,16 +835,70 @@ namespace TmCGPTD.Models
                             isDeleteHistory = true;
                         }
                     }
+
+                    // 要約または削除完了後、システムメッセージが残っていれば削除
+                    Dictionary<string, object>? itemToRemove = null;
+                    foreach (var item in conversationHistory)
+                    {
+                        if (item.ContainsKey("role") && item["role"].ToString() == "system" && item.ContainsKey("content"))
+                        {
+                            itemToRemove = item;
+                            break;
+                        }
+                    }
+                    if (itemToRemove != null)
+                    {
+                        conversationHistory.Remove(itemToRemove);
+                    }
+
+                    // 保存したシステムメッセージを再挿入
+                    if (recenctSystemMessage != null)
+                    {
+                        conversationHistory.Insert(0, recenctSystemMessage);
+                    }
+                }
+
+                // システムメッセージの処理
+                if (chatTextPost.StartsWith("#system", StringComparison.OrdinalIgnoreCase) || chatTextPost.StartsWith("# system", StringComparison.OrdinalIgnoreCase))
+                {
+                    chatTextPost = Regex.Replace(chatTextPost, @"^#(\s*?)system", "", RegexOptions.IgnoreCase).Trim();
+
+                    // 最初の"---"の位置を検索
+                    int separatorIndex = chatTextPost.IndexOf("---");
+
+                    string systemMessage = chatTextPost.Substring(0, separatorIndex).Trim();//システムメッセージを取得
+
+                    chatTextPost = chatTextPost.Substring(separatorIndex+3).Trim();//本文だけ残す
+
+                    var systemInput = new Dictionary<string, object>() { { "role", "system"}, {"content", systemMessage } };
+
+                    // 既存のシステムメッセージを削除
+                    Dictionary<string, object>? itemToRemove = null;
+                    foreach (var item in conversationHistory)
+                    {
+                        if (item.ContainsKey("role") && item["role"].ToString() == "system" && item.ContainsKey("content"))
+                        {
+                            itemToRemove = item;
+                            break;
+                        }
+                    }
+                    if (itemToRemove != null)
+                    {
+                        conversationHistory.Remove(itemToRemove);
+                    }
+
+                    // 会話履歴の先頭にシステムメッセージを追加
+                    conversationHistory.Insert(0, systemInput);
                 }
 
                 // 現在のユーザーの入力を表すディクショナリ
                 var userInput = new Dictionary<string, object>() { { "role", "user" }, { "content", chatTextPost } };
 
-                // 圧縮済みの会話履歴をpostedConversationHistoryにディープコピー
-                string jsonCopy = System.Text.Json.JsonSerializer.Serialize(conversationHistory);
-                postedConversationHistory = System.Text.Json.JsonSerializer.Deserialize<List<Dictionary<string, object>>>(jsonCopy);
+                // 送信直前の会話履歴をpostedConversationHistoryにディープコピー
+                string jsonCopy = JsonSerializer.Serialize(conversationHistory);
+                postedConversationHistory = JsonSerializer.Deserialize<List<Dictionary<string, object>>>(jsonCopy);
 
-                // 過去の会話履歴と現在の入力を結合
+                // 会話履歴と現在の入力を結合
                 conversationHistory.Add(userInput);
 
                 // リクエストパラメータを作成
