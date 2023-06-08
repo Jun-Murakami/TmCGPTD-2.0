@@ -590,7 +590,7 @@ namespace TmCGPTD.Models
                         pattern = "<mat-icon[^>]*?>.*?</mat-icon>";
                         markdown = Regex.Replace(markdown, pattern, "");
 
-                        Debug.WriteLine(markdown);
+                        //Debug.WriteLine(markdown);
 
                         pattern = "<div[^>]*?>コードは慎重に使用してください。.*?</div>";
                         markdown = Regex.Replace(markdown, pattern, "");
@@ -614,8 +614,8 @@ namespace TmCGPTD.Models
                         string replacement = $"[<a $2</a>]($1){br}{br}";
                         markdown = Regex.Replace(markdown, pattern, replacement);
 
-                        pattern = @"^!\[\]\(http[^)]*?(.gif|.svg)\)";
-                        markdown = Regex.Replace(markdown, pattern, "", RegexOptions.Multiline);
+                        pattern = @"!\[\]\(http[^)]*?(.gif|.svg)\)";
+                        markdown = Regex.Replace(markdown, pattern, "", RegexOptions.IgnoreCase);
 
                         markdown = markdown.Replace("<p>", $"")
                                             .Replace("</p>", $"{br}{br}")
