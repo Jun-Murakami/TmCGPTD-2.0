@@ -30,7 +30,7 @@ namespace TmCGPTD.Views
                         // Get the instance of the control
                         TextBox textBox = this.FindControl<TextBox>($"TextBox{i}");
                         textBox.Classes.Add("KeyDown");
-                        ButtonÅ@button = this.FindControl<Button>($"Button{i}");
+                        Button button = this.FindControl<Button>($"Button{i}");
                         button.Classes.Add("KeyDown");
 
                     }
