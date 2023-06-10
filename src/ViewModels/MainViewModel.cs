@@ -92,6 +92,7 @@ namespace TmCGPTD.ViewModels
                     if (string.IsNullOrWhiteSpace(value))
                     {
                         SearchKeyword = string.Empty;
+                        VMLocator.DataGridViewModel.SelectedItemIndex = -1;
                     }
                 }
             }
@@ -248,8 +249,8 @@ namespace TmCGPTD.ViewModels
                 else
                 {
                     await VMLocator.ChatViewModel.GoChatAsync();
+                    VMLocator.DataGridViewModel.DataGridIsFocused = false;
                     VMLocator.DataGridViewModel.ChatList = await _dbProcess.SearchChatDatabaseAsync();
-                    VMLocator.DataGridViewModel.DataGridIsFocused = true;
                     VMLocator.DataGridViewModel.SelectedItemIndex = 0;
                 }
 
@@ -284,7 +285,7 @@ namespace TmCGPTD.ViewModels
                     new("All files (*.*)") { Patterns = new[] { "*" } }}
             };
 
-            var result = await (Application.Current.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime).MainWindow.StorageProvider.OpenFilePickerAsync(dialog);
+            var result = await (Application.Current!.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)!.MainWindow!.StorageProvider.OpenFilePickerAsync(dialog);
 
             if (result.Count > 0)
             {
@@ -314,7 +315,7 @@ namespace TmCGPTD.ViewModels
                     new("All files (*.*)") { Patterns = new[] { "*" } }}
             };
 
-            var result = await (Application.Current.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime).MainWindow.StorageProvider.SaveFilePickerAsync(dialog);
+            var result = await (Application.Current!.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)!.MainWindow!.StorageProvider.SaveFilePickerAsync(dialog);
 
             if (result != null)
             {

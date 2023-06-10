@@ -130,10 +130,10 @@ namespace TmCGPTD.Models
                 content = strongRegex.Replace(content, m => $"<strong>{m.Groups[1].Value}</strong>");
 
                 pattern = @$"#(\s*)(?i)system({Environment.NewLine})*?---({Environment.NewLine})*";
-                content = Regex.Replace(content, pattern, "<div class=\"codeHeader2\"><span class=\"lang\">System Message</span</div><pre style=\"margin:0px 0px 2.5em 0px\"><code id=\"headerOn\" class=\"plaintext\">System messages were turned off.</code></pre>", RegexOptions.Singleline);
+                content = Regex.Replace(content, pattern, "<div class=\"codeHeader2\"><span class=\"lang\">System Message</span></div><pre style=\"margin:0px 0px 2.5em 0px\"><code id=\"headerOn\" class=\"plaintext\">System messages were turned off.</code></pre>", RegexOptions.Singleline);
 
                 pattern = @$"#(\s*)(?i)system({Environment.NewLine})*(.+?)---({Environment.NewLine})*";
-                content = Regex.Replace(content, pattern, "<div class=\"codeHeader2\"><span class=\"lang\">System Message</span</div><pre style=\"margin:0px 0px 2.5em 0px\"><code id=\"headerOn\" class=\"plaintext\">$3</code></pre>", RegexOptions.Singleline);
+                content = Regex.Replace(content, pattern, "<div class=\"codeHeader2\"><span class=\"lang\">System Message</span></div><pre style=\"margin:0px 0px 2.5em 0px\"><code id=\"headerOn\" class=\"plaintext\">$3</code></pre>", RegexOptions.Singleline);
 
                 pattern = @"`(.*?)`";
                 string replacement = "<code class=\"inline\">`$1`</code>";
@@ -182,6 +182,7 @@ namespace TmCGPTD.Models
 
             return doc.DocumentNode.OuterHtml;
         }
+
         // Webチャットログインポート--------------------------------------------------------------
         public async Task<string> GetWebChatLogAsync(string htmlSource)
         {
@@ -209,7 +210,7 @@ namespace TmCGPTD.Models
                     }
                     else
                     {
-                        webChatTitle = titleText;
+                        webChatTitle = ReplaceEntities(titleText);
                     }
                 }
                 else
@@ -706,6 +707,7 @@ namespace TmCGPTD.Models
                 string chatTextRes = "";
                 string currentTitle = VMLocator.ChatViewModel.ChatTitle;
 
+                // デフォルト値を設定
                 int maxTokens = VMLocator.MainWindowViewModel.ApiMaxTokens;
                 if (!VMLocator.MainWindowViewModel.ApiMaxTokensIsEnable)
                 {
@@ -715,7 +717,65 @@ namespace TmCGPTD.Models
                 int maxContentLength = VMLocator.MainWindowViewModel.MaxContentLength;
                 if (!VMLocator.MainWindowViewModel.MaxContentLengthIsEnable)
                 {
-                    maxContentLength = 3072;
+                    maxContentLength = 2048;
+                }
+
+                TikToken tokenizer = TikToken.EncodingForModel("gpt-3.5-turbo");
+
+                // 入力文字列のトークン数を取得
+                int inputTokenCount = tokenizer.Encode(chatTextPost).Count;
+
+
+                int? separatorIndex = null;
+                string systemMessage ="";
+
+                // システムメッセージの判定
+                if (chatTextPost.StartsWith("#system", StringComparison.OrdinalIgnoreCase) || chatTextPost.StartsWith("# system", StringComparison.OrdinalIgnoreCase))
+                {
+                    chatTextPost = Regex.Replace(chatTextPost, @"^#(\s*?)system", "", RegexOptions.IgnoreCase).Trim();
+
+                    // 最初の"---"の位置を検索
+                    separatorIndex = chatTextPost.IndexOf("---");
+
+                    if (separatorIndex != -1)
+                    {
+                        systemMessage = chatTextPost.Substring(0, (int)separatorIndex).Trim();//システムメッセージを取得
+                        chatTextPost = chatTextPost.Substring((int)(separatorIndex + 3)).Trim();//本文だけ残す
+                    }
+                    else
+                    {   // 本文がない場合はシステムメッセージのみまたは初期化動作
+                        systemMessage = chatTextPost.Trim();
+                        chatTextPost = "";
+                    }
+
+                    // 本文が空またはシステムメッセージが空の場合
+                    if (string.IsNullOrWhiteSpace(chatTextPost) || string.IsNullOrWhiteSpace(systemMessage))
+                    {
+                        VMLocator.ChatViewModel.LastConversationHistory = new List<Dictionary<string, object>>(conversationHistory);
+
+                        var itemToRemove = GetSystemMessageItem(conversationHistory);
+                        if (itemToRemove != null)
+                        {
+                            conversationHistory.Remove(itemToRemove);
+                        }
+
+                        var systemInput = new Dictionary<string, object>() { { "role", "system" }, { "content", systemMessage } };
+                        if (!string.IsNullOrWhiteSpace(systemMessage))
+                        {
+                            // 会話履歴の先頭にシステムメッセージを追加
+                            conversationHistory.Insert(0, systemInput);
+                        }
+
+                        // ビューモデルを更新
+                        VMLocator.ChatViewModel.ConversationHistory = conversationHistory;
+
+                        if (string.IsNullOrEmpty(VMLocator.ChatViewModel.ChatCategory))
+                        {
+                            VMLocator.ChatViewModel.ChatCategory = "API Chat";
+                        }
+
+                        return "";
+                    }
                 }
 
                 // 既存のシステムメッセージをディープコピー
@@ -730,8 +790,6 @@ namespace TmCGPTD.Models
                     }
                 }
 
-                TikToken tokenizer = TikToken.EncodingForModel("gpt-3.5-turbo");
-
                 // 過去の会話履歴と現在の入力を結合する前に、過去の会話履歴に含まれるcontent文字列のトークン数を取得
                 int historyContentTokenCount = conversationHistory.Sum(d => tokenizer.Encode(d["content"].ToString()).Count);
 
@@ -741,9 +799,6 @@ namespace TmCGPTD.Models
                 // 履歴を逆順にする
                 List<Dictionary<string, object>> reversedHistoryList = new List<Dictionary<string, object>>(conversationHistory);
                 reversedHistoryList.Reverse();
-
-                // 入力文字列のトークン数を取得
-                int inputTokenCount = tokenizer.Encode(chatTextPost).Count;
 
                 // 入力文字列 + maxTokensが4096を超えた場合
                 if ((inputTokenCount + maxTokens) > 4096)
@@ -762,7 +817,7 @@ namespace TmCGPTD.Models
                 int limitLength = VMLocator.MainWindowViewModel.ApiMaxTokensIsEnable ? inputTokenCount + maxTokens + 400 : maxContentLength;
 
                 // 過去の履歴＋ユーザーの新規入力＋maxTokensがmaxContentLengthを超えた場合の要約処理
-                if (historyContentTokenCount + inputTokenCount + maxTokens > maxContentLength)
+                if (historyContentTokenCount + inputTokenCount + maxTokens > maxContentLength && historyContentTokenCount > 0)
                 {
                     int historyTokenCount = 0;
                     int messagesToSelect = 0; // 会話履歴のどのインデックスまで選択するか
@@ -799,7 +854,14 @@ namespace TmCGPTD.Models
                     }
                     else if (messagesToSelect == 0)
                     {
-                        forCompMes = reversedHistoryList[0]["content"].ToString();
+                        if (reversedHistoryList.Count > 0)
+                        {
+                            forCompMes = reversedHistoryList[0]["content"].ToString();
+                        }
+                        else
+                        {
+                            throw new Exception($"Error: Can't find conversation history to summarize.{Environment.NewLine}");
+                        }
                     }
 
                     if (messagesToSelect > 0)
@@ -842,15 +904,7 @@ namespace TmCGPTD.Models
                     }
 
                     // 要約または削除完了後、システムメッセージが残っていれば削除
-                    Dictionary<string, object>? itemToRemove = null;
-                    foreach (var item in conversationHistory)
-                    {
-                        if (item.ContainsKey("role") && item["role"].ToString() == "system" && item.ContainsKey("content"))
-                        {
-                            itemToRemove = item;
-                            break;
-                        }
-                    }
+                    var itemToRemove = GetSystemMessageItem(conversationHistory);
                     if (itemToRemove != null)
                     {
                         conversationHistory.Remove(itemToRemove);
@@ -864,29 +918,12 @@ namespace TmCGPTD.Models
                 }
 
                 // システムメッセージの処理
-                if (chatTextPost.StartsWith("#system", StringComparison.OrdinalIgnoreCase) || chatTextPost.StartsWith("# system", StringComparison.OrdinalIgnoreCase))
+                if (separatorIndex != null)
                 {
-                    chatTextPost = Regex.Replace(chatTextPost, @"^#(\s*?)system", "", RegexOptions.IgnoreCase).Trim();
-
-                    // 最初の"---"の位置を検索
-                    int separatorIndex = chatTextPost.IndexOf("---");
-
-                    string systemMessage = chatTextPost.Substring(0, separatorIndex).Trim();//システムメッセージを取得
-
-                    chatTextPost = chatTextPost.Substring(separatorIndex+3).Trim();//本文だけ残す
-
                     var systemInput = new Dictionary<string, object>() { { "role", "system"}, {"content", systemMessage } };
 
                     // 既存のシステムメッセージがあれば削除
-                    Dictionary<string, object>? itemToRemove = null;
-                    foreach (var item in conversationHistory)
-                    {
-                        if (item.ContainsKey("role") && item["role"].ToString() == "system" && item.ContainsKey("content"))
-                        {
-                            itemToRemove = item;
-                            break;
-                        }
-                    }
+                    var itemToRemove = GetSystemMessageItem(conversationHistory);
                     if (itemToRemove != null)
                     {
                         conversationHistory.Remove(itemToRemove);
@@ -975,6 +1012,7 @@ namespace TmCGPTD.Models
                         using var stream = await response.Content.ReadAsStreamAsync();
                         using var reader = new StreamReader(stream);
                         string? line;
+                        bool isDoneReceived = false;
 
                         // レスポンスを行ごとに読み込む
                         while ((line = await reader.ReadLineAsync()) != null)
@@ -987,7 +1025,8 @@ namespace TmCGPTD.Models
                                 // "data: [DONE]"を受け取ったらループを終了
                                 if (json == "[DONE]")
                                 {
-                                    await VMLocator.ChatViewModel.UpdateUIWithReceivedMessage("[DONE]");
+                                    //await VMLocator.ChatViewModel.UpdateUIWithReceivedMessage("[DONE]", chatTextRes);
+                                    isDoneReceived = true;
                                     break;
                                 }
 
@@ -998,9 +1037,16 @@ namespace TmCGPTD.Models
                                 {
                                     // ログをUIに出力
                                     chatTextRes += chatResponse.choices[0].delta.content;
-                                    await VMLocator.ChatViewModel.UpdateUIWithReceivedMessage(chatTextRes);
+                                    await VMLocator.ChatViewModel.UpdateUIWithReceivedMessage(chatResponse.choices[0].delta.content, chatTextRes);
                                 }
                             }
+                        }
+
+                        // [DONE]を受け取らなかったらエラー処理
+                        if (!isDoneReceived)
+                        {
+                            await VMLocator.ChatViewModel.UpdateUIWithReceivedMessage("[ERROR]", chatTextRes);
+                            chatTextRes += $"{Environment.NewLine}[ERROR] Connection has been terminated.";
                         }
 
                         // 入力トークン数を計算
@@ -1039,10 +1085,18 @@ namespace TmCGPTD.Models
                             chatTextRes += $"-Conversation history has been removed. before: {preSummarizedHistoryTokenCount}, after: {tokenizer.Encode(postConversation).Count}.{Environment.NewLine}";
                         }
 
+                        await VMLocator.ChatViewModel.UpdateUIWithReceivedMessage("[DONE]", chatTextRes.Trim());
+
                         //会話が成立した時点でタイトルが空欄だったらタイトルを自動生成する
                         if (string.IsNullOrEmpty(currentTitle))
                         {
                             VMLocator.ChatViewModel.ChatTitle = await GetTitleAsync(currentTitle);
+                        }
+
+                        // 会話が成立した時点でカテゴリーが空欄だったら「API Chat」を自動設定する
+                        if (string.IsNullOrEmpty(VMLocator.ChatViewModel.ChatCategory))
+                        {
+                            VMLocator.ChatViewModel.ChatCategory = "API Chat";
                         }
                     }
                     else
@@ -1057,6 +1111,18 @@ namespace TmCGPTD.Models
             {
                 throw new Exception($"{ex.Message}");
             }
+        }
+
+        private Dictionary<string, object>? GetSystemMessageItem(List<Dictionary<string, object>>? conversationHistory)
+        {
+            foreach (var item in conversationHistory)
+            {
+                if (item.ContainsKey("role") && item["role"].ToString() == "system" && item.ContainsKey("content"))
+                {
+                    return item;
+                }
+            }
+            return null;
         }
 
         public class ResponseChunkData

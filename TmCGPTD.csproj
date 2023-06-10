@@ -78,6 +78,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <AvaloniaResource Update="Assets\highlight.min.js">
+      <CopyToOutputDirectory></CopyToOutputDirectory>
+    </AvaloniaResource>
+  </ItemGroup>
+
+  <ItemGroup>
     <AvaloniaXaml Update="Assets\CustomDataGridStyles.axaml">
       <SubType>Designer</SubType>
     </AvaloniaXaml>

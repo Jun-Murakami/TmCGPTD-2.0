@@ -9,7 +9,6 @@ namespace TmCGPTD.ViewModels
 {
     public class DataGridViewModel : ViewModelBase
     {
-
         private int _selectedItemIndex;
         public int SelectedItemIndex
         {
@@ -55,15 +54,14 @@ namespace TmCGPTD.ViewModels
                 {
                     OnPropertyChanged(nameof(SelectedItemId));
 
-                    if (_selectedItem != default && DataGridIsFocused)
+                    if (SelectedItemId != -1 && _selectedItem != null && !VMLocator.ChatViewModel.ChatIsRunning && DataGridIsFocused)
                     {
                         VMLocator.ChatViewModel.LastId = _selectedItem.Id;
                         ShowChatLogAsync(_selectedItem.Id);
                     }
-                    else
+                    else if (!string.IsNullOrWhiteSpace(VMLocator.MainViewModel.SearchLogKeyword))
                     {
                         SelectedItemIndex = -1;
-                        VMLocator.ChatViewModel.LastId = -1;
                     }
                 }
             }

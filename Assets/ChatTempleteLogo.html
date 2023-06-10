@@ -4,7 +4,6 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Chat Log</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.6.0/highlight.min.js"></script>
     <script>
 
 
@@ -196,6 +195,8 @@
 
     <button id="floatingCopyButton">Copy to clipboard</button>
 
+    <div id="floatingSystemMessageInfo"><div class="codeHeader3">System Message</div><div class="codeBody"></div></div>
+
     <div class="svg-container">
         <svg id="a" data-name="Layer1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500.13 92.84">
             <g>
@@ -268,14 +269,16 @@
         // ボタンハンドラ設定
         document.addEventListener('DOMContentLoaded', setupButtons);
 
-        // highlight.js-----------------------------------
-        hljs.highlightAll();
 
         // 最下部スクロール-----------------------------------
         const scrollToBottomBtn = document.getElementById('scrollToBottomBtn');
 
         function isAtBottom() {
             return window.innerHeight + window.scrollY >= document.body.scrollHeight;
+        }
+
+        function isAtBottom5() {
+            return window.innerHeight + window.scrollY >= document.body.scrollHeight - 5;
         }
 
         function toggleButtonVisibility() {

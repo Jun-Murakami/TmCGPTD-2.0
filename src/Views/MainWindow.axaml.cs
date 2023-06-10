@@ -80,9 +80,9 @@ namespace TmCGPTD.Views
             if (File.Exists(Path.Combine(settings.AppDataPath, "settings.json")))
             {
                 this.Width = settings.Width - 1;
-                this.Width = settings.Width;
-                this.Height = settings.Height;
                 this.Position = new PixelPoint(settings.X, settings.Y);
+                this.Height = settings.Height;
+                this.Width = settings.Width;
                 this.WindowState = settings.IsMaximized ? WindowState.Maximized : WindowState.Normal;
             }
             else
@@ -166,6 +166,7 @@ namespace TmCGPTD.Views
             await _dbProcess.UpdateChatLogDatabaseAsync();
 
             VMLocator.DataGridViewModel.ChatList = await _dbProcess.SearchChatDatabaseAsync();
+            VMLocator.DataGridViewModel.SelectedItemIndex = -1;
             VMLocator.EditorViewModel.EditorModeIsChecked = settings.EditorMode;
             VMLocator.EditorViewModel.SelectedLangIndex = settings.SyntaxHighlighting;
 

@@ -71,7 +71,7 @@
         </Style>
 
         <Style Selector="Grid#PhrasePresets Button.KeyDown">
-            <Setter Property="Background" Value="rgb(100, 90, 165)" />
+            <Setter Property="Background" Value="rgb(77, 75, 108)" />
         </Style>
 
         <Style Selector="Grid#PhrasePresets Button:pressed">
@@ -255,7 +255,7 @@
         </Style>
 
         <Style Selector="Grid#PhrasePresets TextBox.KeyDown">
-            <Setter Property="Background" Value="rgb(100, 90, 165)" />
+            <Setter Property="Background" Value="rgb(77, 75, 108)" />
         </Style>
 
 
