@@ -1201,15 +1201,31 @@ namespace TmCGPTD.Models
         // チャットログを更新--------------------------------------------------------------
         public async Task InsertDatabaseChatAsync(DateTime postDate, string postText, DateTime resDate, string resText)
         {
+            var insertText = new List<string>();
 
-            var insertText = new List<string>
+            if (!string.IsNullOrWhiteSpace(resText))
             {
-                $"[{postDate}] by You" + Environment.NewLine,
-                postText + Environment.NewLine,
-                "(!--editable--)",
-                $"[{resDate}] by AI",
-                resText
-            };
+                insertText = new List<string>
+                {
+                    $"[{postDate}] by You" + Environment.NewLine,
+                    postText + Environment.NewLine,
+                    "(!--editable--)" + Environment.NewLine,
+                    $"[{resDate}] by AI",
+                    resText
+                };
+            }
+            else
+            {
+                // AIの返答が空の場合(システムメッセージのみ)
+                insertText = new List<string>
+                {
+                    $"[{postDate}] by You" + Environment.NewLine,
+                    postText +
+                    "---" + Environment.NewLine,
+                    "(!--editable--)" + Environment.NewLine,
+                };
+            }
+
 
             var _editorViewModel = VMLocator.EditorViewModel;
             List<string> inputText = new()
@@ -1306,7 +1322,6 @@ namespace TmCGPTD.Models
                         }
 
 
-
                         // 既存のテキストに新しいメッセージを追加する
                         string newText = ( currentText + Environment.NewLine + string.Join(Environment.NewLine, insertText) ).Trim();
 
@@ -1352,6 +1367,10 @@ namespace TmCGPTD.Models
                     }
                     // トランザクションをコミットする
                     await Task.Run(() => transaction.Commit());
+
+                    // 成功したら各種変数を更新する
+                    VMLocator.ChatViewModel.LastPrompt = promptTextForSave;
+                    VMLocator.ChatViewModel.ReEditIsOn = false;
                 }
                 catch (Exception)
                 {

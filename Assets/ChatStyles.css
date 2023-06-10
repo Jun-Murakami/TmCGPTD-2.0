@@ -12,6 +12,11 @@ body {
   color: #dcdcdc;
 }
 
+strong {
+    font-weight: 700;
+    color: #eeeeee;
+}
+
 a:link, a:visited {
   color: #9b8aff;
   text-decoration: none;
@@ -31,11 +36,6 @@ img {
   width: 100%;
   height: auto;
   margin: 1.2em 0px 1.2em 0px;
-}
-
-strong {
-  font-weight: 700;
-  color: #eeeeee;
 }
 
 ::-webkit-scrollbar {
@@ -173,6 +173,37 @@ div.usage {
   font-size: 0.9em;
 }
 
+#floatingSystemMessageInfo {
+    position: fixed;
+    height: auto;
+    padding:0 30px 0 30px;
+    bottom: 15px;
+    background: none;
+    display: none;
+    border: none;
+    outline: none;
+    opacity: 0;
+}
+
+div.codeHeader3 {
+    display: flex;
+    justify-content: space-between;
+    background: #6F6EAF;
+    color: #eeeeee;
+    font-size: 0.8em;
+    border-radius: 6px 6px 0px 0px;
+    margin: 1.8em 0px 0px 0px;
+    padding: 0px 0px 0px 1em;
+}
+
+div.codeBody {
+    word-break: break-all;
+    font-size: 11pt;
+    line-height: 1.7em;
+    border-radius: 0px 0px 6px 6px;
+    padding: 1em;
+    background: #202020;
+}
 
 span.lang {
   text-align: left;
