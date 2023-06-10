@@ -41,7 +41,7 @@
 		<TextBlock Grid.Row="0" Grid.ColumnSpan="5" Text="API Parameters" HorizontalAlignment="Center" Margin="0,10,0,30"/>
 		
 		<TextBlock Grid.Row="1" Grid.Column="0" Text="model" TextAlignment="Right" />
-		<ComboBox Grid.Row="1" Grid.Column="1" HorizontalAlignment="Stretch" Items="{Binding ModelList}"  SelectedItem="{Binding ApiModel}"/>
+		<ComboBox Grid.Row="1" Grid.Column="1" HorizontalAlignment="Stretch" ItemsSource="{Binding ModelList}"  SelectedItem="{Binding ApiModel}"/>
 
 		<TextBlock Grid.Row="2" Grid.Column="3" Text="Enable" Margin="8,0"/>
 		<TextBlock Grid.Row="2" Grid.Column="4" Text="Default" />
