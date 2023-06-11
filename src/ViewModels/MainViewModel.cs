@@ -105,6 +105,13 @@ namespace TmCGPTD.ViewModels
             set => SetProperty(ref _searchKeyword, value);
         }
 
+        private bool _autoSaveIsChecked;
+        public bool AutoSaveIsChecked
+        {
+            get => _autoSaveIsChecked;
+            set => SetProperty(ref _autoSaveIsChecked, value);
+        }
+
         private bool _logPainIsOpened;
         public bool LogPainIsOpened
         {

@@ -62,9 +62,6 @@ namespace TmCGPTD.ViewModels
         public ICommand AltKey9Command { get; }
         public ICommand AltKey0Command { get; }
 
-        public ICommand ArrowUpCommand { get; }
-        public ICommand ArrowDownCommand { get; }
-
         public ICommand ValidateTextInputCommand { get; }
         public ICommand ClosingApiSettingsCommand { get; }
         public ICommand ResetApiSettingsCommand { get; }

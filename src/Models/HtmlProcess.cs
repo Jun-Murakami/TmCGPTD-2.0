@@ -204,7 +204,7 @@ namespace TmCGPTD.Models
                 if (titleNode != null)
                 {
                     string titleText = titleNode.InnerText;
-                    if (titleText == "New chat" || titleText == "")
+                    if (titleText == "New chat" || titleText == "" || titleText == "ChatGPT")
                     {
                         return resourceString;
                     }
@@ -358,7 +358,7 @@ namespace TmCGPTD.Models
                         pattern = @"(?<=<pre>[^<]*?)(?<code><code>|<\/code>)(?=[^<]*?<\/pre>)";
                         htmlString = Regex.Replace(htmlString, pattern, "`", RegexOptions.Singleline);
 
-                        Debug.WriteLine(htmlString);
+                        //Debug.WriteLine(htmlString);
 
                         // 置換処理
                         htmlString = htmlString.Replace("<pre class=\"\">", $"{br}{br}```")

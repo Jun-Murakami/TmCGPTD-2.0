@@ -16,7 +16,7 @@ namespace TmCGPTD.Views
             DataContext = PhrasePresetsViewModel;
             VMLocator.PhrasePresetsViewModel = PhrasePresetsViewModel;
 
-            PhrasePresetsViewModel.PropertyChanged += ViewModel_PropertyChanged;
+            PhrasePresetsViewModel.PropertyChanged += ViewModel_PropertyChanged!;
         }
 
         private void ViewModel_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -53,19 +53,19 @@ namespace TmCGPTD.Views
 
                 if(isKeyCommand)
                 {
-                    OnButtonClick(button,null);
+                    OnButtonClick(button!,null!);
                     return;
                 }
 
                 if (isKeyDown)
                 {
-                    textBox.Classes.Add("KeyDown");
-                    button.Classes.Add("KeyDown");
+                    textBox!.Classes.Add("KeyDown");
+                    button!.Classes.Add("KeyDown");
                 }
                 else
                 {
-                    textBox.Classes.Remove("KeyDown");
-                    button.Classes.Remove("KeyDown");
+                    textBox!.Classes.Remove("KeyDown");
+                    button!.Classes.Remove("KeyDown");
                 }
             }
         }
@@ -75,8 +75,8 @@ namespace TmCGPTD.Views
         {
             if (sender is Button button)
             {
-                int buttonNumber = int.Parse(button.Name.Substring(6));
-                TextBox textBox = this.FindControl<TextBox>($"TextBox{buttonNumber}");
+                int buttonNumber = int.Parse(button.Name!.Substring(6))!;
+                TextBox textBox = this.FindControl<TextBox>($"TextBox{buttonNumber}")!;
 
                 if (textBox.Text == null )
                 {
@@ -84,7 +84,7 @@ namespace TmCGPTD.Views
                 }
 
                 // Get the currently focused control
-                var focusedControl = FocusManager.Instance.Current;
+                var focusedControl = FocusManager.Instance!.Current;
 
                 if (focusedControl is TextBox focusedTextBox)
                 {

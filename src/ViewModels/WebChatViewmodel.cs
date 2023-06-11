@@ -67,8 +67,8 @@ namespace TmCGPTD.ViewModels
             {
                 return;
             }
-            var dialog = new ContentDialog() { Title = msg, PrimaryButtonText = "OK" };
-            await VMLocator.MainViewModel.ContentDialogShowAsync(dialog);
+            //var dialog = new ContentDialog() { Title = msg, PrimaryButtonText = "OK" };
+            //await VMLocator.MainViewModel.ContentDialogShowAsync(dialog);
         }
 
         public async Task TextSearch(string searchKeyword, bool searchDirection, bool searchReset = false)
