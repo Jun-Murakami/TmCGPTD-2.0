@@ -9,13 +9,13 @@
 			<Grid.RowDefinitions>
 				<RowDefinition Height="50" />
 				<RowDefinition Height="{Binding EditorHeight1,Mode=TwoWay}" MinHeight="10" />
-				<RowDefinition Height="2"/>
+				<RowDefinition Height="5"/>
 				<RowDefinition Height="{Binding EditorHeight2,Mode=TwoWay}" MinHeight="10" />
-				<RowDefinition Height="2"/>
+				<RowDefinition Height="5"/>
 				<RowDefinition Height="{Binding EditorHeight3,Mode=TwoWay}" MinHeight="10" />
-				<RowDefinition Height="2"/>
+				<RowDefinition Height="5"/>
 				<RowDefinition Height="{Binding EditorHeight4,Mode=TwoWay}" MinHeight="10" />
-				<RowDefinition Height="2"/>
+				<RowDefinition Height="5"/>
 				<RowDefinition Height="{Binding EditorHeight5,Mode=TwoWay}" MinHeight="10" />
 				<RowDefinition Height="50" />
 			</Grid.RowDefinitions>
