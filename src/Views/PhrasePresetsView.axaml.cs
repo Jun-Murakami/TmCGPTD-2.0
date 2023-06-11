@@ -21,55 +21,55 @@ namespace TmCGPTD.Views
 
         private void ViewModel_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
-            if (e.PropertyName == nameof(PhrasePresetsViewModel.CtrlKeyIsDown))
-            {
-                if (PhrasePresetsViewModel.CtrlKeyIsDown)
-                {
-                    for (int i = 1; i <= 10; i++)
-                    {
-                        // Get the instance of the control
-                        TextBox textBox = this.FindControl<TextBox>($"TextBox{i}");
-                        textBox.Classes.Add("KeyDown");
-                        ButtonÅ@button = this.FindControl<Button>($"Button{i}");
-                        button.Classes.Add("KeyDown");
+            int start, end;
+            bool isKeyDown = false;
+            bool isKeyCommand = false;
 
-                    }
-                }
-                else
-                {
-                    for (int i = 1; i <= 10; i++)
-                    {
-                        TextBox textBox = this.FindControl<TextBox>($"TextBox{i}");
-                        textBox.Classes.Remove("KeyDown");
-                        Button button = this.FindControl<Button>($"Button{i}");
-                        button.Classes.Remove("KeyDown");
-                    }
-                }
-            }
-            else if (e.PropertyName == nameof(PhrasePresetsViewModel.AltKeyIsDown))
+            switch (e.PropertyName)
             {
-                if (PhrasePresetsViewModel.AltKeyIsDown)
+                case nameof(PhrasePresetsViewModel.CtrlKeyIsDown):
+                    start = 1;
+                    end = 10;
+                    isKeyDown = PhrasePresetsViewModel.CtrlKeyIsDown;
+                    break;
+                case nameof(PhrasePresetsViewModel.AltKeyIsDown):
+                    start = 11;
+                    end = 20;
+                    isKeyDown = PhrasePresetsViewModel.AltKeyIsDown;
+                    break;
+                case nameof(PhrasePresetsViewModel.KeyDownNum):
+                    start = PhrasePresetsViewModel.KeyDownNum;
+                    end = PhrasePresetsViewModel.KeyDownNum;
+                    isKeyCommand = true;
+                    break;
+                default:
+                    return;
+            }
+
+            for (int i = start; i <= end; i++)
+            {
+                TextBox? textBox = this.FindControl<TextBox>($"TextBox{i}");
+                Button? button = this.FindControl<Button>($"Button{i}");
+
+                if(isKeyCommand)
                 {
-                    for (int i = 11; i <= 20; i++)
-                    {
-                        TextBox textBox = this.FindControl<TextBox>($"TextBox{i}");
-                        textBox.Classes.Add("KeyDown");
-                        Button button = this.FindControl<Button>($"Button{i}");
-                        button.Classes.Add("KeyDown");
-                    }
+                    OnButtonClick(button,null);
+                    return;
+                }
+
+                if (isKeyDown)
+                {
+                    textBox.Classes.Add("KeyDown");
+                    button.Classes.Add("KeyDown");
                 }
                 else
                 {
-                    for (int i = 11; i <= 20; i++)
-                    {
-                        TextBox textBox = this.FindControl<TextBox>($"TextBox{i}");
-                        textBox.Classes.Remove("KeyDown");
-                        Button button = this.FindControl<Button>($"Button{i}");
-                        button.Classes.Remove("KeyDown");
-                    }
+                    textBox.Classes.Remove("KeyDown");
+                    button.Classes.Remove("KeyDown");
                 }
             }
         }
+
 
         private void OnButtonClick(object sender, RoutedEventArgs e)
         {

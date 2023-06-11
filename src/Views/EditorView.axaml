@@ -75,7 +75,8 @@
 								  OnContent="Code"
 								  OffContent="Text"
 								  Margin="6,0,0,5"
-								  VerticalAlignment="Center"/>
+								  VerticalAlignment="Center"
+								  HotKey="Ctrl+Divide"/>
 				</Grid>
 			</Border>
 			<TextBox Grid.Row="1"
