@@ -15,29 +15,27 @@ namespace TmCGPTD.ViewModels
             ResetApiSettingsCommand = new RelayCommand(ResetApiSettings);
             ValidateTextInputCommand = new RelayCommand<string>(ValidateTextInput);
 
-            PhrasePresetsViewModel _phrasePresetsVM = VMLocator.PhrasePresetsViewModel;
+            CtrlKey1Command = new RelayCommand(() => VMLocator.PhrasePresetsViewModel.KeyDownNum = 1);
+            CtrlKey2Command = new RelayCommand(() => VMLocator.PhrasePresetsViewModel.KeyDownNum = 2);
+            CtrlKey3Command = new RelayCommand(() => VMLocator.PhrasePresetsViewModel.KeyDownNum = 3);
+            CtrlKey4Command = new RelayCommand(() => VMLocator.PhrasePresetsViewModel.KeyDownNum = 4);
+            CtrlKey5Command = new RelayCommand(() => VMLocator.PhrasePresetsViewModel.KeyDownNum = 5);
+            CtrlKey6Command = new RelayCommand(() => VMLocator.PhrasePresetsViewModel.KeyDownNum = 6);
+            CtrlKey7Command = new RelayCommand(() => VMLocator.PhrasePresetsViewModel.KeyDownNum = 7);
+            CtrlKey8Command = new RelayCommand(() => VMLocator.PhrasePresetsViewModel.KeyDownNum = 8);
+            CtrlKey9Command = new RelayCommand(() => VMLocator.PhrasePresetsViewModel.KeyDownNum = 9);
+            CtrlKey0Command = new RelayCommand(() => VMLocator.PhrasePresetsViewModel.KeyDownNum = 10);
 
-            CtrlKey1Command = new RelayCommand(() => _phrasePresetsVM.KeyDownNum = 1);
-            CtrlKey2Command = new RelayCommand(() => _phrasePresetsVM.KeyDownNum = 2);
-            CtrlKey3Command = new RelayCommand(() => _phrasePresetsVM.KeyDownNum = 3);
-            CtrlKey4Command = new RelayCommand(() => _phrasePresetsVM.KeyDownNum = 4);
-            CtrlKey5Command = new RelayCommand(() => _phrasePresetsVM.KeyDownNum = 5);
-            CtrlKey6Command = new RelayCommand(() => _phrasePresetsVM.KeyDownNum = 6);
-            CtrlKey7Command = new RelayCommand(() => _phrasePresetsVM.KeyDownNum = 7);
-            CtrlKey8Command = new RelayCommand(() => _phrasePresetsVM.KeyDownNum = 8);
-            CtrlKey9Command = new RelayCommand(() => _phrasePresetsVM.KeyDownNum = 9);
-            CtrlKey0Command = new RelayCommand(() => _phrasePresetsVM.KeyDownNum = 10);
-
-            AltKey1Command = new RelayCommand(() => _phrasePresetsVM.KeyDownNum = 11);
-            AltKey2Command = new RelayCommand(() => _phrasePresetsVM.KeyDownNum = 12);
-            AltKey3Command = new RelayCommand(() => _phrasePresetsVM.KeyDownNum = 13);
-            AltKey4Command = new RelayCommand(() => _phrasePresetsVM.KeyDownNum = 14);
-            AltKey5Command = new RelayCommand(() => _phrasePresetsVM.KeyDownNum = 15);
-            AltKey6Command = new RelayCommand(() => _phrasePresetsVM.KeyDownNum = 16);
-            AltKey7Command = new RelayCommand(() => _phrasePresetsVM.KeyDownNum = 17);
-            AltKey8Command = new RelayCommand(() => _phrasePresetsVM.KeyDownNum = 18);
-            AltKey9Command = new RelayCommand(() => _phrasePresetsVM.KeyDownNum = 19);
-            AltKey0Command = new RelayCommand(() => _phrasePresetsVM.KeyDownNum = 20);
+            AltKey1Command = new RelayCommand(() => VMLocator.PhrasePresetsViewModel.KeyDownNum = 11);
+            AltKey2Command = new RelayCommand(() => VMLocator.PhrasePresetsViewModel.KeyDownNum = 12);
+            AltKey3Command = new RelayCommand(() => VMLocator.PhrasePresetsViewModel.KeyDownNum = 13);
+            AltKey4Command = new RelayCommand(() => VMLocator.PhrasePresetsViewModel.KeyDownNum = 14);
+            AltKey5Command = new RelayCommand(() => VMLocator.PhrasePresetsViewModel.KeyDownNum = 15);
+            AltKey6Command = new RelayCommand(() => VMLocator.PhrasePresetsViewModel.KeyDownNum = 16);
+            AltKey7Command = new RelayCommand(() => VMLocator.PhrasePresetsViewModel.KeyDownNum = 17);
+            AltKey8Command = new RelayCommand(() => VMLocator.PhrasePresetsViewModel.KeyDownNum = 18);
+            AltKey9Command = new RelayCommand(() => VMLocator.PhrasePresetsViewModel.KeyDownNum = 19);
+            AltKey0Command = new RelayCommand(() => VMLocator.PhrasePresetsViewModel.KeyDownNum = 20);
         }
 
         public ICommand CtrlKey1Command { get; }
