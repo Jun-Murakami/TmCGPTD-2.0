@@ -9,6 +9,7 @@ using System.IO;
 using System.Threading.Tasks;
 using System.Text.RegularExpressions;
 using Avalonia.Controls;
+using Avalonia;
 
 namespace TmCGPTD.Models
 {
@@ -17,9 +18,9 @@ namespace TmCGPTD.Models
         // 表示用HTML初期化--------------------------------------------------------------
         public async Task<string> InitializeChatLogToHtml()
         {
-            using var streamReader = new StreamReader(AvaloniaLocator.Current.GetService<IAssetLoader>().Open(new Uri("avares://TmCGPTD/Assets/ChatTempleteLogo.html")));
-            using var chatCssStreamReader = new StreamReader(AvaloniaLocator.Current.GetService<IAssetLoader>().Open(new Uri("avares://TmCGPTD/Assets/ChatStyles.css")));
-            using var cssStreamReader = new StreamReader(AvaloniaLocator.Current.GetService<IAssetLoader>().Open(new Uri("avares://TmCGPTD/Assets/vs2015.min.css")));
+            using var streamReader = new StreamReader(AvaloniaLocator.Current.GetService<IAssetLoader>()!.Open(new Uri("avares://TmCGPTD/Assets/ChatTempleteLogo.html")));
+            using var chatCssStreamReader = new StreamReader(AvaloniaLocator.Current.GetService<IAssetLoader>()!.Open(new Uri("avares://TmCGPTD/Assets/ChatStyles.css")));
+            using var cssStreamReader = new StreamReader(AvaloniaLocator.Current.GetService<IAssetLoader>()!.Open(new Uri("avares://TmCGPTD/Assets/vs2015.min.css")));
 
 
             string chatCssContent = await chatCssStreamReader.ReadToEndAsync();
@@ -43,9 +44,9 @@ namespace TmCGPTD.Models
         public async Task<string> ConvertChatLogToHtml(string plainTextChatLog)
         {
             plainTextChatLog = Regex.Replace(plainTextChatLog, @"\r\n|\r|\n", Environment.NewLine);
-            using var streamReader = new StreamReader(AvaloniaLocator.Current.GetService<IAssetLoader>().Open(new Uri("avares://TmCGPTD/Assets/ChatTemplete.html")));
-            using var chatCssStreamReader = new StreamReader(AvaloniaLocator.Current.GetService<IAssetLoader>().Open(new Uri("avares://TmCGPTD/Assets/ChatStyles.css")));
-            using var cssStreamReader = new StreamReader(AvaloniaLocator.Current.GetService<IAssetLoader>().Open(new Uri("avares://TmCGPTD/Assets/vs2015.min.css")));
+            using var streamReader = new StreamReader(AvaloniaLocator.Current.GetService<IAssetLoader>()!.Open(new Uri("avares://TmCGPTD/Assets/ChatTemplete.html")));
+            using var chatCssStreamReader = new StreamReader(AvaloniaLocator.Current.GetService<IAssetLoader>()!.Open(new Uri("avares://TmCGPTD/Assets/ChatStyles.css")));
+            using var cssStreamReader = new StreamReader(AvaloniaLocator.Current.GetService<IAssetLoader>()!.Open(new Uri("avares://TmCGPTD/Assets/vs2015.min.css")));
 
 
             string chatCssContent = await chatCssStreamReader.ReadToEndAsync();

@@ -14,6 +14,7 @@ using HarfBuzzSharp;
 using System.Reflection;
 using System.Diagnostics;
 using Avalonia.Platform;
+using Avalonia;
 
 namespace TmCGPTD.Views
 {
@@ -58,7 +59,7 @@ namespace TmCGPTD.Views
 
         private async void Browser_LoadStart(object sender, LoadStartEventArgs e)
         {
-            using var scriptStreamReader = new StreamReader(AssetLoader.Open(new Uri("avares://TmCGPTD/Assets/highlight.min.js")));
+            using var scriptStreamReader = new StreamReader(AvaloniaLocator.Current.GetService<IAssetLoader>()!.Open(new Uri("avares://TmCGPTD/Assets/highlight.min.js")));
             string scriptContent = await scriptStreamReader.ReadToEndAsync();
             _browser.ExecuteJavaScript(scriptContent);
             _browser.ExecuteJavaScript("hljs.highlightAll();");
