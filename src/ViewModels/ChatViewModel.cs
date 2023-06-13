@@ -26,6 +26,7 @@ namespace TmCGPTD.ViewModels
         private Button _button2;
         DatabaseProcess _databaseProcess = new DatabaseProcess();
         HtmlProcess _htmlProcess = new HtmlProcess();
+        ChatProcess _chatProcess = new ChatProcess();
 
         public ChatViewModel()
         {
@@ -167,7 +168,8 @@ namespace TmCGPTD.ViewModels
                 }
 
                 // チャットを投稿
-                var resText = await _htmlProcess.PostChatAsync(postText);
+
+                var resText = await _chatProcess.PostChatAsync(postText);
                 var resDate = DateTime.Now;
 
                 // データベースにチャットを追加
