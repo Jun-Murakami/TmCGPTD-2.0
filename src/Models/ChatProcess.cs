@@ -20,7 +20,6 @@ namespace TmCGPTD.Models
             public string? UserInputBody { get; set; } //システムメッセージがある場合ここに本文だけが入る
             public string? AssistantResponse { get; set; } // アシスタントの返答
             public string? ChatTitle { get; set; } // チャットのタイトル
-            public string? ChatCategory { get; set; } // チャットのカテゴリ
             public Dictionary<string, object>? OldSystemMessageDic { get; set; } // 古いシステムメッセージの辞書
             public string? NewSystemMessageStr { get; set; } // 新しいシステムメッセージの文字列
             public List<Dictionary<string, object>>? ConversationHistory { get; set; } // 会話履歴
@@ -243,6 +242,11 @@ namespace TmCGPTD.Models
 
                 // 会話履歴の先頭にシステムメッセージを追加
                 conversationHistory!.Insert(0, systemInput);
+            }
+
+            if(!string.IsNullOrWhiteSpace(chatParameters.UserInputBody)) //システムメッセージがある場合、ユーザー入力は本文のみ
+            {
+                chatTextPost = chatParameters.UserInputBody;
             }
 
             // 現在のユーザーの入力を表すディクショナリ

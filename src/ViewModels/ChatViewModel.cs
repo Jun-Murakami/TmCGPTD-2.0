@@ -195,7 +195,6 @@ namespace TmCGPTD.ViewModels
                     UserInputBody = postTextBody,
                     AssistantResponse = "",
                     ChatTitle = VMLocator.ChatViewModel.ChatTitle,
-                    ChatCategory = VMLocator.ChatViewModel.ChatCategory,
                     OldSystemMessageDic = oldSystemMessage,
                     NewSystemMessageStr = systemMessage,
                     ConversationHistory = ConversationHistory,
