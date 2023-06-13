@@ -126,6 +126,20 @@ namespace TmCGPTD.Models
                 if (rangeLength > 0)
                 {
                     forCompMes = reversedHistoryList.GetRange(messageStart, rangeLength).Select(message => message["content"].ToString()).Aggregate((a, b) => a + b);
+
+                    // 以下のコードは上記のコードと同じ処理
+                    //List<Dictionary<string, object>> rangeList = reversedHistoryList.GetRange(messageStart, rangeLength);
+                    //List<string> contentList = new List<string>();
+                    //foreach (Dictionary<string, object> message in rangeList)
+                    //{
+                    //    contentList.Add(message["content"].ToString());
+                    //}
+                    //
+                    //forCompMes = "";
+                    //foreach (string content in contentList)
+                    //{
+                    //    forCompMes += content;
+                    //}
                 }
                 else if (messagesToSelect == 0)
                 {

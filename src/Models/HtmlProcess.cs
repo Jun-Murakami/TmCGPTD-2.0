@@ -1,7 +1,6 @@
 ﻿using Avalonia.Platform;
 using HtmlAgilityPack;
 using System;
-using System.Text.Json;
 using System.Net;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,17 +8,7 @@ using System.Text;
 using System.IO;
 using System.Threading.Tasks;
 using System.Text.RegularExpressions;
-using System.Net.Http;
-using TiktokenSharp;
-using System.Diagnostics;
-using Avalonia;
 using Avalonia.Controls;
-using FluentAvalonia.UI.Controls;
-using CommunityToolkit.Mvvm.DependencyInjection;
-using System.Reflection.Metadata;
-using ReverseMarkdown.Converters;
-using System.Reactive.Joins;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace TmCGPTD.Models
 {
