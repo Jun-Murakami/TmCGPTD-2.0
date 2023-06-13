@@ -16,6 +16,7 @@ using System.Reflection.Metadata;
 using System.Text.RegularExpressions;
 using static TmCGPTD.Models.HtmlProcess;
 using System.Reactive.Joins;
+using static TmCGPTD.Models.ChatProcess;
 
 namespace TmCGPTD.ViewModels
 {
@@ -72,7 +73,8 @@ namespace TmCGPTD.ViewModels
 
             try
             {
-                if(ReEditIsOn)
+                // 再編集モード時の初期化
+                if (ReEditIsOn)
                 {
                     string Code = @"var userDivs = document.querySelectorAll('.user'); // userクラスのdiv要素を取得
                                     for (var i = 0; i < userDivs.length; i++) {
@@ -86,13 +88,16 @@ namespace TmCGPTD.ViewModels
                     _browser.ExecuteJavaScript(Code);
                 }
 
+                // ユーザー入力を取得
                 string postText = VMLocator.EditorViewModel.GetRecentText().Trim().Trim('\r', '\n');
 
+                // ロゴを削除
                 string jsCode = $@"var element = document.querySelector('.svg-container');
                                 if (element) {{
                                     element.remove();
                                 }}";
                 _browser.ExecuteJavaScript(jsCode);
+
 
                 string escapedString = JsonSerializer.Serialize(postText);
 
@@ -100,39 +105,42 @@ namespace TmCGPTD.ViewModels
 
                 string additonalJsCode = "";
                 bool isOnlySystemMessage = false;
+                string postTextBody = "";
 
                 // システムメッセージの処理
                 string systemMessage = "";
-                if (postText.StartsWith("#system", StringComparison.OrdinalIgnoreCase) || postText.StartsWith("# system", StringComparison.OrdinalIgnoreCase))
+                if (Regex.IsMatch(postText, @"^#\s*system", RegexOptions.IgnoreCase))
                 {
-                    escapedString = Regex.Replace(postText, @"^#(\s*?)system", "", RegexOptions.IgnoreCase).Trim();
+                    string tempString = Regex.Replace(postText, @"^#(\s*?)system", "", RegexOptions.IgnoreCase).Trim();
 
                     // 最初の"---"の位置を検索
-                    int separatorIndex = escapedString.IndexOf("---");
+                    int separatorIndex = tempString.IndexOf("---");
                     if (separatorIndex != -1)
                     {
-                        systemMessage = escapedString.Substring(0, separatorIndex).Trim();//システムメッセージを取得
-                        escapedString = escapedString.Substring(separatorIndex + 3).Trim();//本文だけ残す
+                        systemMessage = tempString.Substring(0, separatorIndex).Trim();//システムメッセージを取得
+                        tempString = tempString.Substring(separatorIndex + 3).Trim();//本文だけ残す
                     }
                     else
                     {
-                        systemMessage = escapedString.Trim();//存在しなければシステムメッセージのみ
-                        escapedString = "";
+                        systemMessage = tempString.Trim();//存在しなければシステムメッセージのみ
+                        tempString = "";
                         isOnlySystemMessage = true;
                     }
-                        
+
                     if (string.IsNullOrWhiteSpace(systemMessage))
                     {
                         systemMessage = "System messages were turned off.";
                     }
 
-                    escapedString = JsonSerializer.Serialize(escapedString);
+                    postTextBody = tempString;
+                    escapedString = JsonSerializer.Serialize(tempString);
 
                     htmlToAdd = $"<span class=\"userHeader\">[{postDate}] by You</span>" +
                                 "<div class=\"codeHeader2\"><span class=\"lang\">System Message</span></div>" +
                                 $"<pre style=\"margin:0px 0px 2.5em 0px\"><code id=\"headerOn\" class=\"plaintext\">{systemMessage}</code></pre>";
                     additonalJsCode = $@"hljs.highlightAll();";
                 }
+
 
                 // ユーザーの要素を生成
                 jsCode = $@"var wrapper = document.getElementById('scrollableWrapper');
@@ -151,6 +159,7 @@ namespace TmCGPTD.ViewModels
                 jsCode = $@"window.scrollTo({{top: document.body.scrollHeight, behavior: 'smooth' }});";
                 _browser.ExecuteJavaScript(jsCode);
 
+
                 // アシスタントの要素を生成。システムメッセージのみの場合はスキップ
                 if (!isOnlySystemMessage)
                 {
@@ -167,12 +176,78 @@ namespace TmCGPTD.ViewModels
                     _browser.ExecuteJavaScript(jsCode);
                 }
 
-                // チャットを投稿
+                
+                // 既存のシステムメッセージをディープコピー
+                Dictionary<string, object>? oldSystemMessage = null;
+                foreach (var item in ConversationHistory)
+                {
+                    if (item.ContainsKey("role") && item["role"].ToString() == "system" && item.ContainsKey("content"))
+                    {
+                        string json = JsonSerializer.Serialize(item);
+                        oldSystemMessage = JsonSerializer.Deserialize<Dictionary<string, object>>(json);
+                        break;
+                    }
+                }
 
-                var resText = await _chatProcess.PostChatAsync(postText);
+                // パラメータを生成してチャットを投稿
+                ChatParameters postParameters = new ChatParameters {
+                    UserInput = postText,
+                    UserInputBody = postTextBody,
+                    AssistantResponse = "",
+                    ChatTitle = VMLocator.ChatViewModel.ChatTitle,
+                    ChatCategory = VMLocator.ChatViewModel.ChatCategory,
+                    OldSystemMessageDic = oldSystemMessage,
+                    NewSystemMessageStr = systemMessage,
+                    ConversationHistory = ConversationHistory,
+                    PostedConversationHistory = null,
+                };
+
+
+                // システムメッセージのみの場合は投稿しない
+                string resText = "";
+                if (isOnlySystemMessage)
+                {
+                    // 既存のシステムメッセージがあれば削除
+                    var itemToRemove = GetSystemMessageItem(ConversationHistory);
+                    if (itemToRemove != null)
+                    {
+                        ConversationHistory!.Remove(itemToRemove);
+                    }
+
+                    // 新しいシステムメッセージがあれば会話履歴の先頭に追加
+                    var systemInput = new Dictionary<string, object>() { { "role", "system" }, { "content", systemMessage } };
+                    if (!string.IsNullOrWhiteSpace(systemMessage))
+                    {
+                        ConversationHistory!.Insert(0, systemInput);
+                    }
+
+                    if (string.IsNullOrEmpty(ChatCategory))
+                    {
+                        ChatCategory = "API Chat";
+                    }
+                }
+                else
+                {
+                    // メッセージ投稿
+                    resText = await _chatProcess.PostChatAsync(postParameters);
+
+
+                    //会話が成立した時点でタイトルが空欄だったらタイトルを自動生成する
+                    if (string.IsNullOrEmpty(ChatTitle))
+                    {
+                        ChatTitle = await _chatProcess.GetTitleAsync(ConversationHistory);
+                    }
+                }
+
+                // カテゴリーが空欄だったら「API Chat」を自動設定する
+                if (string.IsNullOrEmpty(VMLocator.ChatViewModel.ChatCategory))
+                {
+                    VMLocator.ChatViewModel.ChatCategory = "API Chat";
+                }
+
                 var resDate = DateTime.Now;
 
-                // データベースにチャットを追加
+                // データベースを更新
                 await _databaseProcess.InsertDatabaseChatAsync(postDate, postText, resDate, resText);
 
                 await Task.Delay(700);
@@ -222,6 +297,17 @@ namespace TmCGPTD.ViewModels
             }
 
             ChatIsRunning = false;
+        }
+        private Dictionary<string, object>? GetSystemMessageItem(List<Dictionary<string, object>>? conversationHistory)
+        {
+            foreach (var item in conversationHistory!)
+            {
+                if (item.ContainsKey("role") && item["role"].ToString() == "system" && item.ContainsKey("content"))
+                {
+                    return item;
+                }
+            }
+            return null;
         }
 
         // チャット受信メソッド--------------------------------------------------------------
@@ -324,7 +410,6 @@ namespace TmCGPTD.ViewModels
                 }
             }
         }
-
 
         // 新しいチャットを初期化--------------------------------------------------------------
         public async Task InitializeChatAsync()
