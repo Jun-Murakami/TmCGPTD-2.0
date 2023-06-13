@@ -11,6 +11,7 @@
 		xmlns:local="using:TmCGPTD.Views"
         Icon="/Assets/TmCGPTD.ico"
         Title="TmCGPTD">
+
 	<dialogHost:DialogHost IsOpen="{Binding	ApiSettingIsOpened}"
 						   DialogMargin="16"
 							DisableOpeningAnimation="True"
@@ -25,4 +26,28 @@
 		</Panel>
 		
 	</dialogHost:DialogHost>
+
+	<Window.KeyBindings>
+		<KeyBinding Command="{Binding CtrlKey1Command}" Gesture="Ctrl+D1" />
+		<KeyBinding Command="{Binding CtrlKey2Command}" Gesture="Ctrl+D2" />
+		<KeyBinding Command="{Binding CtrlKey3Command}" Gesture="Ctrl+D3" />
+		<KeyBinding Command="{Binding CtrlKey4Command}" Gesture="Ctrl+D4" />
+		<KeyBinding Command="{Binding CtrlKey5Command}" Gesture="Ctrl+D5" />
+		<KeyBinding Command="{Binding CtrlKey6Command}" Gesture="Ctrl+D6" />
+		<KeyBinding Command="{Binding CtrlKey7Command}" Gesture="Ctrl+D7" />
+		<KeyBinding Command="{Binding CtrlKey8Command}" Gesture="Ctrl+D8" />
+		<KeyBinding Command="{Binding CtrlKey9Command}" Gesture="Ctrl+D9" />
+		<KeyBinding Command="{Binding CtrlKey0Command}" Gesture="Ctrl+D0" />
+		<KeyBinding Command="{Binding AltKey1Command}" Gesture="Alt+D1" />
+		<KeyBinding Command="{Binding AltKey2Command}" Gesture="Alt+D2" />
+		<KeyBinding Command="{Binding AltKey3Command}" Gesture="Alt+D3" />
+		<KeyBinding Command="{Binding AltKey4Command}" Gesture="Alt+D4" />
+		<KeyBinding Command="{Binding AltKey5Command}" Gesture="Alt+D5" />
+		<KeyBinding Command="{Binding AltKey6Command}" Gesture="Alt+D6" />
+		<KeyBinding Command="{Binding AltKey7Command}" Gesture="Alt+D7" />
+		<KeyBinding Command="{Binding AltKey8Command}" Gesture="Alt+D8" />
+		<KeyBinding Command="{Binding AltKey9Command}" Gesture="Alt+D9" />
+		<KeyBinding Command="{Binding AltKey0Command}" Gesture="Alt+D0" />
+	</Window.KeyBindings>
+	
 </Window>

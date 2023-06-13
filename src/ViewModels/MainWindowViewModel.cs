@@ -2,6 +2,7 @@ using CommunityToolkit.Mvvm.Input;
 using System.Collections.Generic;
 using System.Windows.Input;
 using System.Text.RegularExpressions;
+using System.Diagnostics;
 
 namespace TmCGPTD.ViewModels
 {
@@ -13,7 +14,56 @@ namespace TmCGPTD.ViewModels
             ClosingApiSettingsCommand = new RelayCommand(ClosingApiSettings);
             ResetApiSettingsCommand = new RelayCommand(ResetApiSettings);
             ValidateTextInputCommand = new RelayCommand<string>(ValidateTextInput);
+
+            CtrlKey1Command = new RelayCommand(() => VMLocator.PhrasePresetsViewModel.KeyDownNum = 1);
+            CtrlKey2Command = new RelayCommand(() => VMLocator.PhrasePresetsViewModel.KeyDownNum = 2);
+            CtrlKey3Command = new RelayCommand(() => VMLocator.PhrasePresetsViewModel.KeyDownNum = 3);
+            CtrlKey4Command = new RelayCommand(() => VMLocator.PhrasePresetsViewModel.KeyDownNum = 4);
+            CtrlKey5Command = new RelayCommand(() => VMLocator.PhrasePresetsViewModel.KeyDownNum = 5);
+            CtrlKey6Command = new RelayCommand(() => VMLocator.PhrasePresetsViewModel.KeyDownNum = 6);
+            CtrlKey7Command = new RelayCommand(() => VMLocator.PhrasePresetsViewModel.KeyDownNum = 7);
+            CtrlKey8Command = new RelayCommand(() => VMLocator.PhrasePresetsViewModel.KeyDownNum = 8);
+            CtrlKey9Command = new RelayCommand(() => VMLocator.PhrasePresetsViewModel.KeyDownNum = 9);
+            CtrlKey0Command = new RelayCommand(() => VMLocator.PhrasePresetsViewModel.KeyDownNum = 10);
+
+            AltKey1Command = new RelayCommand(() => VMLocator.PhrasePresetsViewModel.KeyDownNum = 11);
+            AltKey2Command = new RelayCommand(() => VMLocator.PhrasePresetsViewModel.KeyDownNum = 12);
+            AltKey3Command = new RelayCommand(() => VMLocator.PhrasePresetsViewModel.KeyDownNum = 13);
+            AltKey4Command = new RelayCommand(() => VMLocator.PhrasePresetsViewModel.KeyDownNum = 14);
+            AltKey5Command = new RelayCommand(() => VMLocator.PhrasePresetsViewModel.KeyDownNum = 15);
+            AltKey6Command = new RelayCommand(() => VMLocator.PhrasePresetsViewModel.KeyDownNum = 16);
+            AltKey7Command = new RelayCommand(() => VMLocator.PhrasePresetsViewModel.KeyDownNum = 17);
+            AltKey8Command = new RelayCommand(() => VMLocator.PhrasePresetsViewModel.KeyDownNum = 18);
+            AltKey9Command = new RelayCommand(() => VMLocator.PhrasePresetsViewModel.KeyDownNum = 19);
+            AltKey0Command = new RelayCommand(() => VMLocator.PhrasePresetsViewModel.KeyDownNum = 20);
         }
+
+        public ICommand CtrlKey1Command { get; }
+        public ICommand CtrlKey2Command { get; }
+        public ICommand CtrlKey3Command { get; }
+        public ICommand CtrlKey4Command { get; }
+        public ICommand CtrlKey5Command { get; }
+        public ICommand CtrlKey6Command { get; }
+        public ICommand CtrlKey7Command { get; }
+        public ICommand CtrlKey8Command { get; }
+        public ICommand CtrlKey9Command { get; }
+        public ICommand CtrlKey0Command { get; }
+
+        public ICommand AltKey1Command { get; }
+        public ICommand AltKey2Command { get; }
+        public ICommand AltKey3Command { get; }
+        public ICommand AltKey4Command { get; }
+        public ICommand AltKey5Command { get; }
+        public ICommand AltKey6Command { get; }
+        public ICommand AltKey7Command { get; }
+        public ICommand AltKey8Command { get; }
+        public ICommand AltKey9Command { get; }
+        public ICommand AltKey0Command { get; }
+
+        public ICommand ValidateTextInputCommand { get; }
+        public ICommand ClosingApiSettingsCommand { get; }
+        public ICommand ResetApiSettingsCommand { get; }
+
 
         private void ClosingApiSettings()
         {
@@ -23,8 +73,6 @@ namespace TmCGPTD.ViewModels
             VMLocator.WebChatBardViewModel.WebChatBardViewIsVisible = true;
         }
 
-        public ICommand ValidateTextInputCommand { get; }
-
         private void ValidateTextInput(string text)
         {
             Regex regex = new Regex("[^0-9.-]+");
@@ -33,7 +81,6 @@ namespace TmCGPTD.ViewModels
                 return;
             }
         }
-        public ICommand ClosingApiSettingsCommand { get; }
 
         private bool _apiSettingIsOpened;
         public bool ApiSettingIsOpened
@@ -41,7 +88,6 @@ namespace TmCGPTD.ViewModels
             get => _apiSettingIsOpened;
             set => SetProperty(ref _apiSettingIsOpened, value);
         }
-        public ICommand ResetApiSettingsCommand { get; }
 
         private void ResetApiSettings()
         {

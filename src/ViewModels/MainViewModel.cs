@@ -105,6 +105,20 @@ namespace TmCGPTD.ViewModels
             set => SetProperty(ref _searchKeyword, value);
         }
 
+        private bool _autoSaveIsChecked;
+        public bool AutoSaveIsChecked
+        {
+            get => _autoSaveIsChecked;
+            set => SetProperty(ref _autoSaveIsChecked, value);
+        }
+
+        private string _searchKeyword;
+        public string SearchKeyword
+        {
+            get => _searchKeyword;
+            set => SetProperty(ref _searchKeyword, value);
+        }
+
         private bool _logPainIsOpened;
         public bool LogPainIsOpened
         {
@@ -285,7 +299,7 @@ namespace TmCGPTD.ViewModels
                     new("All files (*.*)") { Patterns = new[] { "*" } }}
             };
 
-            var result = await (Application.Current!.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)!.MainWindow!.StorageProvider.OpenFilePickerAsync(dialog);
+            var result = await (Application.Current.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime).MainWindow.StorageProvider.OpenFilePickerAsync(dialog);
 
             if (result.Count > 0)
             {

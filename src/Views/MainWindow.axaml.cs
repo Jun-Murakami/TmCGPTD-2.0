@@ -71,6 +71,30 @@ namespace TmCGPTD.Views
             }
         }
 
+        private void MainWindow_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.LeftAlt || e.Key == Key.RightAlt)
+            {
+                VMLocator.PhrasePresetsViewModel.AltKeyIsDown = true;
+            }
+            else if (e.Key == Key.LeftCtrl || e.Key == Key.RightCtrl)
+            {
+                VMLocator.PhrasePresetsViewModel.CtrlKeyIsDown = true;
+            }
+        }
+
+        private void MainWindow_KeyUp(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.LeftAlt || e.Key == Key.RightAlt)
+            {
+                VMLocator.PhrasePresetsViewModel.AltKeyIsDown = false;
+            }
+            else if (e.Key == Key.LeftCtrl || e.Key == Key.RightCtrl)
+            {
+                VMLocator.PhrasePresetsViewModel.CtrlKeyIsDown = false;
+            }
+        }
+
         private double _previousWidth;
 
         private async void MainWindow_Loaded(object sender, RoutedEventArgs e)
