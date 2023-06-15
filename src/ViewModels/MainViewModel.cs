@@ -14,6 +14,7 @@ using FluentAvalonia.UI.Controls;
 using Avalonia;
 using Avalonia.Platform.Storage;
 using System.Diagnostics;
+using System.Threading;
 
 namespace TmCGPTD.ViewModels
 {
@@ -222,6 +223,8 @@ namespace TmCGPTD.ViewModels
             set => SetProperty(ref _postButtonText, value);
         }
 
+        // CancellationTokenSourceを作成
+        private CancellationTokenSource cts = new CancellationTokenSource();
 
         private async Task PostAsync()
         {
@@ -229,6 +232,8 @@ namespace TmCGPTD.ViewModels
             {
                 return;
             }
+
+            CancellationToken token = cts.Token; // キャンセルトークンを作成
 
             List<Dictionary<string, object>>? backupConversationHistory = null;
 
@@ -240,7 +245,7 @@ namespace TmCGPTD.ViewModels
                     backupConversationHistory = System.Text.Json.JsonSerializer.Deserialize<List<Dictionary<string, object>>>(jsonCopy);
 
                     jsonCopy = System.Text.Json.JsonSerializer.Serialize(VMLocator.ChatViewModel.LastConversationHistory);
-                    VMLocator.ChatViewModel.ConversationHistory = System.Text.Json.JsonSerializer.Deserialize<List<Dictionary<string, object>>>(jsonCopy);
+                    VMLocator.ChatViewModel.ConversationHistory = System.Text.Json.JsonSerializer.Deserialize<List<Dictionary<string, object>>>(jsonCopy)!;
 
                 }
                 await _dbProcess.InserEditorLogDatabasetAsync();
@@ -255,10 +260,14 @@ namespace TmCGPTD.ViewModels
                 }
                 else
                 {
-                    await VMLocator.ChatViewModel.GoChatAsync();
-                    VMLocator.DataGridViewModel.DataGridIsFocused = false;
-                    VMLocator.DataGridViewModel.ChatList = await _dbProcess.SearchChatDatabaseAsync();
-                    VMLocator.DataGridViewModel.SelectedItemIndex = 0;
+                    bool isNotCancelBeforeResponce = await VMLocator.ChatViewModel.GoChatAsync(token);
+
+                    if (isNotCancelBeforeResponce)
+                    {
+                        VMLocator.DataGridViewModel.DataGridIsFocused = false;
+                        VMLocator.DataGridViewModel.ChatList = await _dbProcess.SearchChatDatabaseAsync();
+                        VMLocator.DataGridViewModel.SelectedItemIndex = 0;
+                    }
                 }
 
                 VMLocator.EditorViewModel.TextClear();
@@ -279,6 +288,12 @@ namespace TmCGPTD.ViewModels
                 }
                 //throw;
             }
+        }
+
+        public void CancelPost()
+        {
+            cts.Cancel(); // キャンセル
+            cts = new CancellationTokenSource(); // CancellationTokenSourceを作り直す
         }
 
         private async Task ImportChatLogAsync()

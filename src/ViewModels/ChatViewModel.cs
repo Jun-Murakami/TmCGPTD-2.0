@@ -17,6 +17,7 @@ using System.Text.RegularExpressions;
 using static TmCGPTD.Models.HtmlProcess;
 using System.Reactive.Joins;
 using static TmCGPTD.Models.ChatProcess;
+using System.Threading;
 
 namespace TmCGPTD.ViewModels
 {
@@ -56,11 +57,11 @@ namespace TmCGPTD.ViewModels
         public IAsyncRelayCommand SearchPrev { get; }
         public IAsyncRelayCommand SearchNext { get; }
 
-        public async Task GoChatAsync()
+        public async Task<bool> GoChatAsync(CancellationToken token)
         {
             if (ChatIsRunning)//チャット実行中の場合はキャンセル
             {
-                return;
+                return true;
             }
             ChatIsRunning = true;
 
@@ -159,7 +160,6 @@ namespace TmCGPTD.ViewModels
                 jsCode = $@"window.scrollTo({{top: document.body.scrollHeight, behavior: 'smooth' }});";
                 _browser.ExecuteJavaScript(jsCode);
 
-
                 // アシスタントの要素を生成。システムメッセージのみの場合はスキップ
                 if (!isOnlySystemMessage)
                 {
@@ -176,7 +176,6 @@ namespace TmCGPTD.ViewModels
                     _browser.ExecuteJavaScript(jsCode);
                 }
 
-                
                 // 既存のシステムメッセージをディープコピー
                 Dictionary<string, object>? oldSystemMessage = null;
                 foreach (var item in ConversationHistory)
@@ -189,7 +188,7 @@ namespace TmCGPTD.ViewModels
                     }
                 }
 
-                // パラメータを生成してチャットを投稿
+                // パラメータを生成
                 ChatParameters postParameters = new ChatParameters {
                     UserInput = postText,
                     UserInputBody = postTextBody,
@@ -200,7 +199,6 @@ namespace TmCGPTD.ViewModels
                     ConversationHistory = ConversationHistory,
                     PostedConversationHistory = null,
                 };
-
 
                 // システムメッセージのみの場合は投稿しない
                 string resText = "";
@@ -227,9 +225,41 @@ namespace TmCGPTD.ViewModels
                 }
                 else
                 {
-                    // メッセージ投稿
-                    resText = await _chatProcess.PostChatAsync(postParameters);
+                    // キャンセルボタンを表示
+                    jsCode = @"var stopButton = document.getElementById('stopButton');
+                               stopButton.style.display = 'block';";
+                    _browser.ExecuteJavaScript(jsCode);
 
+                    await Task.Delay(100);
+
+                    // メッセージ投稿 /////////////////////////////////////////////////
+                    resText = await _chatProcess.PostChatAsync(postParameters, token);
+
+
+                    if (string.IsNullOrWhiteSpace(resText)) //返答が空だったら返答前にキャンセルされたと判断する
+                    {
+                        jsCode = $@"var wrapper = document.getElementById('scrollableWrapper');
+                                var userElements = wrapper.getElementsByClassName('user');
+                                var assistantElements = wrapper.getElementsByClassName('assistant');
+                                if(userElements.length > 0 && assistantElements.length > 0) {{
+                                    userElements[userElements.length - 1].remove(); // 最後の'user'要素を削除
+                                    assistantElements[assistantElements.length - 1].remove(); // 最後の'assistant'要素を削除
+                                }}
+                            ";
+                        _browser.ExecuteJavaScript(jsCode);
+
+                        jsCode = $@"window.scrollTo({{top: document.body.scrollHeight, behavior: 'smooth' }});
+                                    var stopButton = document.getElementById('stopButton');
+                                    stopButton.style.display = 'none';";
+                        _browser.ExecuteJavaScript(jsCode);
+                        ChatIsRunning = false;
+                        return false;
+                    }
+
+                    // キャンセルボタンを非表示
+                    jsCode = @"var stopButton = document.getElementById('stopButton');
+                               stopButton.style.display = 'none';";
+                    _browser.ExecuteJavaScript(jsCode);
 
                     //会話が成立した時点でタイトルが空欄だったらタイトルを自動生成する
                     if (string.IsNullOrEmpty(ChatTitle))
@@ -271,13 +301,20 @@ namespace TmCGPTD.ViewModels
 
                 jsCode = $@"window.scrollTo({{top: document.body.scrollHeight, behavior: 'smooth' }});";
                 _browser.ExecuteJavaScript(jsCode);
+
             }
             catch (Exception ex)
             {
+                // キャンセルボタンを非表示
+                string jsCode = @"var stopButton = document.getElementById('stopButton');
+                                  stopButton.style.display = 'block';";
+                _browser.ExecuteJavaScript(jsCode);
+
+                // エラーメッセージを表示
                 var htmlToAdd = $"<span class=\"assistantHeader\">[Error]</span><div style=\"white-space: pre-wrap\" id=\"document\">{ex.Message}</div>";
                 string escapedString = JsonSerializer.Serialize(htmlToAdd);
 
-                var jsCode = $@"var wrapper = document.getElementById('scrollableWrapper');
+                jsCode = $@"var wrapper = document.getElementById('scrollableWrapper');
                         var thinkingHeader = wrapper.querySelector('.thinkingHeader');
                         if (thinkingHeader) {{
                             var newElement = document.createElement('div');
@@ -296,6 +333,7 @@ namespace TmCGPTD.ViewModels
             }
 
             ChatIsRunning = false;
+            return true;
         }
         private Dictionary<string, object>? GetSystemMessageItem(List<Dictionary<string, object>>? conversationHistory)
         {
@@ -327,15 +365,39 @@ namespace TmCGPTD.ViewModels
                 isUpdateTag = true;
             }
 
-            if (message == "[ERROR]")
+            if (message == "[ERROR]") // エラーが発生した場合
             {
-                escapedString = $"{Environment.NewLine}[ERROR] Connection has been terminated.";
                 string insertMessageScript = $@"
                         (() => {{
+                            var wrapper = document.getElementById('scrollableWrapper');
+                            var thinkingHeader = wrapper.querySelector('.thinkingHeader');
+                            if (thinkingHeader) {{
+                                thinkingHeader.parentNode.removeChild(thinkingHeader);
+                            }} 
                             var isBottom = isAtBottom5();
                             const assistantElements = document.getElementsByClassName('assistant');
                             const lastAssistantElement = assistantElements[assistantElements.length - 1];
-                            lastAssistantElement.innerHTML += {escapedString};
+                            lastAssistantElement.innerHTML = {escapedHtml};
+                            hljs.highlightAll();
+                            window.scrollTo({{top: document.body.scrollHeight, behavior: 'smooth' }});
+                        }})();
+                    ";
+                _browser.ExecuteJavaScript(insertMessageScript);
+            }
+            else if (message == "[CANCEL]") // キャンセルされた場合
+            {
+                string insertMessageScript = $@"
+                        (() => {{
+                            var wrapper = document.getElementById('scrollableWrapper');
+                            var thinkingHeader = wrapper.querySelector('.thinkingHeader');
+                            if (thinkingHeader) {{
+                                thinkingHeader.parentNode.removeChild(thinkingHeader);
+                            }} 
+                            var isBottom = isAtBottom5();
+                            const assistantElements = document.getElementsByClassName('assistant');
+                            const lastAssistantElement = assistantElements[assistantElements.length - 1];
+                            lastAssistantElement.innerHTML = {escapedHtml};
+                            hljs.highlightAll();
                             window.scrollTo({{top: document.body.scrollHeight, behavior: 'smooth' }});
                         }})();
                     ";
