@@ -162,11 +162,20 @@
             }
         }
 
+        // ストップボタン-----------------------------------
+        function stopGenerating(event) {
+            const button = event.target;
+            button.style.display = 'none';
+            window.open('https://StopGenerating', '_blank');
+        }
+
         function setupButtons() {
-            const copyButtons = document.querySelectorAll('#copyButton');
-            copyButtons.forEach(button => button.addEventListener('click', copyCode));
+            const copyButton = document.querySelectorAll('#copyButton');
+            copyButton.forEach(button => button.addEventListener('click', copyCode));
             const editButtons = document.querySelectorAll('.editButton');
             editButtons.forEach(button => button.addEventListener('click', switchEdit));
+            const stopButton = document.querySelectorAll('#stopButton');
+            stopButton.forEach(button => button.addEventListener('click', stopGenerating));
         }
 
     </script>
@@ -196,6 +205,8 @@
     <button id="floatingCopyButton">Copy to clipboard</button>
 
     <div id="floatingSystemMessageInfo"><div class="codeHeader3">System Message</div><div class="codeBody"></div></div>
+
+    <button id="stopButton">□ Stop generating</button>
 
     <div class="svg-container">
         <svg id="a" data-name="Layer1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500.13 92.84">

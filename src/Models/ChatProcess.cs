@@ -9,6 +9,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using TiktokenSharp;
+using System.Threading;
 
 namespace TmCGPTD.Models
 {
@@ -30,13 +31,18 @@ namespace TmCGPTD.Models
         }
 
         // メインルーチン--------------------------------------------------------------
-        public async Task<string> PostChatAsync(ChatParameters chatParameters)
+        public async Task<string> PostChatAsync(ChatParameters chatParameters, CancellationToken token)
         {
             try
             {
-                chatParameters = await ProcessSendMessageAsync(chatParameters);
+                chatParameters = await ProcessSendMessageAsync(chatParameters, token);
+                if (token.IsCancellationRequested)
+                {
+                    return "";
+                }
+
                 chatParameters = await SetOptionParametersAsync(chatParameters);
-                string chatTextRes = await SendAndRecieveChatAsync(chatParameters);
+                string chatTextRes = await SendAndRecieveChatAsync(chatParameters, token);
 
                 return chatTextRes;
             }
@@ -47,7 +53,7 @@ namespace TmCGPTD.Models
         }
 
         // トークン数制限の事前処理--------------------------------------------------------------
-        private async Task<ChatParameters> ProcessSendMessageAsync(ChatParameters chatParameters)
+        private async Task<ChatParameters> ProcessSendMessageAsync(ChatParameters chatParameters,CancellationToken token)
         {
             string? chatTextPost = chatParameters.UserInput; // ユーザー入力全文
             string currentTitle = chatParameters.ChatTitle!; // チャットタイトル
@@ -156,7 +162,7 @@ namespace TmCGPTD.Models
                     // 抽出したテキストを要約APIリクエストに送信
                     try
                     {
-                        string summary = await GetSummaryAsync(forCompMes!);
+                        string summary = await GetSummaryAsync(forCompMes!, token);
                         summary = currentTitle + ": " + summary;
 
                         string summaryLog = "";
@@ -300,120 +306,136 @@ namespace TmCGPTD.Models
 
 
         // APIに接続してレスポンス取得--------------------------------------------------------------
-        public async Task<string> SendAndRecieveChatAsync(ChatParameters chatParameters)
+        public async Task<string> SendAndRecieveChatAsync(ChatParameters chatParameters, CancellationToken token)
         {
             string chatTextRes = ""; // レスポンス格納用変数
-            List<Dictionary<string, object>>? conversationHistory = chatParameters.ConversationHistory; // 会話履歴
 
-            // APIリクエストを送信
-            using (var httpClientStr = new HttpClient())
+            try
             {
-                var settings = AppSettings.Instance;
+                List<Dictionary<string, object>>? conversationHistory = chatParameters.ConversationHistory; // 会話履歴
 
-                httpClientStr.Timeout = TimeSpan.FromSeconds(300d);
-
-                // HttpRequestMessageの作成
-                var httpRequestMessage = new HttpRequestMessage
+                // APIリクエストを送信
+                using (var httpClientStr = new HttpClient())
                 {
-                    Method = HttpMethod.Post,
-                    RequestUri = new Uri(settings.ApiUrl),
-                    Headers = {
+                    var settings = AppSettings.Instance;
+
+                    httpClientStr.Timeout = TimeSpan.FromSeconds(300d);
+
+                    // HttpRequestMessageの作成
+                    var httpRequestMessage = new HttpRequestMessage
+                    {
+                        Method = HttpMethod.Post,
+                        RequestUri = new Uri(settings.ApiUrl),
+                        Headers = {
                         { HttpRequestHeader.Authorization.ToString(), $"Bearer {settings.ApiKey}" },
                         { HttpRequestHeader.ContentType.ToString(), "application/json" }
                     },
-                    Content = new StringContent(JsonSerializer.Serialize(chatParameters.Options), Encoding.UTF8, "application/json")
-                };
+                        Content = new StringContent(JsonSerializer.Serialize(chatParameters.Options), Encoding.UTF8, "application/json")
+                    };
 
-                // SendAsyncでレスポンスを取得
-                var response = await httpClientStr.SendAsync(httpRequestMessage, HttpCompletionOption.ResponseHeadersRead);
+                    // SendAsyncでレスポンスを取得
+                    var response = await httpClientStr.SendAsync(httpRequestMessage, HttpCompletionOption.ResponseHeadersRead);
 
-                // レスポンスが成功した場合
-                if (response.IsSuccessStatusCode)
-                {
-                    // レスポンスのStreamを取得
-                    using var stream = await response.Content.ReadAsStreamAsync();
-                    using var reader = new StreamReader(stream);
-                    string? line;
-                    bool isDoneReceived = false;
-
-                    // レスポンスを行ごとに読み込む
-                    while ((line = await reader.ReadLineAsync()) != null)
+                    // レスポンスが成功した場合
+                    if (response.IsSuccessStatusCode)
                     {
-                        // "data: "で始まる行をパース
-                        if (line.StartsWith("data: "))
-                        {
-                            var json = line.Substring(6);
+                        // レスポンスのStreamを取得
+                        using var stream = await response.Content.ReadAsStreamAsync();
+                        using var reader = new StreamReader(stream);
+                        string? line;
+                        bool isDoneReceived = false;
 
-                            // "data: [DONE]"を受け取ったらループを終了
-                            if (json == "[DONE]")
+                        // レスポンスを行ごとに読み込む
+                        while ((line = await reader.ReadLineAsync()) != null)
+                        {
+                            // キャンセルされた場合
+                            if (token.IsCancellationRequested)
                             {
-                                //await VMLocator.ChatViewModel.UpdateUIWithReceivedMessage("[DONE]", chatTextRes);
-                                isDoneReceived = true;
-                                break;
+                                chatTextRes += $"{Environment.NewLine}{Environment.NewLine}[Cancel] Response generation has been canceled.";
+                                await VMLocator.ChatViewModel.UpdateUIWithReceivedMessage("[CANCEL]", chatTextRes.Trim()); // Streamキャンセル処理
+                                return chatTextRes;
                             }
 
-                            var chatResponse = JsonSerializer.Deserialize<ResponseChunkData>(json);
-
-                            // choices[0].delta.contentに差分の文字列がある場合
-                            if (chatResponse?.choices?.FirstOrDefault()?.delta?.content != null)
+                            // "data: "で始まる行をパース
+                            if (line.StartsWith("data: "))
                             {
-                                // ログをUIに出力
-                                chatTextRes += chatResponse.choices[0].delta!.content;
-                                await VMLocator.ChatViewModel.UpdateUIWithReceivedMessage(chatResponse.choices[0].delta!.content, chatTextRes);
+                                var json = line.Substring(6);
+
+                                // "data: [DONE]"を受け取ったらループを終了
+                                if (json == "[DONE]")
+                                {
+                                    isDoneReceived = true;
+                                    break;
+                                }
+
+                                var chatResponse = JsonSerializer.Deserialize<ResponseChunkData>(json);
+
+                                // choices[0].delta.contentに差分の文字列がある場合
+                                if (chatResponse?.choices?.FirstOrDefault()?.delta?.content != null)
+                                {
+                                    // ログをUIに出力
+                                    chatTextRes += chatResponse.choices[0].delta!.content;
+                                    await VMLocator.ChatViewModel.UpdateUIWithReceivedMessage(chatResponse.choices[0].delta!.content, chatTextRes);
+                                }
                             }
                         }
-                    }
 
-                    // [DONE]を受け取らなかったらエラー処理
-                    if (!isDoneReceived)
+                        // [DONE]を受け取らなかったらエラー処理
+                        if (!isDoneReceived)
+                        {
+                            await VMLocator.ChatViewModel.UpdateUIWithReceivedMessage("[ERROR]", chatTextRes);
+                            chatTextRes += $"{Environment.NewLine}{Environment.NewLine}[ERROR] Connection has been terminated.";
+                        }
+
+                        // 入力トークン数を計算
+                        TikToken tokenizer = TikToken.EncodingForModel("gpt-3.5-turbo");
+                        var inputConversationTokenCount = tokenizer.Encode(conversationHistory!.Select(d => d["content"].ToString()).Aggregate((a, b) => a + b)!).Count;
+
+                        // レスポンスのトークン数を計算
+                        var responseTokenCount = tokenizer.Encode(chatTextRes).Count;
+
+                        // レス本文
+                        chatTextRes = Environment.NewLine + chatTextRes + Environment.NewLine + Environment.NewLine;
+
+                        // 応答に成功したconversationHistoryを保存
+                        VMLocator.ChatViewModel.LastConversationHistory = chatParameters.PostedConversationHistory!;
+
+                        // 応答を受け取った後、conversationHistory に追加
+                        conversationHistory!.Add(new Dictionary<string, object>() { { "role", "assistant" }, { "content", chatTextRes } });
+
+                        // ビューモデルを更新
+                        VMLocator.ChatViewModel.ConversationHistory = conversationHistory;
+
+                        // usageを計算
+                        chatTextRes += $"usage={{\"prompt_tokens\":{inputConversationTokenCount},\"completion_tokens\":{responseTokenCount},\"total_tokens\":{inputConversationTokenCount + responseTokenCount}}}" + Environment.NewLine;
+
+                        // 要約が実行された場合、メソッドの戻り値の最後に要約前のトークン数と要約後のトークン数をメッセージとして付け加える
+                        string? postConversation = conversationHistory.Select(d => d["content"].ToString()).Aggregate((a, b) => a + b);
+                        if (chatParameters.PreSummarizedHistoryTokenCount > tokenizer.Encode(postConversation!).Count)
+                        {
+                            chatTextRes += $"-Conversation history has been summarized. before: {chatParameters.PreSummarizedHistoryTokenCount}, after: {tokenizer.Encode(postConversation!).Count}.{Environment.NewLine}";
+                        }
+                        else if (chatParameters.IsDeleteHistory) // 会話履歴が全て削除された場合
+                        {
+                            chatTextRes += $"-Conversation history has been removed. before: {chatParameters.PreSummarizedHistoryTokenCount}, after: {tokenizer.Encode(postConversation!).Count}.{Environment.NewLine}";
+                        }
+
+                        await VMLocator.ChatViewModel.UpdateUIWithReceivedMessage("[DONE]", chatTextRes.Trim()); // Stream終了処理
+
+                    }
+                    else
                     {
-                        await VMLocator.ChatViewModel.UpdateUIWithReceivedMessage("[ERROR]", chatTextRes);
-                        chatTextRes += $"{Environment.NewLine}[ERROR] Connection has been terminated.";
+                        string errorBody = await response.Content.ReadAsStringAsync();
+                        throw new Exception($"Error: Response status code does not indicate success: {response.StatusCode} ({response.ReasonPhrase}). Response body: {errorBody}");
                     }
-
-                    // 入力トークン数を計算
-                    TikToken tokenizer = TikToken.EncodingForModel("gpt-3.5-turbo");
-                    var inputConversationTokenCount = tokenizer.Encode(conversationHistory!.Select(d => d["content"].ToString()).Aggregate((a, b) => a + b)!).Count;
-
-                    // レスポンスのトークン数を計算
-                    var responseTokenCount = tokenizer.Encode(chatTextRes).Count;
-
-                    // レス本文
-                    chatTextRes = Environment.NewLine + chatTextRes + Environment.NewLine + Environment.NewLine;
-
-                    // 応答に成功したconversationHistoryを保存
-                    VMLocator.ChatViewModel.LastConversationHistory = chatParameters.PostedConversationHistory!;
-
-                    // 応答を受け取った後、conversationHistory に追加
-                    conversationHistory!.Add(new Dictionary<string, object>() { { "role", "assistant" }, { "content", chatTextRes } });
-
-                    // ビューモデルを更新
-                    VMLocator.ChatViewModel.ConversationHistory = conversationHistory;
-
-                    // usageを計算
-                    chatTextRes += $"usage={{\"prompt_tokens\":{inputConversationTokenCount},\"completion_tokens\":{responseTokenCount},\"total_tokens\":{inputConversationTokenCount + responseTokenCount}}}" + Environment.NewLine;
-
-                    // 要約が実行された場合、メソッドの戻り値の最後に要約前のトークン数と要約後のトークン数をメッセージとして付け加える
-                    string? postConversation = conversationHistory.Select(d => d["content"].ToString()).Aggregate((a, b) => a + b);
-                    if (chatParameters.PreSummarizedHistoryTokenCount > tokenizer.Encode(postConversation!).Count)
-                    {
-                        chatTextRes += $"-Conversation history has been summarized. before: {chatParameters.PreSummarizedHistoryTokenCount}, after: {tokenizer.Encode(postConversation!).Count}.{Environment.NewLine}";
-                    }
-                    else if (chatParameters.IsDeleteHistory) // 会話履歴が全て削除された場合
-                    {
-                        chatTextRes += $"-Conversation history has been removed. before: {chatParameters.PreSummarizedHistoryTokenCount}, after: {tokenizer.Encode(postConversation!).Count}.{Environment.NewLine}";
-                    }
-
-                    await VMLocator.ChatViewModel.UpdateUIWithReceivedMessage("[DONE]", chatTextRes.Trim()); // Stream終了処理
-
                 }
-                else
-                {
-                    string errorBody = await response.Content.ReadAsStringAsync();
-                    throw new Exception($"Error: Response status code does not indicate success: {response.StatusCode} ({response.ReasonPhrase}). Response body: {errorBody}");
-                }
+                return chatTextRes;
             }
-            return chatTextRes;
+            catch (Exception)
+            {
+                throw;
+            }
+
         }
 
         public class ResponseChunkData
@@ -439,16 +461,19 @@ namespace TmCGPTD.Models
         }
 
         //文章要約圧縮メソッド--------------------------------------------------------------
-        public async Task<string> GetSummaryAsync(string forCompMes)
+        public async Task<string> GetSummaryAsync(string forCompMes, CancellationToken token)
         {
             string summary;
 
-            using (var httpClient = new HttpClient())
+            try
             {
-                httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", AppSettings.Instance.ApiKey);
-                httpClient.Timeout = TimeSpan.FromSeconds(200d);
 
-                var options = new Dictionary<string, object>
+                using (var httpClient = new HttpClient())
+                {
+                    httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", AppSettings.Instance.ApiKey);
+                    httpClient.Timeout = TimeSpan.FromSeconds(200d);
+
+                    var options = new Dictionary<string, object>
                 {
                     { "model", "gpt-3.5-turbo" },
                     { "messages", new List<Dictionary<string, object>>
@@ -459,26 +484,35 @@ namespace TmCGPTD.Models
                     }
                 };
 
-                string jsonContent = JsonSerializer.Serialize(options);
+                    string jsonContent = JsonSerializer.Serialize(options);
 
-                var content = new StringContent(jsonContent, System.Text.Encoding.UTF8, "application/json");
+                    var content = new StringContent(jsonContent, System.Text.Encoding.UTF8, "application/json");
 
-                var response = await httpClient.PostAsync(AppSettings.Instance.ApiUrl, content);
+                    var response = await httpClient.PostAsync(AppSettings.Instance.ApiUrl, content);
 
-                if (response.IsSuccessStatusCode)
-                {
-                    string responseBody = await response.Content.ReadAsStringAsync();
-                    var responseJson = JsonSerializer.Deserialize<JsonElement>(responseBody);
-                    summary = responseJson.GetProperty("choices")[0].GetProperty("message").GetProperty("content").GetString()!.Trim();
+                    if (response.IsSuccessStatusCode)
+                    {
+                        string responseBody = await response.Content.ReadAsStringAsync(token);
+                        var responseJson = JsonSerializer.Deserialize<JsonElement>(responseBody);
+                        summary = responseJson.GetProperty("choices")[0].GetProperty("message").GetProperty("content").GetString()!.Trim();
+                    }
+                    else
+                    {
+                        string errorBody = await response.Content.ReadAsStringAsync();
+                        throw new Exception($"Summarize Error: Response status code does not indicate success: {response.StatusCode} ({response.ReasonPhrase}). Response body: {errorBody}");
+                    }
                 }
-                else
-                {
-                    string errorBody = await response.Content.ReadAsStringAsync();
-                    throw new Exception($"Summarize Error: Response status code does not indicate success: {response.StatusCode} ({response.ReasonPhrase}). Response body: {errorBody}");
-                }
+
+                return summary;
             }
-
-            return summary;
+            catch (OperationCanceledException)
+            {
+                return "";
+            }
+            catch (Exception)
+            {
+                throw;
+            }
         }
 
         //タイトル命名メソッド--------------------------------------------------------------
