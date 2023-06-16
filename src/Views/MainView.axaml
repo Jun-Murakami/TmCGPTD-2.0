@@ -207,7 +207,16 @@
 				<Border Grid.Row="1" Grid.Column="2"
 						BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
 						BorderThickness="1,1,1,0">
-					<ui:Frame Name="RightFrame" />
+					<Grid>
+						<ui:Frame Name="RightFrame" />
+						<TextBlock
+							VerticalAlignment="Bottom"
+							HorizontalAlignment="Right"
+							Margin="0,0,5,55"
+							Foreground="rgb(106, 108, 125)"
+							Text="{Binding InputTokens}"
+							/>
+					</Grid>
 				</Border>
 				<Border Grid.Row="2" Grid.Column="2"
 						BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"

@@ -224,6 +224,13 @@ namespace TmCGPTD.ViewModels
             set => SetProperty(ref _postButtonText, value);
         }
 
+        private string _inputTokens;
+        public string InputTokens
+        {
+            get => _inputTokens;
+            set => SetProperty(ref _inputTokens, value);
+        }
+
         // CancellationTokenSourceを作成
         private CancellationTokenSource cts = new CancellationTokenSource();
 
