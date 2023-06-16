@@ -2,11 +2,13 @@ using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using Avalonia.Input;
 using TmCGPTD.ViewModels;
+using FluentAvalonia.UI.Controls;
 
 namespace TmCGPTD.Views
 {
     public partial class EditorView : UserControl
     {
+        private Frame _editorPane;
         public EditorViewModel EditorViewModel { get; } = new EditorViewModel();
 
         public EditorView()
@@ -14,6 +16,12 @@ namespace TmCGPTD.Views
             InitializeComponent();
             DataContext = EditorViewModel;
             VMLocator.EditorViewModel = EditorViewModel;
+
+            _editorPane = this.FindControl<Frame>("EditorFrame")!;
+
+            _editorPane.IsNavigationStackEnabled = false;
+
+            _editorPane.Navigate(typeof(EditorFiveView));
         }
 
         private void UserControl_PointerWheelChanged(object sender, PointerWheelEventArgs e)

@@ -539,6 +539,13 @@ namespace TmCGPTD.ViewModels
             get => _editor5Text;
             set => SetProperty(ref _editor5Text, value);
         }
+
+        private string _editorOneText;
+        public string EditorOneText
+        {
+            get => _editorOneText;
+            set => SetProperty(ref _editorOneText, value);
+        }
     }
 
 }
