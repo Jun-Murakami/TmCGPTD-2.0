@@ -23,6 +23,7 @@ namespace TmCGPTD.ViewModels
         {
             EditorCommonFontSize = 16;
             EditorModeIsChecked = true;
+            IsEditorFiveVisible = true;
 
             TextClear();
 
@@ -243,6 +244,12 @@ namespace TmCGPTD.ViewModels
             set => SetProperty(ref _editorHeight5, value);
         }
 
+        private bool _isEditorFiveVisible;
+        public bool IsEditorFiveVisible
+        {
+            get => _isEditorFiveVisible;
+            set => SetProperty(ref _isEditorFiveVisible, value);
+        }
 
         private async Task SaveTemplateAsync()
         {
@@ -538,13 +545,6 @@ namespace TmCGPTD.ViewModels
         {
             get => _editor5Text;
             set => SetProperty(ref _editor5Text, value);
-        }
-
-        private string _editorOneText;
-        public string EditorOneText
-        {
-            get => _editorOneText;
-            set => SetProperty(ref _editorOneText, value);
         }
     }
 

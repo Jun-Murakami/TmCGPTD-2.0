@@ -7,24 +7,24 @@
              x:Class="TmCGPTD.Views.EditorFiveView">
   <Grid>
 	  <Grid.RowDefinitions>
-		  <RowDefinition Height="{Binding EditorHeight1,Mode=TwoWay}" MinHeight="10" />
+		  <RowDefinition Height="{Binding Source={StaticResource VMLocator}, Path=EditorViewModel.EditorHeight1,Mode=TwoWay}" MinHeight="10" />
 		  <RowDefinition Height="5"/>
-		  <RowDefinition Height="{Binding EditorHeight2,Mode=TwoWay}" MinHeight="10" />
+		  <RowDefinition Height="{Binding Source={StaticResource VMLocator}, Path=EditorViewModel.EditorHeight2,Mode=TwoWay}" MinHeight="10" />
 		  <RowDefinition Height="5"/>
-		  <RowDefinition Height="{Binding EditorHeight3,Mode=TwoWay}" MinHeight="10" />
+		  <RowDefinition Height="{Binding Source={StaticResource VMLocator}, Path=EditorViewModel.EditorHeight3,Mode=TwoWay}" MinHeight="10" />
 		  <RowDefinition Height="5"/>
-		  <RowDefinition Height="{Binding EditorHeight4,Mode=TwoWay}" MinHeight="10" />
+		  <RowDefinition Height="{Binding Source={StaticResource VMLocator}, Path=EditorViewModel.EditorHeight4,Mode=TwoWay}" MinHeight="10" />
 		  <RowDefinition Height="5"/>
-		  <RowDefinition Height="{Binding EditorHeight5,Mode=TwoWay}" MinHeight="10" />
+		  <RowDefinition Height="{Binding Source={StaticResource VMLocator}, Path=EditorViewModel.EditorHeight5,Mode=TwoWay}" MinHeight="10" />
 	  </Grid.RowDefinitions>
 	  <TextBox Grid.Row="0"
 			   Name="Editor1"
 			   AcceptsReturn="True"
-			   Text="{Binding Path=DataContext.Editor1Text, RelativeSource={RelativeSource FindAncestor, AncestorType=views:EditorView},Mode=TwoWay}"
-			   FontSize="{Binding Path=DataContext.EditorCommonFontSize, RelativeSource={RelativeSource FindAncestor, AncestorType=views:EditorView}" />
+			   Text="{Binding Source={StaticResource VMLocator}, Path=EditorViewModel.Editor1Text,Mode=TwoWay}"
+			   FontSize="{Binding Source={StaticResource VMLocator}, Path=EditorViewModel.EditorCommonFontSize}" />
 	  <GridSplitter Grid.Row="1" Height="2" Background="rgb(57, 58, 70)" Focusable="False"/>
 	  <TransitioningContentControl Grid.Row="2"
-								   Content="{Binding SelectedEditor2View}">
+								   Content="{Binding Source={StaticResource VMLocator}, Path=EditorViewModel.SelectedEditor2View}">
 		  <TransitioningContentControl.PageTransition>
 			  <PageSlide Duration="0:00:00.050" Orientation="Horizontal"/>
 		  </TransitioningContentControl.PageTransition>
@@ -33,11 +33,11 @@
 	  <TextBox Grid.Row="4"
 			   Name="Editor3"
 			   AcceptsReturn="True"
-			   Text="{Binding Path=DataContext.Editor3Text, RelativeSource={RelativeSource FindAncestor, AncestorType=views:EditorView},Mode=TwoWay}"
-			   FontSize="{Binding Path=DataContext.EditorCommonFontSize, RelativeSource={RelativeSource FindAncestor, AncestorType=views:EditorView}" />
+			   Text="{Binding Source={StaticResource VMLocator}, Path=EditorViewModel.Editor3Text,Mode=TwoWay}"
+			   FontSize="{Binding Source={StaticResource VMLocator}, Path=EditorViewModel.EditorCommonFontSize}" />
 	  <GridSplitter Grid.Row="5" Height="2" Background="rgb(57, 58, 70)" Focusable="False" />
 	  <TransitioningContentControl Grid.Row="6"
-								   Content="{Binding SelectedEditor4View}">
+								   Content="{Binding Source={StaticResource VMLocator}, Path=EditorViewModel.SelectedEditor4View}">
 		  <TransitioningContentControl.PageTransition>
 			  <PageSlide Duration="0:00:00.050" Orientation="Horizontal"/>
 		  </TransitioningContentControl.PageTransition>
@@ -46,7 +46,7 @@
 	  <TextBox Grid.Row="8"
 			   Name="Editor5"
 			   AcceptsReturn="True"
-			   Text="{Binding Path=DataContext.Editor5Text, RelativeSource={RelativeSource FindAncestor, AncestorType=views:EditorView},Mode=TwoWay}"
-			   FontSize="{Binding Path=DataContext.EditorCommonFontSize, RelativeSource={RelativeSource FindAncestor, AncestorType=views:EditorView}"/>
+			   Text="{Binding Source={StaticResource VMLocator}, Path=EditorViewModel.Editor5Text,Mode=TwoWay}"
+			   FontSize="{Binding Source={StaticResource VMLocator}, Path=EditorViewModel.EditorCommonFontSize}"/>
   </Grid>
 </UserControl>

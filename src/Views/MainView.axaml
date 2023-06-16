@@ -137,6 +137,18 @@
 							</ItemsPanelTemplate>
 						</ListBox.ItemsPanel>
 					</ListBox>
+
+					<Button ToolTip.Tip="Full editor"
+							HorizontalAlignment="Right"
+							VerticalAlignment="Center"
+							BorderThickness="0"
+							Width="28"
+							Height="28"
+							Margin="0,0,150,0"
+							Command="{Binding EditorOneCommand}">
+						<Image Source="/Assets/iconOne.png"
+								VerticalAlignment="Center" />
+					</Button>
 					<Button ToolTip.Tip="Reset separator"
 							HorizontalAlignment="Right"
 							VerticalAlignment="Center"

@@ -10,7 +10,7 @@
 			Name="OneEditor"
 			VerticalAlignment="Stretch"
 			AcceptsReturn="True"
-			Text="{Binding Path=DataContext.EditorOneText, RelativeSource={RelativeSource FindAncestor, AncestorType=views:EditorView},Mode=TwoWay}"
+			Text="{Binding Path=DataContext.Editor1Text, RelativeSource={RelativeSource FindAncestor, AncestorType=views:EditorView},Mode=TwoWay}"
 			FontSize="{Binding Path=DataContext.EditorCommonFontSize, RelativeSource={RelativeSource FindAncestor, AncestorType=views:EditorView}}"/>  
   </Panel>
 </UserControl>

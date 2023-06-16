@@ -17,6 +17,8 @@ namespace TmCGPTD.Views
             DataContext = EditorViewModel;
             VMLocator.EditorViewModel = EditorViewModel;
 
+            EditorViewModel.PropertyChanged += ViewModel_PropertyChanged;
+
             _editorPane = this.FindControl<Frame>("EditorFrame")!;
 
             _editorPane.IsNavigationStackEnabled = false;
@@ -38,6 +40,24 @@ namespace TmCGPTD.Views
                     e.Handled = true;
                 }
             }
+        }
+
+        private void ViewModel_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(EditorViewModel.IsEditorFiveVisible))
+            {
+                switch (EditorViewModel.IsEditorFiveVisible)
+                {
+                    case true:
+                        _editorPane.Navigate(typeof(EditorFiveView));
+                        break;
+
+                    case false:
+                        _editorPane.Navigate(typeof(EditorOneView));
+                        break;
+                }
+            }
+
         }
 
         private void InitializeComponent()

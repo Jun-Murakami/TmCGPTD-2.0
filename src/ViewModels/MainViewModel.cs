@@ -48,6 +48,7 @@ namespace TmCGPTD.ViewModels
 
             CopyToClipboardCommand = new AsyncRelayCommand(async () => await CopyToClipboard());
 
+            EditorOneCommand = new RelayCommand(SetEditorOne);
             ResetSeparatorCommand = new RelayCommand(ResetSeparator);
             SystemMessageCommand = new RelayCommand(InsertSystemMessage);
             HotKeyDisplayCommand = new AsyncRelayCommand(HotKeyDisplayAsync);
@@ -77,6 +78,7 @@ namespace TmCGPTD.ViewModels
         public ICommand ResetSeparatorCommand { get; }
         public ICommand SystemMessageCommand { get; }
         public ICommand OpenApiSettingsCommand { get; }
+        public ICommand EditorOneCommand { get; }
         public IAsyncRelayCommand ShowDatabaseSettingsCommand { get; }
         public IAsyncRelayCommand HotKeyDisplayCommand { get; }
 
@@ -180,7 +182,6 @@ namespace TmCGPTD.ViewModels
             get => _selectedLogPain;
             set => SetProperty(ref _selectedLogPain, value);
         }
-
 
         private ObservableCollection<string> _phrasePresetsItems;
         public ObservableCollection<string> PhrasePresetsItems
@@ -701,8 +702,15 @@ namespace TmCGPTD.ViewModels
             IsCopyButtonClicked = false;
         }
 
+
+        private void SetEditorOne()
+        {
+            VMLocator.EditorViewModel.IsEditorFiveVisible = false;
+        }
+
         private void ResetSeparator()
         {
+            VMLocator.EditorViewModel.IsEditorFiveVisible = true;
             VMLocator.EditorViewModel.SeparatorReset();
         }
 
