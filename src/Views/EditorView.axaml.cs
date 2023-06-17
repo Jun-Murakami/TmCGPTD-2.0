@@ -44,15 +44,17 @@ namespace TmCGPTD.Views
 
         private void ViewModel_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
-            if (e.PropertyName == nameof(EditorViewModel.IsEditorFiveVisible))
+            if (e.PropertyName == nameof(EditorViewModel.EditorSeparateMode))
             {
-                switch (EditorViewModel.IsEditorFiveVisible)
+                switch (EditorViewModel.EditorSeparateMode)
                 {
-                    case true:
+                    case 5:
                         _editorPane.Navigate(typeof(EditorFiveView));
                         break;
-
-                    case false:
+                    case 3:
+                        _editorPane.Navigate(typeof(EditorThreeView));
+                        break;
+                    case 1:
                         _editorPane.Navigate(typeof(EditorOneView));
                         break;
                 }

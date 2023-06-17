@@ -169,7 +169,7 @@ namespace TmCGPTD.Views
             VMLocator.DataGridViewModel.SelectedItemIndex = -1;
             VMLocator.EditorViewModel.EditorModeIsChecked = settings.EditorMode;
             VMLocator.EditorViewModel.SelectedLangIndex = settings.SyntaxHighlighting;
-            VMLocator.EditorViewModel.IsEditorFiveVisible = settings.IsEditorFiveVisible;
+            VMLocator.EditorViewModel.EditorSeparateMode = settings.SeparatorMode;
 
             await _dbProcess.CleanUpEditorLogDatabaseAsync();
             VMLocator.EditorViewModel.SelectedEditorLogIndex = -1;
@@ -256,7 +256,7 @@ namespace TmCGPTD.Views
             settings.EditorHeight4 = VMLocator.EditorViewModel.EditorHeight4;
             settings.EditorHeight5 = VMLocator.EditorViewModel.EditorHeight5;
 
-            settings.IsEditorFiveVisible = VMLocator.EditorViewModel.IsEditorFiveVisible;
+            settings.SeparatorMode = VMLocator.EditorViewModel.EditorSeparateMode;
 
             SaveAppSettings(settings);
         }

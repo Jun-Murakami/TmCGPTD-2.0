@@ -29,7 +29,7 @@ namespace TmCGPTD.ViewModels
         {
             EditorCommonFontSize = 16;
             EditorModeIsChecked = true;
-            IsEditorFiveVisible = true;
+            EditorSeparateMode = 5;
 
             TextClear();
 
@@ -147,6 +147,13 @@ namespace TmCGPTD.ViewModels
             set => SetProperty(ref _selectedEditor4View, value);
         }
 
+        private UserControl _selectedEditor3_2View;
+        public UserControl SelectedEditor3_2View
+        {
+            get => _selectedEditor3_2View;
+            set => SetProperty(ref _selectedEditor3_2View, value);
+        }
+
         private bool _editorModeIsChecked;
         public bool EditorModeIsChecked
         {
@@ -164,6 +171,10 @@ namespace TmCGPTD.ViewModels
         private Editor2TextBoxView _editor2TextBoxView;
         private Editor4AvalonEditView _editor4AvalonEditView;
         private Editor4TextBoxView _editor4TextBoxView;
+
+        private Editor3_2AvalonEditView _editor3_2AvalonEditView;
+        private Editor3_2TextBoxView _editor3_2TextBoxView;
+
         private void UpdateSelectedEditorView()
         {
             if (_editorModeIsChecked)
@@ -171,6 +182,7 @@ namespace TmCGPTD.ViewModels
                 if (_editor2AvalonEditView == null)
                 {
                     _editor2AvalonEditView = new Editor2AvalonEditView();
+                    _editor3_2AvalonEditView = new Editor3_2AvalonEditView();
                 }
                 if (_editor4AvalonEditView == null)
                 {
@@ -178,12 +190,14 @@ namespace TmCGPTD.ViewModels
                 }
                 SelectedEditor2View = _editor2AvalonEditView;
                 SelectedEditor4View = _editor4AvalonEditView;
+                SelectedEditor3_2View = _editor3_2AvalonEditView;
             }
             else
             {
                 if (_editor2TextBoxView == null)
                 {
                     _editor2TextBoxView = new Editor2TextBoxView();
+                    _editor3_2TextBoxView = new Editor3_2TextBoxView();
                 }
                 if (_editor4TextBoxView == null)
                 {
@@ -191,6 +205,7 @@ namespace TmCGPTD.ViewModels
                 }
                 SelectedEditor2View = _editor2TextBoxView;
                 SelectedEditor4View = _editor4TextBoxView;
+                SelectedEditor3_2View = _editor3_2TextBoxView;
             }
         }
 
@@ -253,12 +268,13 @@ namespace TmCGPTD.ViewModels
             set => SetProperty(ref _editorHeight5, value);
         }
 
-        private bool _isEditorFiveVisible;
-        public bool IsEditorFiveVisible
+        private int _editorSeparateMode;
+        public int EditorSeparateMode
         {
-            get => _isEditorFiveVisible;
-            set => SetProperty(ref _isEditorFiveVisible, value);
+            get => _editorSeparateMode;
+            set => SetProperty(ref _editorSeparateMode, value);
         }
+
 
         private async Task SaveTemplateAsync()
         {
@@ -477,13 +493,20 @@ namespace TmCGPTD.ViewModels
             }
         }
 
-        public void SeparatorReset()
+        public void SeparatorResetFive()
         {
             EditorHeight1 = new GridLength(0.21, GridUnitType.Star);
             EditorHeight2 = new GridLength(0.30, GridUnitType.Star);
             EditorHeight3 = new GridLength(0.17, GridUnitType.Star);
             EditorHeight4 = new GridLength(0.24, GridUnitType.Star);
             EditorHeight5 = new GridLength(0.08, GridUnitType.Star);
+        }
+
+        public void SeparatorResetThree()
+        {
+            EditorHeight1 = new GridLength(0.34, GridUnitType.Star);
+            EditorHeight2 = new GridLength(0.33, GridUnitType.Star);
+            EditorHeight3 = new GridLength(0.33, GridUnitType.Star);
         }
 
         public string GetRecentText()

@@ -138,25 +138,36 @@
 						</ListBox.ItemsPanel>
 					</ListBox>
 
-					<Button ToolTip.Tip="Full editor"
+					<Button ToolTip.Tip="Switch to full editor"
 							HorizontalAlignment="Right"
 							VerticalAlignment="Center"
 							BorderThickness="0"
 							Width="28"
 							Height="28"
-							Margin="0,0,150,0"
+							Margin="0,0,180,0"
 							Command="{Binding EditorOneCommand}">
 						<Image Source="/Assets/iconOne.png"
 								VerticalAlignment="Center" />
 					</Button>
-					<Button ToolTip.Tip="Reset separator"
+					<Button ToolTip.Tip="Switch to three split mode"
+						HorizontalAlignment="Right"
+						VerticalAlignment="Center"
+						BorderThickness="0"
+						Width="28"
+						Height="28"
+						Margin="0,0,150,0"
+						Command="{Binding EditorThreeCommand}">
+						<Image Source="/Assets/iconThree.png"
+								VerticalAlignment="Center" />
+					</Button>
+					<Button ToolTip.Tip="Switch to five split mode"
 							HorizontalAlignment="Right"
 							VerticalAlignment="Center"
 							BorderThickness="0"
 							Width="28"
 							Height="28"
 							Margin="0,0,120,0"
-							Command="{Binding ResetSeparatorCommand}">
+							Command="{Binding EditorFiveCommand}">
 						<Image Source="/Assets/iconSeparator.png"
 								VerticalAlignment="Center" />
 					</Button>

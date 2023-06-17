@@ -90,6 +90,15 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Update="src\Views\Editors\Editor3_2TextBoxView.axaml.cs">
+      <DependentUpon>Editor3_2TextBoxView.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="src\Views\Editors\Editor3_2AvalonEditView.axaml.cs">
+      <DependentUpon>Editor3_2AvalonEditView.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="src\Views\EditorThreeView.axaml.cs">
+      <DependentUpon>EditorThreeView.axaml</DependentUpon>
+    </Compile>
     <Compile Update="src\Views\EditorFiveView.axaml.cs">
       <DependentUpon>EditorFiveView.axaml</DependentUpon>
     </Compile>
