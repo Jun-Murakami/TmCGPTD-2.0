@@ -10,9 +10,10 @@
     <system:String x:Key="My.Strings.DatabaseInfo">※データベースファイルの保存先をクラウドフォルダ（DropBoxなど）に設定して他のコンピュータから読み込むことで、チャットログと定型句プリセットを同期できます。</system:String>
     <system:String x:Key="My.Strings.ChatScreenInfo">チャット画面を表示した状態で実行してください。</system:String>
     <system:String x:Key="My.Strings.DatabaseUpdate">データベースファイルがアップデートされました。この操作は一度だけ実行されます。データはバックアップされています。</system:String>
-    <system:String x:Key="My.Strings.SystemMessage">ここにシステムロールのプロンプトを入力してください。</system:String>
-	<system:String x:Key="My.Strings.SystemMessageInfo">システムメッセージは設定されていません。
-		- 設定するには一番上のプロンプトエリアに'#System'と入力し、続けてメッセージを入力してください。
-		- 削除するには'#System'だけを送信します。
-	</system:String>
+    <system:String x:Key="My.Strings.SystemMessage">あなたはOpenAIによってトレーニングされた大規模言語モデルのChatGPTです。
+ユーザーの指示をStep by Stepで注意深く思考し、Markdownで回答して下さい。</system:String>
+<system:String x:Key="My.Strings.SystemMessageInfo">システムメッセージは設定されていません。
+- 設定するには一番上のプロンプトエリアに'#System'と入力し、続けてメッセージを入力してください。
+- 削除するには'#System'だけを送信します。
+</system:String>
 </ResourceDictionary>

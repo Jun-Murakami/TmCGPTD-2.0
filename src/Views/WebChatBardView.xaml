@@ -50,6 +50,17 @@
 						   Margin="10,0,0,0"/>
 				</Grid>
 				<Grid Grid.Column="2">
+					<Button Command="{Binding UpdateBrowserCommand}"
+							Classes="ImageButton"
+							VerticalAlignment="Center"
+							Padding="4,0"
+							Margin="10,0,0,0">
+						<Image Classes="ButtonIcon"
+								Source="/Assets/iconUpdate.png"
+								Height="22"
+								Width="22"
+								VerticalAlignment="Center" />
+					</Button>
 				</Grid>
 				<Grid Grid.Column="3">
 					<TextBox Name="SearchBox"

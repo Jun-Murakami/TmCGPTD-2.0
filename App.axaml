@@ -4,7 +4,7 @@
 			 xmlns:sty="using:FluentAvalonia.Styling"
 			 xmlns:ui="using:FluentAvalonia.UI.Controls"
 			 xmlns:dialogHostAvalonia="clr-namespace:DialogHostAvalonia;assembly=DialogHost.Avalonia"
-			 RequestedThemeVariant="Dark"
+			 RequestedThemeVariant="Light"
              x:Class="TmCGPTD.App">
     <Application.DataTemplates>
         <local:ViewLocator/>
