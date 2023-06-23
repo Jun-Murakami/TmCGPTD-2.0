@@ -37,7 +37,7 @@ namespace TmCGPTD
                       .AfterSetup(_ => CefRuntimeLoader.Initialize(new CefSettings()
                       {
                           CachePath = AppSettings.Instance.AppDataPath,
-                          //RemoteDebuggingPort = 9222,
+                          RemoteDebuggingPort = 9222,
                           LogSeverity = CefLogSeverity.Error,
                           LogFile = AppSettings.Instance.AppDataPath + "\\cef_" + ".log",
                           //BackgroundColor = new CefColor(255, 52, 53, 65),

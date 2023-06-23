@@ -25,25 +25,16 @@
     <Compile Remove="Helper\**" />
     <EmbeddedResource Remove="Helper\**" />
     <None Remove="Helper\**" />
-    <AvaloniaResource Remove="Assets\CustomDataGridStyles.axaml" />
     <AvaloniaResource Include="Assets\Styles.axaml" />
     <None Remove=".gitignore" />
     <None Remove="Assets\TmCGPTD.ico" />
-    <None Remove="src\Views\WebChatBardView.xaml" />
-    <None Remove="src\Views\WebChatView.xaml" />
     <AvaloniaResource Include="Assets\Lato-Regular.ttf" />
     <AvaloniaResource Include="Assets\TmCGPTD.ico" />
     <AvaloniaResource Include="Assets\TmCGPTD2.png" />
     <AvaloniaResource Include="Assets\iconClip.png" />
     <AvaloniaResource Include="Assets\iconWrite.png" />
     <AvaloniaResource Include="Assets\migu-1m-regular.ttf" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <AvaloniaXaml Include="src\Views\WebChatBardView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </AvaloniaXaml>
-    <AvaloniaXaml Include="src\Views\WebChatView.xaml" />
+    <AvaloniaResource Include="supabaseConfig.json" />
   </ItemGroup>
 
   <ItemGroup>
@@ -70,9 +61,11 @@
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.0-preview2" />
     <PackageReference Include="CsvHelper" Version="30.0.1" />
     <PackageReference Include="DialogHost.Avalonia" Version="0.7.3" />
+    <PackageReference Include="EmbedIO" Version="3.5.2" />
     <PackageReference Include="FluentAvaloniaUI" Version="2.0.0-preview8" />
     <PackageReference Include="HtmlAgilityPack" Version="1.11.46" />
     <PackageReference Include="ReverseMarkdown" Version="3.25.0" />
+    <PackageReference Include="supabase-csharp" Version="0.11.1" />
     <PackageReference Include="System.Data.SQLite" Version="1.0.117" />
     <PackageReference Include="TiktokenSharp" Version="1.0.5" />
   </ItemGroup>
@@ -81,33 +74,6 @@
     <AvaloniaResource Update="Assets\highlight.min.js">
       <CopyToOutputDirectory></CopyToOutputDirectory>
     </AvaloniaResource>
-  </ItemGroup>
-
-  <ItemGroup>
-    <AvaloniaXaml Update="Assets\CustomDataGridStyles.axaml">
-      <SubType>Designer</SubType>
-    </AvaloniaXaml>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Update="src\Views\Editors\Editor3_2TextBoxView.axaml.cs">
-      <DependentUpon>Editor3_2TextBoxView.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="src\Views\Editors\Editor3_2AvalonEditView.axaml.cs">
-      <DependentUpon>Editor3_2AvalonEditView.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="src\Views\EditorThreeView.axaml.cs">
-      <DependentUpon>EditorThreeView.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="src\Views\EditorFiveView.axaml.cs">
-      <DependentUpon>EditorFiveView.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="src\Views\HotKeyDisplayView.axaml.cs">
-      <DependentUpon>HotKeyDisplayView.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="src\Views\EditorOneView.axaml.cs">
-      <DependentUpon>EditorOneView.axaml</DependentUpon>
-    </Compile>
   </ItemGroup>
 
 </Project>

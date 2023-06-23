@@ -39,6 +39,25 @@ namespace TmCGPTD.Models
             return doc.DocumentNode.OuterHtml;
         }
 
+        // ログインページHTML初期化--------------------------------------------------------------
+        public async Task<string> InitializeLogInToHtml()
+        {
+            using var streamReader = new StreamReader(AssetLoader.Open(new Uri("avares://TmCGPTD/Assets/LogInTemplete.html")));
+            using var chatCssStreamReader = new StreamReader(AssetLoader.Open(new Uri("avares://TmCGPTD/Assets/ChatStyles.css")));
+
+            string chatCssContent = await chatCssStreamReader.ReadToEndAsync();
+            string templateHtml = await streamReader.ReadToEndAsync();
+
+            var doc = new HtmlDocument();
+            doc.LoadHtml(templateHtml);
+
+            var styleNode2 = doc.CreateElement("style");
+            styleNode2.InnerHtml = chatCssContent;
+            doc.DocumentNode.SelectSingleNode("//head").AppendChild(styleNode2);
+
+            return doc.DocumentNode.OuterHtml;
+        }
+
         // 表示用HTML変換--------------------------------------------------------------
         public async Task<string> ConvertChatLogToHtml(string plainTextChatLog)
         {

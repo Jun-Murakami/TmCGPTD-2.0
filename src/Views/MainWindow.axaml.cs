@@ -75,110 +75,119 @@ namespace TmCGPTD.Views
 
         private async void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
-            var settings = await LoadAppSettingsAsync();
+            try
+            { 
+                var settings = await LoadAppSettingsAsync();
 
-            if (File.Exists(Path.Combine(settings.AppDataPath, "settings.json")))
-            {
-                this.Width = settings.Width - 1;
-                this.Position = new PixelPoint(settings.X, settings.Y);
-                this.Height = settings.Height;
-                this.Width = settings.Width;
-                this.WindowState = settings.IsMaximized ? WindowState.Maximized : WindowState.Normal;
-            }
-            else
-            {
-                var screen = Screens.Primary;
-                var workingArea = screen.WorkingArea;
+                if (File.Exists(Path.Combine(settings.AppDataPath, "settings.json")))
+                {
+                    this.Width = settings.Width - 1;
+                    this.Position = new PixelPoint(settings.X, settings.Y);
+                    this.Height = settings.Height;
+                    this.Width = settings.Width;
+                    this.WindowState = settings.IsMaximized ? WindowState.Maximized : WindowState.Normal;
+                }
+                else
+                {
+                    var screen = Screens.Primary;
+                    var workingArea = screen.WorkingArea;
 
-                double dpiScaling = screen.PixelDensity;
-                this.Width = 1300 * dpiScaling;
-                this.Height = 840 * dpiScaling;
+                    double dpiScaling = screen.PixelDensity;
+                    this.Width = 1300 * dpiScaling;
+                    this.Height = 840 * dpiScaling;
 
-                this.Position = new PixelPoint(5, 0);
-            }
+                    this.Position = new PixelPoint(5, 0);
+                }
 
-            VMLocator.DatabaseSettingsViewModel.DatabasePath = settings.DbPath;
+                VMLocator.DatabaseSettingsViewModel.DatabasePath = settings.DbPath;
 
-            if (!File.Exists(settings.DbPath))
-            {
-                _dbProcess.CreateDatabase();
-            }
+                if (!File.Exists(settings.DbPath))
+                {
+                    _dbProcess.CreateDatabase();
+                }
 
-            await _dbProcess.DbLoadToMemoryAsync();
-            await VMLocator.MainViewModel.LoadPhraseItemsAsync();
+                await _dbProcess.DbLoadToMemoryAsync();
+                await VMLocator.MainViewModel.LoadPhraseItemsAsync();
 
-            VMLocator.MainViewModel.SelectedPhraseItem = settings.PhrasePreset;
+                VMLocator.MainViewModel.SelectedPhraseItem = settings.PhrasePreset;
 
-            VMLocator.MainViewModel.SelectedLogPain = "Chat List";
+                VMLocator.MainViewModel.SelectedLogPain = "Chat List";
 
-            VMLocator.MainViewModel.PhraseExpanderIsOpened = settings.PhraseExpanderMode;
+                VMLocator.MainViewModel.PhraseExpanderIsOpened = settings.PhraseExpanderMode;
 
-            await _dbProcess.GetEditorLogDatabaseAsync();
-            await _dbProcess.GetTemplateItemsAsync();
+                await _dbProcess.GetEditorLogDatabaseAsync();
+                await _dbProcess.GetTemplateItemsAsync();
 
-            VMLocator.EditorViewModel.EditorCommonFontSize = settings.EditorFontSize > 0 ? settings.EditorFontSize : 1;
-            VMLocator.MainViewModel.SelectedPhraseItem = settings.PhrasePreset;
-            VMLocator.EditorViewModel.EditorModeIsChecked = true;
+                VMLocator.EditorViewModel.EditorCommonFontSize = settings.EditorFontSize > 0 ? settings.EditorFontSize : 1;
+                VMLocator.MainViewModel.SelectedPhraseItem = settings.PhrasePreset;
+                VMLocator.EditorViewModel.EditorModeIsChecked = true;
             
-            VMLocator.MainWindowViewModel.ApiMaxTokens = settings.ApiMaxTokens;
-            VMLocator.MainWindowViewModel.ApiTemperature = settings.ApiTemperature;
-            VMLocator.MainWindowViewModel.ApiTopP = settings.ApiTopP;
-            VMLocator.MainWindowViewModel.ApiN = settings.ApiN;
-            VMLocator.MainWindowViewModel.ApiLogprobs = settings.ApiLogprobs;
-            VMLocator.MainWindowViewModel.ApiPresencePenalty = settings.ApiPresencePenalty;
-            VMLocator.MainWindowViewModel.ApiFrequencyPenalty = settings.ApiFrequencyPenalty;
-            VMLocator.MainWindowViewModel.ApiBestOf = settings.ApiBestOf;
-            VMLocator.MainWindowViewModel.ApiStop = settings.ApiStop;
-            VMLocator.MainWindowViewModel.ApiLogitBias = settings.ApiLogitBias;
-            VMLocator.MainWindowViewModel.ApiModel = settings.ApiModel;
-            VMLocator.MainWindowViewModel.ApiUrl = settings.ApiUrl;
-            VMLocator.MainWindowViewModel.ApiKey = settings.ApiKey;
-            VMLocator.MainWindowViewModel.MaxContentLength = settings.MaxContentLength;
+                VMLocator.MainWindowViewModel.ApiMaxTokens = settings.ApiMaxTokens;
+                VMLocator.MainWindowViewModel.ApiTemperature = settings.ApiTemperature;
+                VMLocator.MainWindowViewModel.ApiTopP = settings.ApiTopP;
+                VMLocator.MainWindowViewModel.ApiN = settings.ApiN;
+                VMLocator.MainWindowViewModel.ApiLogprobs = settings.ApiLogprobs;
+                VMLocator.MainWindowViewModel.ApiPresencePenalty = settings.ApiPresencePenalty;
+                VMLocator.MainWindowViewModel.ApiFrequencyPenalty = settings.ApiFrequencyPenalty;
+                VMLocator.MainWindowViewModel.ApiBestOf = settings.ApiBestOf;
+                VMLocator.MainWindowViewModel.ApiStop = settings.ApiStop;
+                VMLocator.MainWindowViewModel.ApiLogitBias = settings.ApiLogitBias;
+                VMLocator.MainWindowViewModel.ApiModel = settings.ApiModel;
+                VMLocator.MainWindowViewModel.ApiUrl = settings.ApiUrl;
+                VMLocator.MainWindowViewModel.ApiKey = settings.ApiKey;
+                VMLocator.MainWindowViewModel.MaxContentLength = settings.MaxContentLength;
 
-            VMLocator.MainWindowViewModel.ApiMaxTokensIsEnable = settings.ApiMaxTokensIsEnable;
-            VMLocator.MainWindowViewModel.ApiTemperatureIsEnable = settings.ApiTemperatureIsEnable;
-            VMLocator.MainWindowViewModel.ApiTopPIsEnable = settings.ApiTopPIsEnable;
-            VMLocator.MainWindowViewModel.ApiNIsEnable = settings.ApiNIsEnable;
-            VMLocator.MainWindowViewModel.ApiLogprobIsEnable = settings.ApiLogprobIsEnable;
-            VMLocator.MainWindowViewModel.ApiPresencePenaltyIsEnable = settings.ApiPresencePenaltyIsEnable;
-            VMLocator.MainWindowViewModel.ApiFrequencyPenaltyIsEnable = settings.ApiFrequencyPenaltyIsEnable;
-            VMLocator.MainWindowViewModel.ApiBestOfIsEnable = settings.ApiBestOfIsEnable;
-            VMLocator.MainWindowViewModel.ApiStopIsEnable = settings.ApiStopIsEnable;
-            VMLocator.MainWindowViewModel.ApiLogitBiasIsEnable = settings.ApiLogitBiasIsEnable;
-            VMLocator.MainWindowViewModel.MaxContentLengthIsEnable = settings.MaxContentLengthIsEnable;
+                VMLocator.MainWindowViewModel.ApiMaxTokensIsEnable = settings.ApiMaxTokensIsEnable;
+                VMLocator.MainWindowViewModel.ApiTemperatureIsEnable = settings.ApiTemperatureIsEnable;
+                VMLocator.MainWindowViewModel.ApiTopPIsEnable = settings.ApiTopPIsEnable;
+                VMLocator.MainWindowViewModel.ApiNIsEnable = settings.ApiNIsEnable;
+                VMLocator.MainWindowViewModel.ApiLogprobIsEnable = settings.ApiLogprobIsEnable;
+                VMLocator.MainWindowViewModel.ApiPresencePenaltyIsEnable = settings.ApiPresencePenaltyIsEnable;
+                VMLocator.MainWindowViewModel.ApiFrequencyPenaltyIsEnable = settings.ApiFrequencyPenaltyIsEnable;
+                VMLocator.MainWindowViewModel.ApiBestOfIsEnable = settings.ApiBestOfIsEnable;
+                VMLocator.MainWindowViewModel.ApiStopIsEnable = settings.ApiStopIsEnable;
+                VMLocator.MainWindowViewModel.ApiLogitBiasIsEnable = settings.ApiLogitBiasIsEnable;
+                VMLocator.MainWindowViewModel.MaxContentLengthIsEnable = settings.MaxContentLengthIsEnable;
 
-            VMLocator.EditorViewModel.EditorHeight1 = settings.EditorHeight1;
-            VMLocator.EditorViewModel.EditorHeight2 = settings.EditorHeight2;
-            VMLocator.EditorViewModel.EditorHeight3 = settings.EditorHeight3;
-            VMLocator.EditorViewModel.EditorHeight4 = settings.EditorHeight4;
-            VMLocator.EditorViewModel.EditorHeight5 = settings.EditorHeight5;
+                VMLocator.EditorViewModel.EditorHeight1 = settings.EditorHeight1;
+                VMLocator.EditorViewModel.EditorHeight2 = settings.EditorHeight2;
+                VMLocator.EditorViewModel.EditorHeight3 = settings.EditorHeight3;
+                VMLocator.EditorViewModel.EditorHeight4 = settings.EditorHeight4;
+                VMLocator.EditorViewModel.EditorHeight5 = settings.EditorHeight5;
 
-            await Dispatcher.UIThread.InvokeAsync(() => { VMLocator.MainViewModel.LogPainIsOpened = false; });
-            if (this.Width > 1295)
-            {
-                //await Task.Delay(1000);
-                await Dispatcher.UIThread.InvokeAsync(() => { VMLocator.MainViewModel.LogPainIsOpened = true; });
+                await Dispatcher.UIThread.InvokeAsync(() => { VMLocator.MainViewModel.LogPainIsOpened = false; });
+                if (this.Width > 1295)
+                {
+                    //await Task.Delay(1000);
+                    await Dispatcher.UIThread.InvokeAsync(() => { VMLocator.MainViewModel.LogPainIsOpened = true; });
+                }
+
+                this.GetObservable(ClientSizeProperty).Subscribe(size => OnSizeChanged(size));
+                _previousWidth = ClientSize.Width;
+
+                await _dbProcess.UpdateChatLogDatabaseAsync();
+
+                VMLocator.DataGridViewModel.ChatList = await _dbProcess.SearchChatDatabaseAsync();
+                VMLocator.DataGridViewModel.SelectedItemIndex = -1;
+                VMLocator.EditorViewModel.EditorModeIsChecked = settings.EditorMode;
+                VMLocator.EditorViewModel.SelectedLangIndex = settings.SyntaxHighlighting;
+                VMLocator.EditorViewModel.EditorSeparateMode = settings.SeparatorMode;
+
+                await _dbProcess.CleanUpEditorLogDatabaseAsync();
+                VMLocator.EditorViewModel.SelectedEditorLogIndex = -1;
+
+                if (string.IsNullOrWhiteSpace(VMLocator.MainWindowViewModel.ApiKey))
+                {
+                    var dialog = new ContentDialog() { Title = $"Please enter your API key.", PrimaryButtonText = "OK" };
+                    await VMLocator.MainViewModel.ContentDialogShowAsync(dialog);
+                    VMLocator.ChatViewModel.OpenApiSettings();
+                }
+
             }
-
-            this.GetObservable(ClientSizeProperty).Subscribe(size => OnSizeChanged(size));
-            _previousWidth = ClientSize.Width;
-
-            await _dbProcess.UpdateChatLogDatabaseAsync();
-
-            VMLocator.DataGridViewModel.ChatList = await _dbProcess.SearchChatDatabaseAsync();
-            VMLocator.DataGridViewModel.SelectedItemIndex = -1;
-            VMLocator.EditorViewModel.EditorModeIsChecked = settings.EditorMode;
-            VMLocator.EditorViewModel.SelectedLangIndex = settings.SyntaxHighlighting;
-            VMLocator.EditorViewModel.EditorSeparateMode = settings.SeparatorMode;
-
-            await _dbProcess.CleanUpEditorLogDatabaseAsync();
-            VMLocator.EditorViewModel.SelectedEditorLogIndex = -1;
-
-            if (string.IsNullOrWhiteSpace(VMLocator.MainWindowViewModel.ApiKey))
+            catch (Exception ex)
             {
-                var dialog = new ContentDialog() { Title = $"Please enter your API key.", PrimaryButtonText = "OK" };
+                var dialog = new ContentDialog() { Title = $"Error", Content = ex.Message, PrimaryButtonText = "OK" };
                 await VMLocator.MainViewModel.ContentDialogShowAsync(dialog);
-                VMLocator.ChatViewModel.OpenApiSettings();
             }
 
         }

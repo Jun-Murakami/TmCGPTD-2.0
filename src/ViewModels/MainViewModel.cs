@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using System.Collections.ObjectModel;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Windows.Input;
 using CommunityToolkit.Mvvm.Input;
 using System.IO;
@@ -13,8 +14,13 @@ using TmCGPTD.Models;
 using FluentAvalonia.UI.Controls;
 using Avalonia;
 using Avalonia.Platform.Storage;
+using Avalonia.Platform;
 using System.Diagnostics;
 using System.Threading;
+using static Supabase.Gotrue.Constants;
+using Supabase.Gotrue;
+using Supabase;
+using static TmCGPTD.Views.WebLogInView;
 
 namespace TmCGPTD.ViewModels
 {
@@ -54,6 +60,7 @@ namespace TmCGPTD.ViewModels
             SystemMessageCommand = new RelayCommand(InsertSystemMessage);
             HotKeyDisplayCommand = new AsyncRelayCommand(HotKeyDisplayAsync);
             OpenApiSettingsCommand = new RelayCommand(OpenApiSettings);
+            SyncDatabaseSettingsCommand = new AsyncRelayCommand(SyncDatabaseSettingsAsync);
             ShowDatabaseSettingsCommand = new AsyncRelayCommand(ShowDatabaseSettingsAsync);
             PhrasePresetsItems = new ObservableCollection<string>();
         }
@@ -81,6 +88,7 @@ namespace TmCGPTD.ViewModels
         public ICommand EditorOneCommand { get; }
         public ICommand SystemMessageCommand { get; }
         public ICommand OpenApiSettingsCommand { get; }
+        public IAsyncRelayCommand SyncDatabaseSettingsCommand { get; }
         public IAsyncRelayCommand ShowDatabaseSettingsCommand { get; }
         public IAsyncRelayCommand HotKeyDisplayCommand { get; }
 
@@ -232,6 +240,34 @@ namespace TmCGPTD.ViewModels
             get => _inputTokens;
             set => SetProperty(ref _inputTokens, value);
         }
+
+        private bool _onLogin;
+        public bool OnLogin
+        {
+            get => _onLogin;
+            set => SetProperty(ref _onLogin, value);
+        }
+
+        private string _authCode;
+        public string AuthCode
+        {
+            get => _authCode;
+            set
+            {
+                if(SetProperty(ref _authCode, value))
+                {
+                    GetAuthAsync();
+                }
+            }
+        }
+
+        private Uri _loginUri;
+        public Uri LoginUri
+        {
+            get => _loginUri;
+            set => SetProperty(ref _loginUri, value);
+        }
+
 
         // CancellationTokenSourceを作成
         private CancellationTokenSource cts = new CancellationTokenSource();
@@ -749,6 +785,49 @@ namespace TmCGPTD.ViewModels
             VMLocator.MainWindowViewModel.ApiSettingIsOpened = true;
         }
 
+        private Supabase.Client? _supabase;
+        private ProviderAuthState? _authState;
+        private Session? _session;
+        public async Task SyncDatabaseSettingsAsync()
+        {
+            using var streamReader = new StreamReader(AssetLoader.Open(new Uri("avares://TmCGPTD/supabaseConfig.json")));
+            string jsonString = await streamReader.ReadToEndAsync();
+
+            SupabaseConfig config = JsonSerializer.Deserialize<SupabaseConfig>(jsonString)!;
+
+            var supabaseUrl = config!.Url;
+            var supabaseKey = config.Key;
+
+            var auth = new Supabase.Gotrue.Client(new ClientOptions<Session>
+            {
+                Url = supabaseUrl,
+                Headers = new Dictionary<string, string>
+                {
+                    { "apikey", supabaseKey }
+                }
+            });
+
+            _supabase = new Supabase.Client(supabaseUrl, supabaseKey);
+            await _supabase.InitializeAsync();
+
+            _authState = await _supabase.Auth.SignIn(Constants.Provider.Google, new SignInOptions
+            {
+                FlowType = Constants.OAuthFlowType.PKCE,
+                RedirectTo = "http://localhost:3000/oauth/callback"
+            });
+            LoginUri = _authState.Uri;
+
+            OnLogin = true;
+        }
+
+        private async Task GetAuthAsync()
+        {
+            _session = await _supabase.Auth.ExchangeCodeForSession(_authState.PKCEVerifier!, AuthCode);
+            OnLogin = false;
+            var cdialog = new ContentDialog() { Title = $"Login Success.", PrimaryButtonText = "OK" };
+            await ContentDialogShowAsync(cdialog);
+        }
+
         private async Task ShowDatabaseSettingsAsync()
         {
             Application.Current!.TryFindResource("My.Strings.DatabaseInfo", out object resource1);
@@ -785,6 +864,5 @@ namespace TmCGPTD.ViewModels
             VMLocator.WebChatBardViewModel.WebChatBardViewIsVisible = true;
             return dialogResult;
         }
-
     }
 }

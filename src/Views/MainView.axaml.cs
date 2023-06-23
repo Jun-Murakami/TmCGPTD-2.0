@@ -1,5 +1,6 @@
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
+using Avalonia.Threading;
 using FluentAvalonia.UI.Controls;
 using FluentAvalonia.UI.Media.Animation;
 using System;
@@ -17,17 +18,18 @@ namespace TmCGPTD.Views
 
             DataContext = MainViewModel;
             VMLocator.MainViewModel = MainViewModel;
+            MainViewModel.PropertyChanged += ViewModel_PropertyChanged;
 
 
-            _stackPanel = this.FindControl<StackPanel>("ProgramTitleBar");
+            _stackPanel = this.FindControl<StackPanel>("ProgramTitleBar")!;
 
             if (OperatingSystem.IsMacOS())
             {
                 _stackPanel.HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center;
             }
 
-            _leftPane = this.FindControl<Frame>("LeftFrame");
-            _rightPane = this.FindControl<Frame>("RightFrame");
+            _leftPane = this.FindControl<Frame>("LeftFrame")!;
+            _rightPane = this.FindControl<Frame>("RightFrame")!;
 
             //Frame‚Ìƒiƒr—š—ð–³Œø
             _leftPane.IsNavigationStackEnabled = false;
@@ -68,16 +70,40 @@ namespace TmCGPTD.Views
             {
                 case 0:
                     _leftPane.Navigate(typeof(ChatView));
+                    MainViewModel.OnLogin = false;
                     break;
 
                 case 1:
                     _leftPane.Navigate(typeof(WebChatView), null, new SuppressNavigationTransitionInfo());
+                    MainViewModel.OnLogin = false;
                     break;
 
                 case 2:
                     _leftPane.Navigate(typeof(WebChatBardView), null, new SuppressNavigationTransitionInfo());
+                    MainViewModel.OnLogin = false;
                     break;
             }
+        }
+
+        private async void ViewModel_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if(e.PropertyName == nameof(MainViewModel.OnLogin))
+            {
+                if(MainViewModel.OnLogin)
+                {
+                    await Dispatcher.UIThread.InvokeAsync(() =>
+                    {
+                        _leftPane.Navigate(typeof(WebLogInView), null, new SuppressNavigationTransitionInfo());
+                    });
+                }
+                else
+                {
+                    await Dispatcher.UIThread.InvokeAsync(() =>
+                    {
+                        _leftPane.Navigate(typeof(ChatView), null, new SuppressNavigationTransitionInfo());
+                    });
+                }
+            }   
         }
 
         private void InitializeComponent()
