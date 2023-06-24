@@ -10,7 +10,6 @@
 			<Grid.RowDefinitions>
 				<RowDefinition Height="50" />
 				<RowDefinition Height="*" />
-				<RowDefinition Height="50" />
 			</Grid.RowDefinitions>
 			<Border Grid.Row="0" BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}" BorderThickness="0,0,0,1">
 				<Grid>
@@ -93,35 +92,7 @@
 
 				</Grid>
 			</Border>
-			<TextBox Grid.Row="1"
-					 Name="Editor1"
-					 AcceptsReturn="True"
-					 Text="{Binding Editor1Text, Mode=TwoWay}"
-					 FontSize="{Binding EditorCommonFontSize}" />
-			<GridSplitter Grid.Row="2" Height="2" Background="rgb(52, 53, 65)" Focusable="False"/>
-			<TextBox Grid.Row="3"
-					 Name="Editor2"
-					 AcceptsReturn="True"
-					 Text="{Binding Editor2Text, Mode=TwoWay}"
-					 FontSize="{Binding EditorCommonFontSize}" />
-			<GridSplitter Grid.Row="4" Height="2" Background="rgb(52, 53, 65)" Focusable="False"/>
-			<TextBox Grid.Row="5"
-					 Name="Editor3"
-					 AcceptsReturn="True"
-					 Text="{Binding Editor3Text, Mode=TwoWay}"
-					 FontSize="{Binding EditorCommonFontSize}" />
-			<GridSplitter Grid.Row="6" Height="2" Background="rgb(52, 53, 65)" Focusable="False" />
-			<TextBox Grid.Row="7"
-					 Name="Editor4"
-					 AcceptsReturn="True"
-					 Text="{Binding Editor4Text, Mode=TwoWay}"
-					 FontSize="{Binding EditorCommonFontSize}" />
-			<GridSplitter Grid.Row="8" Height="2" Background="rgb(52, 53, 65)" Focusable="False" />
-			<TextBox Grid.Row="9"
-					 Name="Editor5"
-					 AcceptsReturn="True"
-					 Text="{Binding Editor5Text, Mode=TwoWay}"
-					 FontSize="{Binding EditorCommonFontSize}"/>
+			<ui:Frame Grid.Row="1" Name="EditorFrame" />
 		</Grid>
 		<UserControl.Resources>
 			<MenuFlyout x:Key="TemplateMenuFlyout" Placement="Bottom">
