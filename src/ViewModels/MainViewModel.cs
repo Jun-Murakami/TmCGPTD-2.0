@@ -48,7 +48,9 @@ namespace TmCGPTD.ViewModels
 
             CopyToClipboardCommand = new AsyncRelayCommand(async () => await CopyToClipboard());
 
-            ResetSeparatorCommand = new RelayCommand(ResetSeparator);
+            EditorOneCommand = new RelayCommand(SetEditorOne);
+            EditorThreeCommand = new RelayCommand(SetEditorThree);
+            EditorFiveCommand = new RelayCommand(SetEditorFive);
             SystemMessageCommand = new RelayCommand(InsertSystemMessage);
             HotKeyDisplayCommand = new AsyncRelayCommand(HotKeyDisplayAsync);
             OpenApiSettingsCommand = new RelayCommand(OpenApiSettings);
@@ -74,7 +76,9 @@ namespace TmCGPTD.ViewModels
         public ICommand Editor5Clear { get; }
         public ICommand EditorAllClear { get; }
         public ICommand CopyToClipboardCommand { get; }
-        public ICommand ResetSeparatorCommand { get; }
+        public ICommand EditorFiveCommand { get; }
+        public ICommand EditorThreeCommand { get; }
+        public ICommand EditorOneCommand { get; }
         public ICommand SystemMessageCommand { get; }
         public ICommand OpenApiSettingsCommand { get; }
         public IAsyncRelayCommand ShowDatabaseSettingsCommand { get; }
@@ -181,7 +185,6 @@ namespace TmCGPTD.ViewModels
             set => SetProperty(ref _selectedLogPain, value);
         }
 
-
         private ObservableCollection<string> _phrasePresetsItems;
         public ObservableCollection<string> PhrasePresetsItems
         {
@@ -221,6 +224,13 @@ namespace TmCGPTD.ViewModels
         {
             get => _postButtonText;
             set => SetProperty(ref _postButtonText, value);
+        }
+
+        private string _inputTokens;
+        public string InputTokens
+        {
+            get => _inputTokens;
+            set => SetProperty(ref _inputTokens, value);
         }
 
         // CancellationTokenSourceを作成
@@ -701,9 +711,28 @@ namespace TmCGPTD.ViewModels
             IsCopyButtonClicked = false;
         }
 
-        private void ResetSeparator()
+
+        private void SetEditorOne()
         {
-            VMLocator.EditorViewModel.SeparatorReset();
+            VMLocator.EditorViewModel.EditorSeparateMode = 1;
+        }
+
+        private void SetEditorThree()
+        {
+            if (VMLocator.EditorViewModel.EditorSeparateMode != 3)
+            {
+                VMLocator.EditorViewModel.EditorSeparateMode = 3;
+            }
+            VMLocator.EditorViewModel.SeparatorResetThree();
+        }
+
+        private void SetEditorFive()
+        {
+            if (VMLocator.EditorViewModel.EditorSeparateMode != 5)
+            {
+                VMLocator.EditorViewModel.EditorSeparateMode = 5;
+            }
+            VMLocator.EditorViewModel.SeparatorResetFive();
         }
 
         private void InsertSystemMessage()

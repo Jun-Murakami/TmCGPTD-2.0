@@ -155,7 +155,7 @@ namespace TmCGPTD.Views
             await Dispatcher.UIThread.InvokeAsync(() => { VMLocator.MainViewModel.LogPainIsOpened = false; });
             if (this.Width > 1295)
             {
-                await Task.Delay(1000);
+                //await Task.Delay(1000);
                 await Dispatcher.UIThread.InvokeAsync(() => { VMLocator.MainViewModel.LogPainIsOpened = true; });
             }
 
@@ -167,6 +167,7 @@ namespace TmCGPTD.Views
             VMLocator.DataGridViewModel.ChatList = await _dbProcess.SearchChatDatabaseAsync();
             VMLocator.DataGridViewModel.SelectedItemIndex = -1;
             VMLocator.EditorViewModel.SelectedLangIndex = settings.SyntaxHighlighting;
+            VMLocator.EditorViewModel.EditorSeparateMode = settings.SeparatorMode;
 
             await _dbProcess.CleanUpEditorLogDatabaseAsync();
             VMLocator.EditorViewModel.SelectedEditorLogIndex = -1;
@@ -251,6 +252,8 @@ namespace TmCGPTD.Views
             settings.EditorHeight3 = VMLocator.EditorViewModel.EditorHeight3;
             settings.EditorHeight4 = VMLocator.EditorViewModel.EditorHeight4;
             settings.EditorHeight5 = VMLocator.EditorViewModel.EditorHeight5;
+
+            settings.SeparatorMode = VMLocator.EditorViewModel.EditorSeparateMode;
 
             SaveAppSettings(settings);
         }

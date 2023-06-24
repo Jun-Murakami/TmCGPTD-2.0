@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Xilium.CefGlue.Avalonia;
 using FluentAvalonia.UI.Controls;
 using TmCGPTD.Models;
+using System.Windows.Input;
 
 namespace TmCGPTD.ViewModels
 {
@@ -19,6 +20,7 @@ namespace TmCGPTD.ViewModels
             SearchNext = new AsyncRelayCommand(async () => await TextSearch(VMLocator.MainViewModel.SearchKeyword, true));
 
             ImportWebChatLogCommand = new AsyncRelayCommand(async () => await ImportWebChatLog());
+            UpdateBrowserCommand = new RelayCommand(UpdateBrowser);
 
             WebChatBardViewIsVisible = true;
         }
@@ -281,6 +283,11 @@ namespace TmCGPTD.ViewModels
             return;
         }
 
+        private void UpdateBrowser()
+        {
+            _browser?.Reload();
+        }
+
         // Browserインスタンスを受け取る
         public void SetBrowser(AvaloniaCefBrowser browser)
         {
@@ -290,6 +297,7 @@ namespace TmCGPTD.ViewModels
         public IAsyncRelayCommand SearchPrev { get; }
         public IAsyncRelayCommand SearchNext { get; }
         public IAsyncRelayCommand ImportWebChatLogCommand { get; }
+        public ICommand UpdateBrowserCommand { get; }
 
         private bool _webChatBardViewIsVisible;
         public bool WebChatBardViewIsVisible//ダイアログ表示用

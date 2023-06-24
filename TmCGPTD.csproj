@@ -71,6 +71,9 @@
     <Compile Update="src\Views\HotKeyDisplayView.axaml.cs">
       <DependentUpon>HotKeyDisplayView.axaml</DependentUpon>
     </Compile>
+    <Compile Update="src\Views\EditorOneView.axaml.cs">
+      <DependentUpon>EditorOneView.axaml</DependentUpon>
+    </Compile>
   </ItemGroup>
 
 </Project>

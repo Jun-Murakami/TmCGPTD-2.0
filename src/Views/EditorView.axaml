@@ -3,20 +3,14 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+		xmlns:ui="using:FluentAvalonia.UI.Controls"
 		PointerWheelChanged="UserControl_PointerWheelChanged"
         x:Class="TmCGPTD.Views.EditorView">
 		<Grid VerticalAlignment="Stretch" Name="EditorGrid">
 			<Grid.RowDefinitions>
 				<RowDefinition Height="50" />
-				<RowDefinition Height="{Binding EditorHeight1,Mode=TwoWay}" MinHeight="10" />
-				<RowDefinition Height="5"/>
-				<RowDefinition Height="{Binding EditorHeight2,Mode=TwoWay}" MinHeight="10" />
-				<RowDefinition Height="5"/>
-				<RowDefinition Height="{Binding EditorHeight3,Mode=TwoWay}" MinHeight="10" />
-				<RowDefinition Height="5"/>
-				<RowDefinition Height="{Binding EditorHeight4,Mode=TwoWay}" MinHeight="10" />
-				<RowDefinition Height="5"/>
-				<RowDefinition Height="{Binding EditorHeight5,Mode=TwoWay}" MinHeight="10" />
+				<RowDefinition Height="*" />
+				<RowDefinition Height="50" />
 			</Grid.RowDefinitions>
 			<Border Grid.Row="0" BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}" BorderThickness="0,0,0,1">
 				<Grid>
