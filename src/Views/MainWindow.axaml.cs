@@ -166,7 +166,6 @@ namespace TmCGPTD.Views
 
             VMLocator.DataGridViewModel.ChatList = await _dbProcess.SearchChatDatabaseAsync();
             VMLocator.DataGridViewModel.SelectedItemIndex = -1;
-            VMLocator.EditorViewModel.SelectedLangIndex = settings.SyntaxHighlighting;
             VMLocator.EditorViewModel.EditorSeparateMode = settings.SeparatorMode;
 
             await _dbProcess.CleanUpEditorLogDatabaseAsync();
@@ -244,7 +243,6 @@ namespace TmCGPTD.Views
 
             settings.EditorFontSize = VMLocator.EditorViewModel.EditorCommonFontSize;
             settings.PhrasePreset = VMLocator.MainViewModel.SelectedPhraseItem;
-            settings.SyntaxHighlighting = VMLocator.EditorViewModel.SelectedLangIndex;
             settings.PhraseExpanderMode = VMLocator.MainViewModel.PhraseExpanderIsOpened;
 
             settings.EditorHeight1 = VMLocator.EditorViewModel.EditorHeight1;

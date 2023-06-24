@@ -110,13 +110,26 @@ namespace TmCGPTD.ViewModels
             }
         }
 
-        private int _selectedLangIndex;
-        public int SelectedLangIndex
+        private UserControl _selectedEditor2View;
+        public UserControl SelectedEditor2View
         {
-            get => _selectedLangIndex;
-            set => SetProperty(ref _selectedLangIndex, value);
+            get => _selectedEditor2View;
+            set => SetProperty(ref _selectedEditor2View, value);
         }
 
+        private UserControl _selectedEditor4View;
+        public UserControl SelectedEditor4View
+        {
+            get => _selectedEditor4View;
+            set => SetProperty(ref _selectedEditor4View, value);
+        }
+
+        private UserControl _selectedEditor3_2View;
+        public UserControl SelectedEditor3_2View
+        {
+            get => _selectedEditor3_2View;
+            set => SetProperty(ref _selectedEditor3_2View, value);
+        }
 
         private ObservableCollection<PromptTemplate> _templateItems;
         public ObservableCollection<PromptTemplate> TemplateItems
