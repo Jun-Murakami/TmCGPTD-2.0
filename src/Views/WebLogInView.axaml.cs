@@ -65,15 +65,28 @@ namespace TmCGPTD.Views
             //var dataUrl = $"data:text/html;charset=utf-8,{encodedHtml}";
             //browser.Address = dataUrl;
 
-            var url = "https://localhost:9999/";
-
-            using (_server = CreateWebServer(url))
+            try
             {
-                _server.RunAsync();
+                var url = "https://localhost:9999/";
 
+                using (_server = CreateWebServer(url))
+                {
+                    _server.RunAsync();
+
+                }
+
+                browser.Address = VMLocator.MainViewModel.LoginUri.ToString();
             }
-
-            browser.Address = VMLocator.MainViewModel.LoginUri.ToString();
+            catch (Exception ex)
+            {
+                var cdialog = new ContentDialog
+                {
+                    Title = "Error",
+                    Content = ex.Message,
+                    CloseButtonText = "OK"
+                };
+                await VMLocator.MainViewModel.ContentDialogShowAsync(cdialog);
+            }
         }
 
         private async void Browser_DetachedFromVisualTree(object sender, VisualTreeAttachmentEventArgs e)
@@ -82,8 +95,8 @@ namespace TmCGPTD.Views
             {
                 await Dispatcher.UIThread.InvokeAsync(() =>
                 {
-                    _server.Dispose();
-                    browser.Dispose();
+                    //_server.Dispose();
+                    //browser.Dispose();
                 });
             }
             catch (Exception ex)
@@ -103,8 +116,8 @@ namespace TmCGPTD.Views
             var server = new WebServer(o => o
                     .WithUrlPrefix(url)
                     .WithMode(HttpListenerMode.EmbedIO))
-                .WithLocalSessionManager()
-                .WithStaticFolder("/", "wwwroot", true);
+                    .WithLocalSessionManager()
+                    .WithStaticFolder("/", "wwwroot", true);
 
             return server;
         }

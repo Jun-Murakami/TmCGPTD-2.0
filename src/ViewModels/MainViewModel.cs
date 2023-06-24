@@ -790,42 +790,48 @@ namespace TmCGPTD.ViewModels
         private Session? _session;
         public async Task SyncDatabaseSettingsAsync()
         {
-            using var streamReader = new StreamReader(AssetLoader.Open(new Uri("avares://TmCGPTD/supabaseConfig.json")));
-            string jsonString = await streamReader.ReadToEndAsync();
-
-            SupabaseConfig config = JsonSerializer.Deserialize<SupabaseConfig>(jsonString)!;
-
-            var supabaseUrl = config!.Url;
-            var supabaseKey = config.Key;
-
-            var auth = new Supabase.Gotrue.Client(new ClientOptions<Session>
+            try
             {
-                Url = supabaseUrl,
-                Headers = new Dictionary<string, string>
+                using var streamReader = new StreamReader(AssetLoader.Open(new Uri("avares://TmCGPTD/supabaseConfig.json")));
+                string jsonString = await streamReader.ReadToEndAsync();
+
+                SupabaseConfig config = JsonSerializer.Deserialize<SupabaseConfig>(jsonString)!;
+
+                var supabaseUrl = config!.Url;
+                var supabaseKey = config.Key;
+
+                var auth = new Supabase.Gotrue.Client(new ClientOptions<Session>
+                {
+                    Url = supabaseUrl,
+                    Headers = new Dictionary<string, string>
                 {
                     { "apikey", supabaseKey }
                 }
-            });
+                });
 
-            _supabase = new Supabase.Client(supabaseUrl, supabaseKey);
-            await _supabase.InitializeAsync();
+                _supabase = new Supabase.Client(supabaseUrl, supabaseKey);
+                await _supabase.InitializeAsync();
 
-            _authState = await _supabase.Auth.SignIn(Constants.Provider.Google, new SignInOptions
+                _authState = await _supabase.Auth.SignIn(Constants.Provider.Google, new SignInOptions
+                {
+                    FlowType = Constants.OAuthFlowType.PKCE,
+                    RedirectTo = "http://localhost:3000/oauth/callback"
+                });
+                LoginUri = _authState.Uri;
+
+                OnLogin = true;
+            }
+            catch (Exception ex)
             {
-                FlowType = Constants.OAuthFlowType.PKCE,
-                RedirectTo = "http://localhost:3000/oauth/callback"
-            });
-            LoginUri = _authState.Uri;
-
-            OnLogin = true;
+                var cdialog = new ContentDialog() { Title = $"Error: {ex.Message}", PrimaryButtonText = "OK" };
+                await ContentDialogShowAsync(cdialog);
+            }
         }
 
         private async Task GetAuthAsync()
         {
             _session = await _supabase.Auth.ExchangeCodeForSession(_authState.PKCEVerifier!, AuthCode);
             OnLogin = false;
-            var cdialog = new ContentDialog() { Title = $"Login Success.", PrimaryButtonText = "OK" };
-            await ContentDialogShowAsync(cdialog);
         }
 
         private async Task ShowDatabaseSettingsAsync()

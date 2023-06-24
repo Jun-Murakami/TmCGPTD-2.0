@@ -70,17 +70,14 @@ namespace TmCGPTD.Views
             {
                 case 0:
                     _leftPane.Navigate(typeof(ChatView));
-                    MainViewModel.OnLogin = false;
                     break;
 
                 case 1:
                     _leftPane.Navigate(typeof(WebChatView), null, new SuppressNavigationTransitionInfo());
-                    MainViewModel.OnLogin = false;
                     break;
 
                 case 2:
                     _leftPane.Navigate(typeof(WebChatBardView), null, new SuppressNavigationTransitionInfo());
-                    MainViewModel.OnLogin = false;
                     break;
             }
         }
@@ -101,7 +98,10 @@ namespace TmCGPTD.Views
                     await Dispatcher.UIThread.InvokeAsync(() =>
                     {
                         _leftPane.Navigate(typeof(ChatView), null, new SuppressNavigationTransitionInfo());
+                        var cdialog = new ContentDialog() { Title = $"Login Success.", PrimaryButtonText = "OK" };
+                        MainViewModel.ContentDialogShowAsync(cdialog);
                     });
+                    
                 }
             }   
         }
