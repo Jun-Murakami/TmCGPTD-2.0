@@ -24,13 +24,13 @@ namespace TmCGPTD.Models
 {
     public class DatabaseProcess
     {
-        public static SQLiteConnection memoryConnection; // メモリ上のSQLコネクション
+        public static SQLiteConnection? memoryConnection; // メモリ上のSQLコネクション
 
         // SQL db初期化--------------------------------------------------------------
         public void CreateDatabase()
         {
             using var connection = new SQLiteConnection($"Data Source={AppSettings.Instance.DbPath}");
-            string sql = "CREATE TABLE phrase (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL DEFAULT '', phrase TEXT NOT NULL DEFAULT '');";
+            string sql = "CREATE TABLE phrase (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL DEFAULT '', phrase TEXT NOT NULL DEFAULT '', date DATE);";
 
             using var command = new SQLiteCommand(sql, connection);
             // phraseテーブル作成
@@ -63,7 +63,7 @@ namespace TmCGPTD.Models
             command.ExecuteNonQuery();
 
             // templateテーブル作成
-            sql = "CREATE TABLE template (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT NOT NULL DEFAULT '', text TEXT NOT NULL DEFAULT '');";
+            sql = "CREATE TABLE template (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT NOT NULL DEFAULT '', text TEXT NOT NULL DEFAULT '', date DATE);";
             command.CommandText = sql;
             command.ExecuteNonQuery();
 
@@ -86,9 +86,12 @@ namespace TmCGPTD.Models
                 bool lastPromptExists = false;
                 bool jsonPrevExists = false;
 
+                bool phraseDateExists = false;
+                bool templateDateExists = false;
+
                 using (var command = new SQLiteCommand(connection))
                 {
-                    // Check 'category' column
+                    // Check column
                     command.CommandText = "PRAGMA table_info(chatlog)";
                     using (var reader = await command.ExecuteReaderAsync())
                     {
@@ -110,11 +113,38 @@ namespace TmCGPTD.Models
                         }
                     }
 
+                    command.CommandText = "PRAGMA table_info(phrase)";
+                    using (var reader = await command.ExecuteReaderAsync())
+                    {
+                        while (reader.Read())
+                        {
+                            var columnName = reader["name"].ToString();
+                            if (columnName == "date")
+                            {
+                                phraseDateExists = true;
+                            }
+                        }
+                    }
+
+                    command.CommandText = "PRAGMA table_info(template)";
+                    using (var reader = await command.ExecuteReaderAsync())
+                    {
+                        while (reader.Read())
+                        {
+                            var columnName = reader["name"].ToString();
+                            if (columnName == "date")
+                            {
+                                templateDateExists = true;
+                            }
+                        }
+                    }
+
+
                     // Backup database
-                    if (!categoryExists || !lastPromptExists || !jsonPrevExists)
+                    if (!categoryExists || !lastPromptExists || !jsonPrevExists || !phraseDateExists || !templateDateExists)
                     {
                         string sourceFile = AppSettings.Instance.DbPath;
-                        string backupFile = AppSettings.Instance.DbPath + ".backup";
+                        string backupFile = AppSettings.Instance.DbPath + ".backupV2.5";
 
                         // Ensure the target does not exist.
                         if (File.Exists(backupFile))
@@ -146,9 +176,23 @@ namespace TmCGPTD.Models
                         command.CommandText = "ALTER TABLE chatlog ADD COLUMN jsonprev TEXT NOT NULL DEFAULT ''";
                         await command.ExecuteNonQueryAsync();
                     }
+
+                    // Add 'date' column
+                    if (!phraseDateExists)
+                    {
+                        command.CommandText = "ALTER TABLE phrase ADD COLUMN date DATE";
+                        await command.ExecuteNonQueryAsync();
+                    }
+
+                    // Add 'date' column
+                    if (!templateDateExists)
+                    {
+                        command.CommandText = "ALTER TABLE template ADD COLUMN date DATE";
+                        await command.ExecuteNonQueryAsync();
+                    }
                 }
 
-                if (!categoryExists || !lastPromptExists)
+                if (!categoryExists || !lastPromptExists || !jsonPrevExists || !phraseDateExists || !templateDateExists)
                 {
                     Application.Current!.TryFindResource("My.Strings.DatabaseUpdate", out object resource1);
                     var dialog = new ContentDialog()
@@ -1185,14 +1229,12 @@ namespace TmCGPTD.Models
             {
                 var rowCount = (long)command.ExecuteScalar();
 
-                // 行数が500を超えている場合
-                if (rowCount > 500)
+                // 行数が200を超えている場合
+                if (rowCount > 200)
                 {
-                    // 日付が新しいもの500を残して削除
-                    using (SQLiteCommand deleteCommand = new SQLiteCommand(@"DELETE FROM editorlog WHERE rowid NOT IN ( SELECT rowid FROM editorlog ORDER BY date DESC LIMIT 500 )", connection))
-                    {
-                        await deleteCommand.ExecuteNonQueryAsync();
-                    }
+                    // 日付が新しいもの200を残して削除
+                    using SQLiteCommand deleteCommand = new SQLiteCommand(@"DELETE FROM editorlog WHERE rowid NOT IN ( SELECT rowid FROM editorlog ORDER BY date DESC LIMIT 200 )", connection);
+                    await deleteCommand.ExecuteNonQueryAsync();
                 }
             }
             await connection.CloseAsync();

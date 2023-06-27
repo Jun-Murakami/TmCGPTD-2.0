@@ -13,17 +13,18 @@ using Avalonia;
 using System.Net.Http;
 using System;
 using TmCGPTD.Models;
-using static Supabase.Gotrue.Constants;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using System.Linq;
 using System.Web;
 using Supabase.Gotrue;
 using System.Collections.Generic;
-using EmbedIO.Actions;
 using EmbedIO;
 using System.Collections.Specialized;
 using Avalonia.Threading;
+using EmbedIO.WebApi;
+using Swan.Logging;
+using Swan;
 
 namespace TmCGPTD.Views
 {
@@ -47,7 +48,7 @@ namespace TmCGPTD.Views
             browser.ContextMenuHandler = new CustomContextMenuHandler();
             browserWrapper.Child = browser;
 
-            //browser.LoadEnd += Browser_LoadEnd;
+
             browser.AddressChanged += Browser_AddressChanged;
         }
 
@@ -71,7 +72,8 @@ namespace TmCGPTD.Views
 
                 using (_server = CreateWebServer(url))
                 {
-                    _server.RunAsync();
+                    
+                    //await _server.RunAsync();
 
                 }
 
@@ -85,19 +87,26 @@ namespace TmCGPTD.Views
                     Content = ex.Message,
                     CloseButtonText = "OK"
                 };
-                await VMLocator.MainViewModel.ContentDialogShowAsync(cdialog);
+                //await VMLocator.MainViewModel.ContentDialogShowAsync(cdialog);
+                //throw;
             }
         }
+        private static WebServer CreateWebServer(string url)
+        {
+                var server = new WebServer(o => o
+                        .WithUrlPrefix(url)
+                        .WithMode(HttpListenerMode.EmbedIO));
 
-        private async void Browser_DetachedFromVisualTree(object sender, VisualTreeAttachmentEventArgs e)
+                return server;
+        }
+
+
+        private void Browser_DetachedFromVisualTree(object sender, VisualTreeAttachmentEventArgs e)
         {
             try
             {
-                await Dispatcher.UIThread.InvokeAsync(() =>
-                {
-                    //_server.Dispose();
-                    //browser.Dispose();
-                });
+                if (_server != null) _server.Dispose();
+                if (browser != null) browser.Dispose();
             }
             catch (Exception ex)
             {
@@ -107,75 +116,35 @@ namespace TmCGPTD.Views
                     Content = ex.Message,
                     CloseButtonText = "OK"
                 };
-                await VMLocator.MainViewModel.ContentDialogShowAsync(cdialog);
+                //await VMLocator.MainViewModel.ContentDialogShowAsync(cdialog);
+                throw;
             }
-        }
-
-        private static WebServer CreateWebServer(string url)
-        {
-            var server = new WebServer(o => o
-                    .WithUrlPrefix(url)
-                    .WithMode(HttpListenerMode.EmbedIO))
-                    .WithLocalSessionManager()
-                    .WithStaticFolder("/", "wwwroot", true);
-
-            return server;
         }
 
         private void Browser_AddressChanged(object sender, string address)
         {
-            Uri uri = new Uri(address);
-            string query = uri.Query;
-            NameValueCollection queryParameters = HttpUtility.ParseQueryString(query);
-            string code = queryParameters["code"];
-
-            if (code != null)
+            try
             {
-                VMLocator.MainViewModel.AuthCode = code;
+                Uri uri = new Uri(address);
+                string query = uri.Query;
+                NameValueCollection queryParameters = HttpUtility.ParseQueryString(query);
+                string code = queryParameters["code"];
+
+                if (code != null)
+                {
+                    VMLocator.MainViewModel.AuthCode = code;
+                }
             }
-        }
-
-        private async void Browser_LoadEnd(object sender, LoadEndEventArgs e)
-        {
-            if (!browser.Title.Contains("#access_token="))
+            catch (Exception ex)
             {
-                await Task.Delay(1000);
-                using var streamReader = new StreamReader(AssetLoader.Open(new Uri("avares://TmCGPTD/supabaseConfig.json")));
-                string jsonString = await streamReader.ReadToEndAsync();
-
-                SupabaseConfig config = JsonSerializer.Deserialize<SupabaseConfig>(jsonString)!;
-
-                var supabaseUrl = config!.Url;
-                var supabaseKey = config.Key;
-
-                string jsCode = $@"var supabaseUrl = '{supabaseUrl}';
-                               var supabaseKey = '{supabaseKey}';
-                               const {{createClient}} = supabase;
-                               const supa = createClient(supabaseUrl, supabaseKey);
-                               supa.auth.signInWithOAuth({{provider: 'google'}}).then(({{data, error}}) => {{
-                               console.log(data);
-                                 console.log(error);
-                               }})";
-
-
-                browser.ExecuteJavaScript(jsCode);
-
-
-            }
-            else
-            {
-                var fragment = new Uri(browser.Title).Fragment.TrimStart('#');
-                fragment = fragment.Replace("&amp;", "&");
-
-                var parameters = HttpUtility.ParseQueryString(fragment);
-
-                var accessToken = parameters["access_token"];
-                var expiresIn = parameters["expires_in"];
-                var providerToken = parameters["provider_token"];
-                var refreshToken = parameters["refresh_token"];
-                var tokenType = parameters["token_type"];
-
-                // ここで取得した認証情報を使用してSupabaseクライアントを認証します。
+                var cdialog = new ContentDialog
+                {
+                    Title = "Error",
+                    Content = ex.Message,
+                    CloseButtonText = "OK"
+                };
+                //await VMLocator.MainViewModel.ContentDialogShowAsync(cdialog);
+                throw;
             }
         }
 

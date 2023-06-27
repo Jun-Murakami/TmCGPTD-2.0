@@ -15,6 +15,8 @@ using System.Linq;
 using Avalonia.Markup.Xaml;
 using System.Diagnostics;
 using Avalonia.Input;
+using Supabase.Gotrue.Interfaces;
+using Supabase.Gotrue;
 
 namespace TmCGPTD.Views
 {
@@ -22,6 +24,8 @@ namespace TmCGPTD.Views
     {
         public MainWindowViewModel MainWindowViewModel { get; } = new MainWindowViewModel();
         DatabaseProcess _dbProcess = new DatabaseProcess();
+        SupabaseProcess _supabaseProcess = new SupabaseProcess();
+        SQLiteProcess _sqliteProcess = new SQLiteProcess();
 
         public MainWindow()
         {
@@ -183,6 +187,24 @@ namespace TmCGPTD.Views
                     VMLocator.ChatViewModel.OpenApiSettings();
                 }
 
+                AppSettings.Instance.Session = settings.Session;
+
+                await _supabaseProcess.InitializeSupabaseAsync();
+
+                if (VMLocator.MainViewModel._supabase != null)
+                {
+                    VMLocator.MainViewModel._supabase.Auth.LoadSession();
+                    await VMLocator.MainViewModel._supabase.Auth.RetrieveSessionAsync();
+                    if (VMLocator.MainViewModel._supabase.Auth.CurrentSession == null && AppSettings.Instance.Session !=null)
+                    {
+                        var dialog = new ContentDialog() { Title = "Cloud sync session expired. Please login again.", PrimaryButtonText = "OK" };
+                        await VMLocator.MainViewModel.ContentDialogShowAsync(dialog);
+                    }
+                    else
+                    {
+                        await _sqliteProcess.CopyLocalToCloudDb();
+                    }
+                }
             }
             catch (Exception ex)
             {
@@ -230,7 +252,7 @@ namespace TmCGPTD.Views
                     options.Converters.Add(new GridLengthConverter());
 
                     var jsonString = File.ReadAllText(Path.Combine(settings.AppDataPath, "settings.json"));
-                    settings = JsonSerializer.Deserialize<AppSettings>(jsonString, options);
+                    settings = System.Text.Json.JsonSerializer.Deserialize<AppSettings>(jsonString, options);
                 }
                 catch (Exception)
                 {
@@ -267,12 +289,20 @@ namespace TmCGPTD.Views
 
             settings.SeparatorMode = VMLocator.EditorViewModel.EditorSeparateMode;
 
+            if(VMLocator.MainViewModel._supabase != null)
+            {
+                if (VMLocator.MainViewModel._supabase.Auth.CurrentSession != null)
+                {
+                    settings.Session = System.Text.Json.JsonSerializer.Serialize(VMLocator.MainViewModel._supabase.Auth.CurrentSession);
+                }
+            }
+
             SaveAppSettings(settings);
         }
 
         private void SaveAppSettings(AppSettings settings)
         {
-            var jsonString = JsonSerializer.Serialize(settings);
+            var jsonString = System.Text.Json.JsonSerializer.Serialize(settings);
             File.WriteAllText(Path.Combine(settings.AppDataPath, "settings.json"), jsonString);
         }
 
