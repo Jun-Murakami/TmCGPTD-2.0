@@ -26,7 +26,7 @@ namespace TmCGPTD.Views
         public MainWindowViewModel MainWindowViewModel { get; } = new MainWindowViewModel();
         DatabaseProcess _dbProcess = new DatabaseProcess();
         SupabaseProcess _supabaseProcess = new SupabaseProcess();
-        SQLiteProcess _sqliteProcess = new SQLiteProcess();
+        SyncProcess _syncProcess = new SyncProcess();
 
         public MainWindow()
         {
@@ -210,7 +210,7 @@ namespace TmCGPTD.Views
                     }
                     else
                     {
-                        await _sqliteProcess.SyncDbAsync();
+                        await _syncProcess.SyncDbAsync();
                     }
                 }
             }

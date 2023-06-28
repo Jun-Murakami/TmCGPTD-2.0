@@ -18,7 +18,7 @@ namespace TmCGPTD
 {
     public class SupabaseProcess
     {
-        SQLiteProcess _sqliteProcess = new SQLiteProcess();
+        SyncProcess _sqliteProcess = new SyncProcess();
 
         public async Task InitializeSupabaseAsync()
         {
