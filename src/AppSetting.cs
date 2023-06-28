@@ -42,6 +42,7 @@ namespace TmCGPTD
         public GridLength EditorHeight5 { get; set; }
         public int SeparatorMode { get; set; }
         public string? Session { get; set; }
+        public bool SyncIsOn { get; set; }
 
         // ChatGPT API接続設定
         public int ApiMaxTokens { get; set; }
@@ -82,6 +83,7 @@ namespace TmCGPTD
             PhraseExpanderMode = true;
             SeparatorMode = 5;
             Session = null;
+            SyncIsOn = false;
 
             EditorHeight1 = new GridLength(0.21, GridUnitType.Star);
             EditorHeight2 = new GridLength(0.30, GridUnitType.Star);

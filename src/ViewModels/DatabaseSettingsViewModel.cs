@@ -18,6 +18,7 @@ namespace TmCGPTD.ViewModels
     public class DatabaseSettingsViewModel : ViewModelBase
     {
         DatabaseProcess _dbProcess = new DatabaseProcess();
+        SupabaseProcess _supabaseProcess = new SupabaseProcess();
 
         public DatabaseSettingsViewModel()
         {
@@ -25,7 +26,6 @@ namespace TmCGPTD.ViewModels
 
             MoveDatabaseCommand = new AsyncRelayCommand(MoveDatabaseAsync);
             LoadDatabaseCommand = new AsyncRelayCommand(LoadDatabaseAsync);
-
         }
 
         public IAsyncRelayCommand MoveDatabaseCommand { get; }
@@ -42,6 +42,28 @@ namespace TmCGPTD.ViewModels
                 {
                     _appSettings.DbPath = value;
                     OnPropertyChanged();
+                }
+            }
+        }
+
+        private bool _syncIsOn;
+        public bool SyncIsOn
+        {
+            get => _appSettings.SyncIsOn;
+            set
+            {
+                if(SetProperty(ref _syncIsOn, value))
+                {
+                    _appSettings.SyncIsOn = value;
+                    if (value)
+                    {
+                        ProcessLog = "You must be logged in with Google.";
+                    }
+                    else
+                    {
+                        _ = _supabaseProcess.SignOutAsync();
+                        ProcessLog = "You have logged out.";
+                    }
                 }
             }
         }

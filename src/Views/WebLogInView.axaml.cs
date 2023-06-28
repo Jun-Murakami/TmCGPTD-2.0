@@ -30,7 +30,6 @@ namespace TmCGPTD.Views
 {
     public partial class WebLogInView : UserControl
     {
-        private WebServer _server;
         private AvaloniaCefBrowser browser;
 
         public WebLogInView()
@@ -61,22 +60,8 @@ namespace TmCGPTD.Views
         HtmlProcess _htmlProcess = new HtmlProcess();
         private async void Browser_AttachedToVisualTree(object sender, VisualTreeAttachmentEventArgs e)
         {
-            //var htmlContent = await _htmlProcess.InitializeLogInToHtml();
-            //var encodedHtml = Uri.EscapeDataString(htmlContent);
-            //var dataUrl = $"data:text/html;charset=utf-8,{encodedHtml}";
-            //browser.Address = dataUrl;
-
             try
             {
-                var url = "https://localhost:9999/";
-
-                using (_server = CreateWebServer(url))
-                {
-                    
-                    //await _server.RunAsync();
-
-                }
-
                 browser.Address = VMLocator.MainViewModel.LoginUri.ToString();
             }
             catch (Exception ex)
@@ -87,25 +72,14 @@ namespace TmCGPTD.Views
                     Content = ex.Message,
                     CloseButtonText = "OK"
                 };
-                //await VMLocator.MainViewModel.ContentDialogShowAsync(cdialog);
-                //throw;
+                await VMLocator.MainViewModel.ContentDialogShowAsync(cdialog);
             }
         }
-        private static WebServer CreateWebServer(string url)
-        {
-                var server = new WebServer(o => o
-                        .WithUrlPrefix(url)
-                        .WithMode(HttpListenerMode.EmbedIO));
 
-                return server;
-        }
-
-
-        private void Browser_DetachedFromVisualTree(object sender, VisualTreeAttachmentEventArgs e)
+        private async void Browser_DetachedFromVisualTree(object sender, VisualTreeAttachmentEventArgs e)
         {
             try
             {
-                if (_server != null) _server.Dispose();
                 if (browser != null) browser.Dispose();
             }
             catch (Exception ex)
@@ -116,19 +90,18 @@ namespace TmCGPTD.Views
                     Content = ex.Message,
                     CloseButtonText = "OK"
                 };
-                //await VMLocator.MainViewModel.ContentDialogShowAsync(cdialog);
-                throw;
+                await VMLocator.MainViewModel.ContentDialogShowAsync(cdialog);
             }
         }
 
-        private void Browser_AddressChanged(object sender, string address)
+        private async void Browser_AddressChanged(object sender, string address)
         {
             try
             {
                 Uri uri = new Uri(address);
                 string query = uri.Query;
                 NameValueCollection queryParameters = HttpUtility.ParseQueryString(query);
-                string code = queryParameters["code"];
+                string? code = queryParameters["code"];
 
                 if (code != null)
                 {
@@ -143,8 +116,7 @@ namespace TmCGPTD.Views
                     Content = ex.Message,
                     CloseButtonText = "OK"
                 };
-                //await VMLocator.MainViewModel.ContentDialogShowAsync(cdialog);
-                throw;
+                await VMLocator.MainViewModel.ContentDialogShowAsync(cdialog);
             }
         }
 

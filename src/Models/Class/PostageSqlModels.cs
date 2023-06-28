@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace TmCGPTD.Models
 {
-    public class PostageSqlProcess
+    public class PostageSqlModels
     {
         // チャットルーム-----------------------------------------------------------------------------------------------------------------
         [Table("chatrooms")]

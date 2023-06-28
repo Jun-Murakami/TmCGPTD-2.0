@@ -17,6 +17,7 @@ using System.Diagnostics;
 using Avalonia.Input;
 using Supabase.Gotrue.Interfaces;
 using Supabase.Gotrue;
+using static Supabase.Gotrue.Constants;
 
 namespace TmCGPTD.Views
 {
@@ -104,6 +105,7 @@ namespace TmCGPTD.Views
                 }
 
                 VMLocator.DatabaseSettingsViewModel.DatabasePath = settings.DbPath;
+                VMLocator.DatabaseSettingsViewModel.SyncIsOn = settings.SyncIsOn;
 
                 if (!File.Exists(settings.DbPath))
                 {
@@ -191,7 +193,9 @@ namespace TmCGPTD.Views
 
                 await _supabaseProcess.InitializeSupabaseAsync();
 
-                if (VMLocator.MainViewModel._supabase != null)
+                
+
+                if (VMLocator.MainViewModel._supabase != null && VMLocator.DatabaseSettingsViewModel.SyncIsOn)
                 {
                     VMLocator.MainViewModel._supabase.Auth.LoadSession();
                     await VMLocator.MainViewModel._supabase.Auth.RetrieveSessionAsync();
@@ -199,10 +203,14 @@ namespace TmCGPTD.Views
                     {
                         var dialog = new ContentDialog() { Title = "Cloud sync session expired. Please login again.", PrimaryButtonText = "OK" };
                         await VMLocator.MainViewModel.ContentDialogShowAsync(dialog);
+
+                        await _supabaseProcess.GetAuthAsync();
+                        VMLocator.MainViewModel.LoginUri = VMLocator.MainViewModel._authState!.Uri;
+                        VMLocator.MainViewModel.OnLogin = true;
                     }
                     else
                     {
-                        await _sqliteProcess.CopyLocalToCloudDb();
+                        await _sqliteProcess.SyncDbAsync();
                     }
                 }
             }
@@ -296,6 +304,7 @@ namespace TmCGPTD.Views
                     settings.Session = System.Text.Json.JsonSerializer.Serialize(VMLocator.MainViewModel._supabase.Auth.CurrentSession);
                 }
             }
+            settings.SyncIsOn = VMLocator.DatabaseSettingsViewModel.SyncIsOn;
 
             SaveAppSettings(settings);
         }

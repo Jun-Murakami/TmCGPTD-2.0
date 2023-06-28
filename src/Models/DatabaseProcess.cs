@@ -24,6 +24,20 @@ namespace TmCGPTD.Models
 {
     public class DatabaseProcess
     {
+        private static DatabaseProcess? _instance;
+        public static DatabaseProcess Instance
+        {
+            get
+            {
+                if (_instance == null)
+                {
+                    _instance = new DatabaseProcess();
+                }
+
+                return _instance;
+            }
+        }
+
         public static SQLiteConnection? memoryConnection; // メモリ上のSQLコネクション
 
         // SQL db初期化--------------------------------------------------------------
@@ -68,7 +82,7 @@ namespace TmCGPTD.Models
             command.ExecuteNonQuery();
 
             // templateインデックス作成
-            sql = "CREATE INDEX idx_template_text ON editorlog (text);";
+            sql = "CREATE INDEX idx_template_text ON template (text);";
             command.CommandText = sql;
             command.ExecuteNonQuery();
         }

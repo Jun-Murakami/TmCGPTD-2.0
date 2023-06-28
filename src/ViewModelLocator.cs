@@ -66,5 +66,12 @@ namespace TmCGPTD
             get => _databaseSettingsViewModel ??= new DatabaseSettingsViewModel();
             set => _databaseSettingsViewModel = value;
         }
+
+        private static ProgressViewModel _progressViewModel;
+        public static ProgressViewModel ProgressViewModel
+        {
+            get => _progressViewModel ??= new ProgressViewModel();
+            set => _progressViewModel = value;
+        }
     }
 }

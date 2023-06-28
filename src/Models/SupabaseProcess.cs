@@ -5,6 +5,7 @@ using Supabase.Gotrue;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Diagnostics;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -59,6 +60,12 @@ namespace TmCGPTD
         {
             VMLocator.MainViewModel._session = await VMLocator.MainViewModel._supabase!.Auth.ExchangeCodeForSession(VMLocator.MainViewModel._authState!.PKCEVerifier!, VMLocator.MainViewModel.AuthCode);
             VMLocator.MainViewModel.OnLogin = false;
+            Debug.WriteLine($"Session: {VMLocator.MainViewModel._supabase.Auth.CurrentSession!.User!.Email}");
+        }
+
+        public async Task SignOutAsync()
+        {
+            await VMLocator.MainViewModel._supabase!.Auth.SignOut();
         }
     }
 }

@@ -98,7 +98,7 @@ namespace TmCGPTD.Views
                     await Dispatcher.UIThread.InvokeAsync(() =>
                     {
                         _leftPane.Navigate(typeof(ChatView), null, new SuppressNavigationTransitionInfo());
-                        var cdialog = new ContentDialog() { Title = $"Login Success.", PrimaryButtonText = "OK" };
+                        var cdialog = new ContentDialog() { Title = $"Login success.", PrimaryButtonText = "OK" };
                         MainViewModel.ContentDialogShowAsync(cdialog);
                     });
                     

@@ -520,7 +520,7 @@ namespace TmCGPTD.ViewModels
                 SelectedPhraseItem = "";
                 await LoadPhraseItemsAsync();
                 SelectedPhraseItem = viewModel.UserInput;
-                }
+            }
             catch (Exception ex)
             {
                 dialog = new ContentDialog() { Title = $"Error: {ex.Message}", PrimaryButtonText = "OK" };
@@ -811,11 +811,19 @@ namespace TmCGPTD.ViewModels
             var dialog = new ContentDialog()
             {
                 Title = resource1,
-                PrimaryButtonText = "OK"
+                PrimaryButtonText = "OK",
+                DataContext = VMLocator.DatabaseSettingsViewModel
             };
 
             dialog.Content = new DatabaseSettingsView();
             await ContentDialogShowAsync(dialog);
+
+            if(VMLocator.DatabaseSettingsViewModel.SyncIsOn && _supabase!.Auth.CurrentSession == null)
+            {
+                await _supabaseProcess.GetAuthAsync();
+                LoginUri = _authState!.Uri;
+                OnLogin = true;
+            }
         }
 
         private async Task HotKeyDisplayAsync()
