@@ -4,6 +4,7 @@ using Avalonia.Threading;
 using FluentAvalonia.UI.Controls;
 using FluentAvalonia.UI.Media.Animation;
 using System;
+using System.Threading.Tasks;
 using TmCGPTD.ViewModels;
 
 namespace TmCGPTD.Views
@@ -28,6 +29,9 @@ namespace TmCGPTD.Views
                 _stackPanel.HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center;
             }
 
+            _syncLogBlock = this.FindControl<TextBlock>("SyncLogText")!;
+
+
             _leftPane = this.FindControl<Frame>("LeftFrame")!;
             _rightPane = this.FindControl<Frame>("RightFrame")!;
 
@@ -47,7 +51,7 @@ namespace TmCGPTD.Views
             _leftPane.Navigate(typeof(ChatView));
         }
 
-
+        private TextBlock _syncLogBlock;
         private Frame _leftPane;
         private Frame _rightPane;
 
@@ -84,9 +88,9 @@ namespace TmCGPTD.Views
 
         private async void ViewModel_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
-            if(e.PropertyName == nameof(MainViewModel.OnLogin))
+            if (e.PropertyName == nameof(MainViewModel.OnLogin))
             {
-                if(MainViewModel.OnLogin)
+                if (MainViewModel.OnLogin)
                 {
                     await Dispatcher.UIThread.InvokeAsync(() =>
                     {
@@ -101,9 +105,18 @@ namespace TmCGPTD.Views
                         var cdialog = new ContentDialog() { Title = $"Login success.", PrimaryButtonText = "OK" };
                         MainViewModel.ContentDialogShowAsync(cdialog);
                     });
-                    
+
                 }
-            }   
+            }
+            else if (e.PropertyName == nameof(MainViewModel.SyncLogText))
+            {
+                _syncLogBlock.Classes.Add("FadeOut");
+
+                await Task.Delay(12000);
+
+                _syncLogBlock.Classes.Remove("FadeOut");
+            }
+
         }
 
         private void InitializeComponent()

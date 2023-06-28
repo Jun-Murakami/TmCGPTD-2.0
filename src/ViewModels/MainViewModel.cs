@@ -273,6 +273,13 @@ namespace TmCGPTD.ViewModels
             set => SetProperty(ref _loginUri, value);
         }
 
+        private string _syncLogText;
+        public string SyncLogText
+        {
+            get => _syncLogText;
+            set => SetProperty(ref _syncLogText, value);
+        }
+
 
         // CancellationTokenSourceを作成
         private CancellationTokenSource cts = new CancellationTokenSource();

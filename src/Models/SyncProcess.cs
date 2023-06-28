@@ -230,25 +230,26 @@ namespace TmCGPTD.Models
                 {
                     //クラウドにデータが無ければ、ローカルの全データをコピーして初回同期する
                     //コピー後にローカルを全削除してクラウドからフェッチ
+                    BackupDb();
                     await CopyAllLocalToCloudDbAsync();
-                    Debug.WriteLine("Uploaded sync status from local. localOnly: " + localOnly);
+                    VMLocator.MainViewModel.SyncLogText = "Synced to cloud from local: " + localOnly;
                 }
                 else if (cloudIsNewer > 0 && localIsNewer == 0 && localOnly == 0)
                 {
                     //クラウドのデータをローカルにコピー
                     await UpsertToLocalDbAsync();
-                    Debug.WriteLine("Sync state fetched from the cloud. cloudIsNewer: " + cloudIsNewer);
+                    VMLocator.MainViewModel.SyncLogText = "Synced from cloud: " + cloudIsNewer;
                 }
                 else if (localIsNewer > 0 && cloudIsNewer == 0 && localOnly >= 0)
                 {
                     //ローカルのデータをコピー
                     await UpsertToCloudDbAsync();
-                    Debug.WriteLine("Uploaded sync status from local. localIsNewer: " + localIsNewer);
+                    VMLocator.MainViewModel.SyncLogText = "Synced to cloud from local: " + localIsNewer;
                 }
                 else if ((localOnly == 0 && cloudIsNewer == 0 && localIsNewer == 0 && localRecords == cloudRecords) || (localRecords == 0 && cloudRecords == 0))
                 {
                     //同期済みまたは初期値
-                    Debug.WriteLine("Sync status is up-to-date.");
+                    VMLocator.MainViewModel.SyncLogText = "Sync status is up-to-date.";
                 }
                 else
                 {
@@ -256,7 +257,7 @@ namespace TmCGPTD.Models
                     var cdialog = new ContentDialog
                     {
                         Title = "Data conflicts.",
-                        Content = $"Please merge or select preferred data.\n*Note that data may be lost if you choose Cloud or Local.\nThis warning appears when data is deleted on the cloud side.\n\nCloud records: {cloudRecords},  Local records: {localRecords}\nCloud is newer: {cloudIsNewer},  Local is newer: {localIsNewer},  Local only: {localOnly}",
+                        Content = $"Please merge or select preferred data.\n*Note that data may be lost if you choose Cloud or Local.\nThis warning appears when data is deleted on the cloud side.\nBefore execution, the database is backed up to the following folder:\n{AppSettings.Instance.DbPath}\n\nCloud records: {cloudRecords},  Local records: {localRecords}\nCloud is newer: {cloudIsNewer},  Local is newer: {localIsNewer},  Local only: {localOnly}",
                         PrimaryButtonText = "Merge",
                         SecondaryButtonText = "Cloud",
                         CloseButtonText = "Local",
@@ -266,18 +267,24 @@ namespace TmCGPTD.Models
                     var result = await VMLocator.MainViewModel.ContentDialogShowAsync(cdialog);
                     if (result == ContentDialogResult.Primary) //マージ
                     {
+                        BackupDb();
                         await UpsertToCloudDbAsync();
                         await UpsertToLocalDbAsync();
-                        Debug.WriteLine("Merge");
+                        VMLocator.MainViewModel.SyncLogText = "Database merge completed.";
                     }
                     else if (result == ContentDialogResult.Secondary) //クラウドを優先
                     {
-
-                        Debug.WriteLine("Cloud");
+                        BackupDb();
+                        await DeleteLocalDbAsync();
+                        await UpsertToLocalDbAsync();
+                        VMLocator.MainViewModel.SyncLogText = "Database synchronization completed.";
                     }
                     else if (result == ContentDialogResult.None) //ローカルを優先
                     {
-                        Debug.WriteLine("Local");
+                        BackupDb();
+                        await DeleteCloudDbAsync();
+                        await CopyAllLocalToCloudDbAsync();
+                        VMLocator.MainViewModel.SyncLogText = "Database synchronization completed.";
                     }
 
                 }
@@ -294,7 +301,7 @@ namespace TmCGPTD.Models
             }
         }
         // -------------------------------------------------------------------------------------------------------
-        // ローカルデータを更新した時はこのメソッドを直接呼び出してから、その後にSyncDbAsync()でデータの整合性をチェックする
+        // ローカルデータを更新した時は、このメソッドを直接呼び出してからその後にSyncDbAsync()でデータの整合性をチェックする
         public async Task UpsertToCloudDbAsync()
         {
             var _dbProcess = DatabaseProcess.Instance;
@@ -676,19 +683,7 @@ namespace TmCGPTD.Models
         public async Task CopyAllLocalToCloudDbAsync()
         {
             var _dbProcess = DatabaseProcess.Instance;
-            string sourceFile = AppSettings.Instance.DbPath;
-            string backupFile = AppSettings.Instance.DbPath + ".backup-" + DateTime.Now.ToString("yyyyMMddHHmmss");
 
-            // Ensure the target does not exist.
-            if (File.Exists(backupFile))
-            {
-                File.Delete(backupFile);
-            }
-
-            // Copy the file.
-            File.Copy(sourceFile, backupFile);
-
-            // Open SQLiteConnection.
             using SQLiteConnection connection = new SQLiteConnection($"Data Source={AppSettings.Instance.DbPath}");
             await connection.OpenAsync();
 
@@ -870,37 +865,30 @@ namespace TmCGPTD.Models
 
             VMLocator.ProgressViewModel.ProgressText = $"Deleting local logs...";
             VMLocator.ProgressViewModel.ProgressValue = 0;
-            using (var transaction = connection.BeginTransaction())
+            try
             {
-                try
-                {
-                    var tables = new List<string> { "phrase", "chatlog", "editorlog", "template" };
-                    foreach (var table in tables)
-                    {
-                        var command = new SQLiteCommand($"DELETE FROM {table}", connection);
-                        await command.ExecuteNonQueryAsync();
-                    }
-                    transaction.Commit();
-                }
-                catch (Exception ex)
-                {
-                    transaction.Rollback();
-                    VMLocator.ProgressViewModel.Hide();
-                    throw new Exception($"Failed to delete local logs: {ex.Message} {ex.StackTrace}");
-                }
+                await DeleteLocalDbAsync();
             }
+            catch (Exception ex)
+            {
+                VMLocator.ProgressViewModel.Hide();
+                throw new Exception($"Failed to delete local logs: {ex.Message}\n{ex.StackTrace}");
+            }
+
+            using SQLiteConnection connection2 = new SQLiteConnection($"Data Source={AppSettings.Instance.DbPath}");
+            await connection.OpenAsync();
 
             VMLocator.ProgressViewModel.ProgressText = $"Fetching data from the cloud...";
 
             var resultPhrase = await supabase.From<Phrase>().Get();
 
-            using (var transaction = connection.BeginTransaction())
+            using (var transaction = connection2.BeginTransaction())
             {
                 try
                 {
                     foreach (var phrase in resultPhrase.Models)
                     {
-                        var command = new SQLiteCommand("INSERT INTO phrase (id, name, phrase, date) VALUES (@Id, @Name, @Content, @Date)", connection);
+                        var command = new SQLiteCommand("INSERT INTO phrase (id, name, phrase, date) VALUES (@Id, @Name, @Content, @Date)", connection2);
                         command.Parameters.AddWithValue("@Id", phrase.Id);
                         command.Parameters.AddWithValue("@Name", phrase.Name);
                         command.Parameters.AddWithValue("@Content", phrase.Content);
@@ -914,20 +902,20 @@ namespace TmCGPTD.Models
                 {
                     transaction.Rollback();
                     VMLocator.ProgressViewModel.Hide();
-                    throw new Exception($"Failed to download phrases: {ex.Message} {ex.StackTrace}");
+                    throw new Exception($"Failed to download phrases: {ex.Message}\n{ex.StackTrace}");
                 }
             }
 
             VMLocator.ProgressViewModel.ProgressValue = 0.25;
 
             var resultEditorLog = await supabase.From<EditorLog>().Get();
-            using (var transaction = connection.BeginTransaction())
+            using (var transaction = connection2.BeginTransaction())
             {
                 try
                 {
                     foreach (var editorLog in resultEditorLog.Models)
                     {
-                        var command = new SQLiteCommand("INSERT INTO editorlog (id, date, text) VALUES (@Id, @Date, @Content )", connection);
+                        var command = new SQLiteCommand("INSERT INTO editorlog (id, date, text) VALUES (@Id, @Date, @Content )", connection2);
                         command.Parameters.AddWithValue("@Id", editorLog.Id);
                         command.Parameters.AddWithValue("@Date", editorLog.Date);
                         command.Parameters.AddWithValue("@Content", editorLog.Content);
@@ -940,20 +928,20 @@ namespace TmCGPTD.Models
                 {
                     transaction.Rollback();
                     VMLocator.ProgressViewModel.Hide();
-                    throw new Exception($"Failed to download editor logs: {ex.Message} {ex.StackTrace}");
+                    throw new Exception($"Failed to download editor logs: {ex.Message}\n{ex.StackTrace}");
                 }
             }
 
             VMLocator.ProgressViewModel.ProgressValue = 0.5;
 
             var resultTemplate = await supabase.From<Template>().Get();
-            using (var transaction = connection.BeginTransaction())
+            using (var transaction = connection2.BeginTransaction())
             {
                 try
                 {
                     foreach (var template in resultTemplate.Models)
                     {
-                        var command = new SQLiteCommand("INSERT INTO template (id, title, text, date) VALUES (@Id, @Name, @Content, @Date)", connection);
+                        var command = new SQLiteCommand("INSERT INTO template (id, title, text, date) VALUES (@Id, @Name, @Content, @Date)", connection2);
                         command.Parameters.AddWithValue("@Id", template.Id);
                         command.Parameters.AddWithValue("@Name", template.Title);
                         command.Parameters.AddWithValue("@Content", template.Content);
@@ -967,7 +955,7 @@ namespace TmCGPTD.Models
                 {
                     transaction.Rollback();
                     VMLocator.ProgressViewModel.Hide();
-                    throw new Exception($"Failed to download templates: {ex.Message} {ex.StackTrace}");
+                    throw new Exception($"Failed to download templates: {ex.Message}\n{ex.StackTrace}");
                 }
             }
 
@@ -975,7 +963,7 @@ namespace TmCGPTD.Models
 
             VMLocator.ProgressViewModel.ProgressValue = 0.75;
 
-            using (var transaction = connection.BeginTransaction())
+            using (var transaction = connection2.BeginTransaction())
             {
 
                 try
@@ -986,7 +974,7 @@ namespace TmCGPTD.Models
 
                         string combinedMessage = CombineMessage(resultMessage.Models);
 
-                        var command = new SQLiteCommand("INSERT INTO chatlog (id, date, title, json, text, category, lastprompt, jsonprev) VALUES (@Id, @UpdatedOn, @Title, @Json, @Message, @Category, @LastPrompt, @JsonPrev)", connection);
+                        var command = new SQLiteCommand("INSERT INTO chatlog (id, date, title, json, text, category, lastprompt, jsonprev) VALUES (@Id, @UpdatedOn, @Title, @Json, @Message, @Category, @LastPrompt, @JsonPrev)", connection2);
                         command.Parameters.AddWithValue("@Id", chatLog.Id);
                         command.Parameters.AddWithValue("@UpdatedOn", chatLog.UpdatedOn);
                         command.Parameters.AddWithValue("@Title", chatLog.Title);
@@ -1011,6 +999,8 @@ namespace TmCGPTD.Models
 
             try
             {
+                await connection2.CloseAsync();
+
                 VMLocator.ProgressViewModel.ProgressText = "Display is being updated...";
                 VMLocator.ProgressViewModel.ProgressValue = 1;
 
@@ -1030,7 +1020,7 @@ namespace TmCGPTD.Models
             catch (Exception ex)
             {
                 VMLocator.ProgressViewModel.Hide();
-                throw new Exception($"Error during display update: {ex.Message} {ex.StackTrace}");
+                throw new Exception($"Error during display update: {ex.Message}\n{ex.StackTrace}");
             }
         }
 
@@ -1122,6 +1112,78 @@ namespace TmCGPTD.Models
             }
 
             return models;
+        }
+        // -------------------------------------------------------------------------------------------------------
+        private void BackupDb()
+        {
+            string sourceFile = AppSettings.Instance.DbPath;
+            string backupFile = AppSettings.Instance.DbPath + ".backup-" + DateTime.Now.ToString("yyyyMMddHHmmss");
+
+            // Ensure the target does not exist.
+            if (File.Exists(backupFile))
+            {
+                File.Delete(backupFile);
+            }
+
+            // Copy the file.
+            File.Copy(sourceFile, backupFile);
+        }
+        // -------------------------------------------------------------------------------------------------------
+        private async Task DeleteLocalDbAsync()
+        {
+            using SQLiteConnection connection = new SQLiteConnection($"Data Source={AppSettings.Instance.DbPath}");
+            await connection.OpenAsync();
+            using (var transaction = connection.BeginTransaction())
+            {
+                try
+                {
+                    var tables = new List<string> { "phrase", "chatlog", "editorlog", "template" };
+                    foreach (var table in tables)
+                    {
+                        var command = new SQLiteCommand($"DELETE FROM {table}", connection);
+                        await command.ExecuteNonQueryAsync();
+                    }
+                    transaction.Commit();
+                }
+                catch (Exception ex)
+                {
+                    transaction.Rollback();
+                    throw new Exception($"Failed to delete local logs: {ex.Message}\n{ex.StackTrace}");
+                }
+            }
+            await connection.CloseAsync();
+        }
+        // -------------------------------------------------------------------------------------------------------
+        private async Task DeleteCloudDbAsync()
+        {
+            try
+            {
+                var supabase = VMLocator.MainViewModel._supabase;
+
+                await supabase!
+                        .From<ChatRoom>()
+                        .Where(x => x.Id > 0)
+                        .Delete();
+
+                await supabase!
+                        .From<EditorLog>()
+                        .Where(x => x.Id > 0)
+                        .Delete();
+
+                await supabase!
+                        .From<Phrase>()
+                        .Where(x => x.Id > 0)
+                        .Delete();
+
+                await supabase!
+                        .From<Template>()
+                        .Where(x => x.Id > 0)
+                        .Delete();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Failed to delete cloud logs: {ex.Message}\n{ex.StackTrace}");
+            }
         }
     }
 }
