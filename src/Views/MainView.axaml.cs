@@ -19,7 +19,7 @@ namespace TmCGPTD.Views
 
             DataContext = MainViewModel;
             VMLocator.MainViewModel = MainViewModel;
-            MainViewModel.PropertyChanged += ViewModel_PropertyChanged;
+            MainViewModel.PropertyChanged += ViewModel_PropertyChanged!;
 
 
             _stackPanel = this.FindControl<StackPanel>("ProgramTitleBar")!;
@@ -42,8 +42,8 @@ namespace TmCGPTD.Views
             var lPane = this.FindControl<ListBox>("LeftPaneList");
             var rPane = this.FindControl<ListBox>("RightPaneList");
 
-            lPane.SelectionChanged += OnLeftListBoxSelectionChanged;
-            rPane.SelectionChanged += OnRightListBoxSelectionChanged;
+            lPane.SelectionChanged += OnLeftListBoxSelectionChanged!;
+            rPane.SelectionChanged += OnRightListBoxSelectionChanged!;
             lPane.SelectedIndex = 0;
             rPane.SelectedIndex = 0;
 
@@ -112,8 +112,9 @@ namespace TmCGPTD.Views
             {
                 _syncLogBlock.Classes.Add("FadeOut");
 
-                await Task.Delay(12000);
+                await Task.Delay(10000);
 
+                VMLocator.MainViewModel.SyncLogText = "";
                 _syncLogBlock.Classes.Remove("FadeOut");
             }
 

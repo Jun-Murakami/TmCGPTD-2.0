@@ -27,6 +27,8 @@ namespace TmCGPTD.Models
 
         public async Task SyncDbAsync()
         {
+            VMLocator.MainViewModel.SyncLogText = "Now in sync.";
+
             try
             {
                 if (VMLocator.MainViewModel._supabase == null)
@@ -234,13 +236,13 @@ namespace TmCGPTD.Models
                     await CopyAllLocalToCloudDbAsync();
                     VMLocator.MainViewModel.SyncLogText = "Synced to cloud from local: " + localOnly;
                 }
-                else if (cloudIsNewer > 0 && localIsNewer == 0 && localOnly == 0)
+                else if (cloudIsNewer > 0 && localIsNewer == 0 && localOnly == 0 || (localRecords == 0 && cloudRecords > 0))
                 {
                     //クラウドのデータをローカルにコピー
                     await UpsertToLocalDbAsync();
                     VMLocator.MainViewModel.SyncLogText = "Synced from cloud: " + cloudIsNewer;
                 }
-                else if (localIsNewer > 0 && cloudIsNewer == 0 && localOnly >= 0)
+                else if (localIsNewer > 0 && cloudIsNewer == 0 && localOnly == 0)
                 {
                     //ローカルのデータをコピー
                     await UpsertToCloudDbAsync();
@@ -257,16 +259,16 @@ namespace TmCGPTD.Models
                     var cdialog = new ContentDialog
                     {
                         Title = "Data conflicts.",
-                        Content = $"Please merge or select preferred data.\n*Note that data may be lost if you choose Cloud or Local.\nThis warning appears when data is deleted on the cloud side.\nBefore execution, the database is backed up to the following folder:\n{AppSettings.Instance.DbPath}\n\nCloud records: {cloudRecords},  Local records: {localRecords}\nCloud is newer: {cloudIsNewer},  Local is newer: {localIsNewer},  Local only: {localOnly}",
+                        Content = $"Please merge or select preferred data.\n*Note that data may be lost if you choose Cloud or Local.\n\nThis warning appears when data is deleted on the cloud side.\nBefore execution, the database is backed up to the folder.\n\nCloud records: {cloudRecords}, Local records: {localRecords}\nCloud is newer: {cloudIsNewer},  Local is newer: {localIsNewer},  Local unique ID: {localOnly}",
                         PrimaryButtonText = "Merge",
                         SecondaryButtonText = "Cloud",
-                        CloseButtonText = "Local",
-                        DefaultButton = ContentDialogButton.Primary
+                        CloseButtonText = "Local"
                     };
 
                     var result = await VMLocator.MainViewModel.ContentDialogShowAsync(cdialog);
                     if (result == ContentDialogResult.Primary) //マージ
                     {
+                        VMLocator.MainViewModel.SyncLogText = "Now in sync.";
                         BackupDb();
                         await UpsertToCloudDbAsync();
                         await UpsertToLocalDbAsync();
@@ -274,17 +276,19 @@ namespace TmCGPTD.Models
                     }
                     else if (result == ContentDialogResult.Secondary) //クラウドを優先
                     {
+                        VMLocator.MainViewModel.SyncLogText = "Now in sync.";
                         BackupDb();
                         await DeleteLocalDbAsync();
                         await UpsertToLocalDbAsync();
-                        VMLocator.MainViewModel.SyncLogText = "Database synchronization completed.";
+                        VMLocator.MainViewModel.SyncLogText = "Database sync completed.";
                     }
                     else if (result == ContentDialogResult.None) //ローカルを優先
                     {
+                        VMLocator.MainViewModel.SyncLogText = "Now in sync.";
                         BackupDb();
                         await DeleteCloudDbAsync();
                         await CopyAllLocalToCloudDbAsync();
-                        VMLocator.MainViewModel.SyncLogText = "Database synchronization completed.";
+                        VMLocator.MainViewModel.SyncLogText = "Database sync completed.";
                     }
 
                 }
@@ -505,7 +509,7 @@ namespace TmCGPTD.Models
                             updateCommand.Parameters.AddWithValue("@Id", cloudData.Id);
                             updateCommand.Parameters.AddWithValue("@Name", cloudData.Name);
                             updateCommand.Parameters.AddWithValue("@Content", cloudData.Content);
-                            updateCommand.Parameters.AddWithValue("@Date", cloudData.Date);
+                            updateCommand.Parameters.AddWithValue("@Date", cloudData.Date.ToString("yyyy-MM-dd HH:mm:ss.fff"));
 
                             await updateCommand.ExecuteNonQueryAsync();
                         }
@@ -552,9 +556,9 @@ namespace TmCGPTD.Models
                             command.Parameters.AddWithValue("@Id", cloudData.Id);
                             command.Parameters.AddWithValue("@Name", cloudData.Title);
                             command.Parameters.AddWithValue("@Content", cloudData.Content);
-                            command.Parameters.AddWithValue("@Date", cloudData.Date);
+                            command.Parameters.AddWithValue("@Date", cloudData.Date.ToString("yyyy-MM-dd HH:mm:ss.fff"));
 
-                                await command.ExecuteNonQueryAsync();
+                            await command.ExecuteNonQueryAsync();
                         }
                     }
 
@@ -597,8 +601,10 @@ namespace TmCGPTD.Models
                                               ON CONFLICT(id) DO UPDATE SET date = excluded.date, text = excluded.text;";
                             var command = new SQLiteCommand(updateSql, connection);
                             command.Parameters.AddWithValue("@Id", cloudData.Id);
-                            command.Parameters.AddWithValue("@Date", cloudData.Date);
+                            command.Parameters.AddWithValue("@Date", cloudData.Date.ToString("yyyy-MM-dd HH:mm:ss.fff"));
                             command.Parameters.AddWithValue("@Content", cloudData.Content);
+
+                            await command.ExecuteNonQueryAsync();
                         }
                     }
 
@@ -645,7 +651,7 @@ namespace TmCGPTD.Models
                                 ON CONFLICT(id) DO UPDATE SET date = excluded.date, title = excluded.title, json = excluded.json, text = excluded.text, category = excluded.category, lastprompt = excluded.lastprompt, jsonprev = excluded.jsonprev;";
                             var command = new SQLiteCommand(updateSql, connection);
                             command.Parameters.AddWithValue("@Id", cloudData.Id);
-                            command.Parameters.AddWithValue("@UpdatedOn", cloudData.UpdatedOn);
+                            command.Parameters.AddWithValue("@UpdatedOn", cloudData.UpdatedOn.ToString("yyyy-MM-dd HH:mm:ss.fff"));
                             command.Parameters.AddWithValue("@Title", cloudData.Title);
                             command.Parameters.AddWithValue("@Json", cloudData.Json);
                             command.Parameters.AddWithValue("@Message", combinedMessage);
@@ -696,7 +702,7 @@ namespace TmCGPTD.Models
                 DataContext = VMLocator.ProgressViewModel
             };
             VMLocator.ProgressViewModel.SetDialog(cdialog);
-            await VMLocator.MainViewModel.ContentDialogShowAsync(cdialog);
+            _ = VMLocator.MainViewModel.ContentDialogShowAsync(cdialog);//awaitすると進まないのでawaitしないこと
 
             try
             {
@@ -876,7 +882,7 @@ namespace TmCGPTD.Models
             }
 
             using SQLiteConnection connection2 = new SQLiteConnection($"Data Source={AppSettings.Instance.DbPath}");
-            await connection.OpenAsync();
+            await connection2.OpenAsync();
 
             VMLocator.ProgressViewModel.ProgressText = $"Fetching data from the cloud...";
 
@@ -892,7 +898,7 @@ namespace TmCGPTD.Models
                         command.Parameters.AddWithValue("@Id", phrase.Id);
                         command.Parameters.AddWithValue("@Name", phrase.Name);
                         command.Parameters.AddWithValue("@Content", phrase.Content);
-                        command.Parameters.AddWithValue("@Date", phrase.Date);
+                        command.Parameters.AddWithValue("@Date", phrase.Date.ToString("yyyy-MM-dd HH:mm:ss.fff"));
 
                         await command.ExecuteNonQueryAsync();
                     }
@@ -917,7 +923,7 @@ namespace TmCGPTD.Models
                     {
                         var command = new SQLiteCommand("INSERT INTO editorlog (id, date, text) VALUES (@Id, @Date, @Content )", connection2);
                         command.Parameters.AddWithValue("@Id", editorLog.Id);
-                        command.Parameters.AddWithValue("@Date", editorLog.Date);
+                        command.Parameters.AddWithValue("@Date", editorLog.Date.ToString("yyyy-MM-dd HH:mm:ss.fff"));
                         command.Parameters.AddWithValue("@Content", editorLog.Content);
 
                         await command.ExecuteNonQueryAsync();
@@ -945,7 +951,7 @@ namespace TmCGPTD.Models
                         command.Parameters.AddWithValue("@Id", template.Id);
                         command.Parameters.AddWithValue("@Name", template.Title);
                         command.Parameters.AddWithValue("@Content", template.Content);
-                        command.Parameters.AddWithValue("@Date", template.Date);
+                        command.Parameters.AddWithValue("@Date", template.Date.ToString("yyyy-MM-dd HH:mm:ss.fff"));
 
                         await command.ExecuteNonQueryAsync();
                     }
@@ -976,7 +982,7 @@ namespace TmCGPTD.Models
 
                         var command = new SQLiteCommand("INSERT INTO chatlog (id, date, title, json, text, category, lastprompt, jsonprev) VALUES (@Id, @UpdatedOn, @Title, @Json, @Message, @Category, @LastPrompt, @JsonPrev)", connection2);
                         command.Parameters.AddWithValue("@Id", chatLog.Id);
-                        command.Parameters.AddWithValue("@UpdatedOn", chatLog.UpdatedOn);
+                        command.Parameters.AddWithValue("@UpdatedOn", chatLog.UpdatedOn.ToString("yyyy-MM-dd HH:mm:ss.fff"));
                         command.Parameters.AddWithValue("@Title", chatLog.Title);
                         command.Parameters.AddWithValue("@Json", chatLog.Json);
                         command.Parameters.AddWithValue("@Message", combinedMessage);
@@ -1080,14 +1086,14 @@ namespace TmCGPTD.Models
                 var systemOffMatch = systemOffRegex.Match(content);
                 if (systemOffMatch.Success)
                 {
-                    models.Add(new Message { UserId = uid, RoomId = roomId, CreatedOn = timestamp, Content = "System messages were turned off.", Role = "system" });
+                    models.Add(new Message { UserId = uid, RoomId = roomId, CreatedOn = timestamp, Content = "System messages were turned off.", Role = "system", Usage = "" });
                     content = content.Replace(systemOffMatch.Value, "").Trim('\r', '\n');
                 }
 
                 var systemMessageMatch = systemMessageRegex.Match(content);
                 if (systemMessageMatch.Success)
                 {
-                    models.Add(new Message { UserId = uid, RoomId = roomId, CreatedOn = timestamp, Content = systemMessageMatch.Value, Role = "system" });
+                    models.Add(new Message { UserId = uid, RoomId = roomId, CreatedOn = timestamp, Content = systemMessageMatch.Value, Role = "system", Usage = "" });
                     content = content.Replace(systemMessageMatch.Value, "").Trim('\r', '\n');
                 }
 
@@ -1106,7 +1112,7 @@ namespace TmCGPTD.Models
                     content = content.Trim('\r', '\n');
                     if (content.Length > 0)
                     {
-                        models.Add(new Message { UserId = uid, RoomId = roomId, CreatedOn = timestamp, Content = content, Role = role });
+                        models.Add(new Message { UserId = uid, RoomId = roomId, CreatedOn = timestamp, Content = content, Role = role, Usage = "" });
                     }
                 }
             }

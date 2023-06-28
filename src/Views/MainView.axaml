@@ -56,7 +56,8 @@
 							   Name="SyncLogText"
 							   HorizontalAlignment="Right"
 							   VerticalAlignment="Center"
-							   Foreground="rgb(126, 128, 145)"
+							   Foreground="rgb(165, 165, 165)"
+							   Opacity="0"
 							   Text="{Binding SyncLogText}"/>
 					<Border Grid.Row="1"
 							BorderBrush="rgb(42, 43, 55)"
