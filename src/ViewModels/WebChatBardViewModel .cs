@@ -131,11 +131,11 @@ namespace TmCGPTD.ViewModels
 	                        top: 7px;
 	                        right: 57px;
 	                        background: #3a3b47;
+                            color: #dcdcdc;
 	                        border-radius: 6px;
 	                        border-width: 1px;
 	                        border: #545563 solid;
 	                        padding: 0px 15px 0px 15px;
-                            color: #fff;
 	                        display: none;
 	                        outline: none;
 	                        transition: opacity 0.6s;
