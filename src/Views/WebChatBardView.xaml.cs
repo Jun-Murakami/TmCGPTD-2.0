@@ -57,12 +57,12 @@ namespace TmCGPTD.Views
         private async void Browser_LoadEnd(object sender, LoadEndEventArgs e)
         {
             string addElementsCode = @"
-                                    const button = document.createElement('button');
+                                    var button = document.createElement('button');
                                     button.id = 'floatingCopyButton';
                                     button.textContent = 'Copy to clipboard';
                                     document.body.appendChild(button);
 
-                                    const style = document.createElement('style');
+                                    var style = document.createElement('style');
                                     style.textContent = `
                                     #floatingCopyButton {
                                         position: absolute;
@@ -87,10 +87,10 @@ namespace TmCGPTD.Views
                                 ";
             browser.ExecuteJavaScript(addElementsCode);
 
-            string scriptCode = @"let savedSelection = null;
+            string scriptCode = @"var savedSelection = null;
 
                                 document.body.addEventListener('mousedown', (event) => {
-                                    const floatingButton = document.getElementById('floatingCopyButton');
+                                    var floatingButton = document.getElementById('floatingCopyButton');
                                     // Check if right-click or Ctrl + click (Mac)
                                     if (event.button === 2 || (event.ctrlKey && event.button === 0)) {
                                         // Save the current selection
