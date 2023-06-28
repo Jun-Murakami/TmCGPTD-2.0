@@ -57,18 +57,23 @@ namespace TmCGPTD.Views
         private async void Browser_LoadEnd(object sender, LoadEndEventArgs e)
         {
             string addElementsCode = @"
-                                    const button = document.createElement('button');
+                                    var button;
+                                    var style;
+                                    if (typeof button === 'undefined') {
+                                    button = document.createElement('button');
+                                    }
                                     button.id = 'floatingCopyButton';
-                                    button.textContent = 'Copy to clipboard';
+                                    button.innerHTML = 'Copy to clipboard';
                                     document.body.appendChild(button);
-
-                                    const style = document.createElement('style');
-                                    style.textContent = `
+                                    if (typeof style === 'undefined') {
+                                    style = document.createElement('style');
+                                    }
+                                    style.type = 'text/css';
+                                    style.innerHTML = `
                                     #floatingCopyButton {
                                         position: absolute;
                                         display: none;
                                         background: #343541;
-                                        color: #dcdcdc;
                                         border-width: 1px;
                                         border: #545563 solid;
                                         cursor: pointer;
@@ -76,7 +81,6 @@ namespace TmCGPTD.Views
                                         line-height: 1.0em;
                                         font-size: 0.8em;
                                         border-radius: 6px;
-                                        z-index: 999999;
                                     }
 
                                     #floatingCopyButton:hover {
@@ -87,10 +91,16 @@ namespace TmCGPTD.Views
                                 ";
             browser.ExecuteJavaScript(addElementsCode);
 
-            string scriptCode = @"let savedSelection = null;
-
+            string scriptCode = @"
+                                var floatingButton;
+                                var savedSelection;
+                                if (typeof floatingButton === 'undefined') {
+                                floatingButton = document.getElementById('floatingCopyButton');
+                                }
+                                if (typeof savedSelection === 'undefined') {
+                                savedSelection = null;
+                                }
                                 document.body.addEventListener('mousedown', (event) => {
-                                    const floatingButton = document.getElementById('floatingCopyButton');
                                     // Check if right-click or Ctrl + click (Mac)
                                     if (event.button === 2 || (event.ctrlKey && event.button === 0)) {
                                         // Save the current selection
