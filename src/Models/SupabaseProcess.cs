@@ -14,12 +14,10 @@ using TmCGPTD.Views;
 using Supabase;
 using TmCGPTD.Models;
 
-namespace TmCGPTD
+namespace TmCGPTD.Models
 {
     public class SupabaseProcess
     {
-        SyncProcess _sqliteProcess = new SyncProcess();
-
         public async Task InitializeSupabaseAsync()
         {
             try
@@ -37,8 +35,8 @@ namespace TmCGPTD
                     SessionHandler = new CustomSessionHandler()
                 };
 
-                VMLocator.MainViewModel._supabase = new Supabase.Client(supabaseUrl!, supabaseKey, options);
-                await VMLocator.MainViewModel._supabase.InitializeAsync();
+                SupabaseStates.Instance.Supabase = new Supabase.Client(supabaseUrl!, supabaseKey, options);
+                await SupabaseStates.Instance.Supabase.InitializeAsync();
             }
             catch (Exception ex)
             {
@@ -49,7 +47,7 @@ namespace TmCGPTD
 
         public async Task GetAuthAsync()
         {
-            VMLocator.MainViewModel._authState = await VMLocator.MainViewModel._supabase!.Auth.SignIn(Constants.Provider.Google, new SignInOptions
+            SupabaseStates.Instance.AuthState = await SupabaseStates.Instance.Supabase!.Auth.SignIn(Constants.Provider.Google, new SignInOptions
             {
                 FlowType = Constants.OAuthFlowType.PKCE,
                 RedirectTo = "http://localhost:3000/oauth/callback"
@@ -58,14 +56,18 @@ namespace TmCGPTD
 
         public async Task GetSessionAsync()
         {
-            VMLocator.MainViewModel._session = await VMLocator.MainViewModel._supabase!.Auth.ExchangeCodeForSession(VMLocator.MainViewModel._authState!.PKCEVerifier!, VMLocator.MainViewModel.AuthCode);
+            var session = await SupabaseStates.Instance.Supabase!.Auth.ExchangeCodeForSession(SupabaseStates.Instance.AuthState!.PKCEVerifier!, VMLocator.MainViewModel.AuthCode!);
             VMLocator.MainViewModel.OnLogin = false;
-            Debug.WriteLine($"Session: {VMLocator.MainViewModel._supabase.Auth.CurrentSession!.User!.Email}");
+            if(session != null)
+            {
+                VMLocator.MainViewModel.SyncLogText = "Signed in.";
+            }
         }
 
         public async Task SignOutAsync()
         {
-            await VMLocator.MainViewModel._supabase!.Auth.SignOut();
+            await SupabaseStates.Instance.Supabase!.Auth.SignOut();
+            VMLocator.MainViewModel.SyncLogText = "Signed out.";
         }
     }
 }

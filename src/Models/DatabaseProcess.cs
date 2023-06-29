@@ -17,8 +17,12 @@ using TmCGPTD.Views;
 using Avalonia;
 using System.Reflection;
 using Avalonia.Controls;
+using Supabase;
 using System.Diagnostics;
 using System.Text.RegularExpressions;
+using static TmCGPTD.Models.PostageSqlModels;
+using System.Xml.Linq;
+using static Postgrest.Constants;
 
 namespace TmCGPTD.Models
 {
@@ -38,7 +42,21 @@ namespace TmCGPTD.Models
             }
         }
 
+        SyncProcess _syncProcess = new SyncProcess();
+        private AppSettings _appSettings => AppSettings.Instance;
+        private Client? _supabase => SupabaseStates.Instance.Supabase;
+        private string? _uid => SupabaseStates.Instance.Supabase?.Auth.CurrentSession?.User?.Id;
+
         public static SQLiteConnection? memoryConnection; // メモリ上のSQLコネクション
+
+        //---------------------------------------------------------------------------
+        private async Task DoSync()
+        {
+            if (_appSettings.SyncIsOn && _supabase != null && _uid != null)
+            {
+                await _syncProcess.SyncDbAsync();
+            }
+        }
 
         // SQL db初期化--------------------------------------------------------------
         public void CreateDatabase()
@@ -208,7 +226,7 @@ namespace TmCGPTD.Models
 
                 if (!categoryExists || !lastPromptExists || !jsonPrevExists || !phraseDateExists || !templateDateExists)
                 {
-                    Application.Current!.TryFindResource("My.Strings.DatabaseUpdate", out object resource1);
+                    Application.Current!.TryFindResource("My.Strings.DatabaseUpdate", out object? resource1);
                     var dialog = new ContentDialog()
                     {
                         Title = $"{resource1}{Environment.NewLine}{Environment.NewLine}{AppSettings.Instance.DbPath}.backup",
@@ -228,7 +246,7 @@ namespace TmCGPTD.Models
                 throw;
             }
             // インメモリをいったん閉じてまた開く
-            await memoryConnection.CloseAsync();
+            await memoryConnection!.CloseAsync();
             await DbLoadToMemoryAsync();
         }
 
@@ -261,28 +279,47 @@ namespace TmCGPTD.Models
         // 定型句プリセットSave--------------------------------------------------------------
         public async Task SavePhrasesAsync(string name, string phrasesText)
         {
+            DateTime now = DateTime.Now;
+            now = now.AddTicks(-(now.Ticks % TimeSpan.TicksPerSecond));  // ミリ秒以下を切り捨てる
             using var connection = new SQLiteConnection($"Data Source={AppSettings.Instance.DbPath}");
             await connection.OpenAsync();
 
             using var transaction = connection.BeginTransaction();
             try
             {
-                string sql = $"INSERT INTO phrase (name, phrase) VALUES (@name, @phrase)";
+                if (_appSettings.SyncIsOn && _supabase != null && _uid != null)
+                {
+                    var result = await _supabase.From<Phrase>().Insert(new Phrase { UserId = _uid, Name = name, Content = phrasesText, Date = now });
 
-                using var command = new SQLiteCommand(sql, connection);
-                command.Parameters.AddWithValue("@name", name);
-                command.Parameters.AddWithValue("@phrase", phrasesText);
+                    string sql = $"INSERT INTO phrase (id, name, phrase, date) VALUES (@id, @name, @phrase, @date)";
 
-                await command.ExecuteNonQueryAsync();
+                    using var command = new SQLiteCommand(sql, connection);
+                    command.Parameters.AddWithValue("@id", result.Models[0].Id);
+                    command.Parameters.AddWithValue("@name", name);
+                    command.Parameters.AddWithValue("@phrase", phrasesText);
+                    command.Parameters.AddWithValue("@date", now);
+                    await command.ExecuteNonQueryAsync();
+                }
+                else
+                {
+                    string sql = $"INSERT INTO phrase (name, phrase, date) VALUES (@name, @phrase, @date)";
 
-                transaction.Commit();
+                    using var command = new SQLiteCommand(sql, connection);
+                    command.Parameters.AddWithValue("@name", name);
+                    command.Parameters.AddWithValue("@phrase", phrasesText);
+                    command.Parameters.AddWithValue("@date", now);
+                    await command.ExecuteNonQueryAsync();
+                }
+                await transaction.CommitAsync();
             }
             catch (Exception)
             {
-                transaction.Rollback();
+                await transaction.RollbackAsync();
+                await DoSync();
                 throw;
             }
-            await memoryConnection.CloseAsync();
+            await DoSync();
+            await memoryConnection!.CloseAsync();
             await DbLoadToMemoryAsync();
         }
 
@@ -335,6 +372,14 @@ namespace TmCGPTD.Models
             using var transaction = connection.BeginTransaction();
             try
             {
+                if (_appSettings.SyncIsOn && _supabase != null && _uid != null)
+                {
+                    var update = await _supabase.From<Phrase>()
+                                                .Where(x => x.Name == oldName)
+                                                .Set(x => x.Name!, newName)
+                                                .Update();
+                }
+
                 using var command = new SQLiteCommand(connection)
                 {
                     CommandText = "UPDATE phrase SET name = @newName WHERE name = @oldName;"
@@ -348,14 +393,16 @@ namespace TmCGPTD.Models
                 {
                     throw new Exception("No matching record found to update.");
                 }
-                transaction.Commit();
+                await transaction.CommitAsync();
             }
             catch (Exception ex)
             {
-                transaction.Rollback();
+                await transaction.RollbackAsync();
+                await DoSync();
                 throw new Exception($"Updating the name from '{oldName}' to '{newName}': {ex.Message}", ex);
             }
-            await memoryConnection.CloseAsync();
+            await DoSync();
+            await memoryConnection!.CloseAsync();
             await DbLoadToMemoryAsync();
         }
 
@@ -368,7 +415,15 @@ namespace TmCGPTD.Models
             using var transaction = connection.BeginTransaction();
             try
             {
-                using var command = new SQLiteCommand(connection)
+                if (_appSettings.SyncIsOn && _supabase != null && _uid != null)
+                {
+                    var update = await _supabase.From<Phrase>()
+                                                .Where(x => x.Name == name)
+                                                .Set(x => x.Content!, phrasesText)
+                                                .Update();
+                }
+
+                    using var command = new SQLiteCommand(connection)
                 {
                     CommandText = "UPDATE phrase SET phrase = @phrasesText WHERE name = @name;"
                 };
@@ -381,14 +436,16 @@ namespace TmCGPTD.Models
                 {
                     throw new Exception("No matching record found to update.");
                 }
-                transaction.Commit();
+                await transaction.CommitAsync();
             }
             catch (Exception ex)
             {
-                transaction.Rollback();
+                await transaction.RollbackAsync();
+                await DoSync();
                 throw new Exception($"Updating the phrase preset '{name}': {ex.Message}", ex);
             }
-            await memoryConnection.CloseAsync();
+            await DoSync();
+            await memoryConnection!.CloseAsync();
             await DbLoadToMemoryAsync();
         }
 
@@ -403,24 +460,34 @@ namespace TmCGPTD.Models
                 using var transaction = connection.BeginTransaction(System.Data.IsolationLevel.Serializable);
                 try
                 {
+                    if (_appSettings.SyncIsOn && _supabase != null && _uid != null)
+                    {
+                        await _supabase.From<Phrase>()
+                                       .Where(x => x.Name == selectedPhraseItem)
+                                       .Delete();
+                    }
+
                     string sql = "DELETE FROM phrase WHERE name = @selectedPhraseItem";
                     using var command = new SQLiteCommand(sql, connection, transaction);
                     command.Parameters.AddWithValue("@selectedPhraseItem", selectedPhraseItem);
 
                     await command.ExecuteNonQueryAsync();
-                    transaction.Commit();
+                    await transaction.CommitAsync();
                 }
                 catch (Exception ex)
                 {
-                    transaction.Rollback();
+                    await transaction.RollbackAsync();
+                    await DoSync();
                     throw new Exception("Occurred while deleting the selected preset.", ex);
                 }
             }
             catch (Exception ex)
             {
+                await DoSync();
                 throw new Exception("Occurred while connecting to the database.", ex);
             }
-            await memoryConnection.CloseAsync();
+            await DoSync();
+            await memoryConnection!.CloseAsync();
             await DbLoadToMemoryAsync();
         }
 
@@ -500,15 +567,70 @@ namespace TmCGPTD.Models
                     {
                         while (await csvReader.ReadAsync()) // データ行を読み込む
                         {
-
+                            string insertQuery;
                             // データを取得
                             var rowData = new List<string>();
-                            for (int i = 1, loopTo = columnEnd; i <= loopTo; i++) // 2列目から8列目まで
-                                rowData.Add(csvReader.GetField(i));
-                            // INSERT文を作成
-                            string values = string.Join(", ", Enumerable.Range(0, rowData.Count).Select(i => $"@value{i}"));
+                            for (int i = 1, loopTo = columnEnd; i <= loopTo; i++)
+                                rowData.Add(csvReader.GetField(i)!);
 
-                            string insertQuery = $"INSERT INTO {tableName} ({columnNames}) VALUES ({values});";
+                            if (_appSettings.SyncIsOn && _supabase != null && _uid != null)
+                            {
+                                if (tableName == "editorlog")
+                                {
+                                    bool success = DateTime.TryParse(rowData[0], out DateTime date);
+                                    if (success)
+                                    {
+                                        date = date.AddTicks(-(date.Ticks % TimeSpan.TicksPerSecond));  // ミリ秒以下を切り捨てる
+                                        var resultEditor = await _supabase.From<EditorLog>()
+                                             .Insert(new EditorLog { UserId = _uid, Date = date, Content = rowData[1] });
+
+                                        long editorId = resultEditor.Models[0].Id;
+
+                                        // INSERT文を作成
+                                        string values = string.Join(", ", Enumerable.Range(0, rowData.Count).Select(i => $"@value{i}"));
+
+                                        insertQuery = $"INSERT INTO {tableName} (id, {columnNames}) VALUES ({editorId}, {values});";
+                                    }
+                                    else
+                                    {
+                                        throw new Exception("The date format is invalid.");
+                                    }
+                                }
+                                else
+                                {
+                                    bool success = DateTime.TryParse(rowData[0], out DateTime date);
+                                    if (success)
+                                    {
+                                        date = date.AddTicks(-(date.Ticks % TimeSpan.TicksPerSecond));
+                                        var resultChatRoom = await _supabase.From<ChatRoom>()
+                                                                        .Insert(new ChatRoom { UserId = _uid, UpdatedOn = date, Title = rowData[1], Json = rowData[2], Category = rowData[4], LastPrompt = rowData[5], JsonPrev = rowData[6] });
+                                        long chatRoomId = resultChatRoom.Models[0].Id;
+
+                                        var models = new List<Message>();
+
+                                        models.AddRange(_syncProcess.DivideMessage(rowData[3], chatRoomId, _uid));
+
+                                        await _supabase.From<Message>().Upsert(models);
+
+                                        // INSERT文を作成
+                                        string values = string.Join(", ", Enumerable.Range(0, rowData.Count).Select(i => $"@value{i}"));
+
+                                        insertQuery = $"INSERT INTO {tableName} (id, {columnNames}) VALUES ({chatRoomId}, {values});";
+
+                                    }
+                                    else
+                                    {
+                                        throw new Exception("The date format is invalid.");
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                // INSERT文を作成
+                                string values = string.Join(", ", Enumerable.Range(0, rowData.Count).Select(i => $"@value{i}"));
+
+                                insertQuery = $"INSERT INTO {tableName} ({columnNames}) VALUES ({values});";
+                            }
 
                             // データをデータベースに挿入
                             using (var command = new SQLiteCommand(insertQuery, con))
@@ -519,13 +641,14 @@ namespace TmCGPTD.Models
                             }
                             processedCount += 1;
                         }
+                        await transaction.CommitAsync();
 
-                        transaction.Commit();
                         msg = $"Successfully imported log. ({processedCount} Records)";
                     }
                     catch (Exception)
                     {
-                        transaction.Rollback();
+                        await transaction.RollbackAsync();
+                        await DoSync();
                         throw;
                     }
                 }
@@ -533,10 +656,11 @@ namespace TmCGPTD.Models
             }
             catch (Exception)
             {
+                await DoSync();
                 throw;
             }
-            // インメモリをいったん閉じてまた開く
-            await memoryConnection.CloseAsync();
+            await DoSync();
+            await memoryConnection!.CloseAsync();
             await DbLoadToMemoryAsync();
 
             return msg;
@@ -583,7 +707,7 @@ namespace TmCGPTD.Models
                             if (reader.GetFieldType(i) == typeof(DateTime))
                             {
                                 var dateValue = reader.GetDateTime(i);
-                                csvWriter.WriteField(dateValue.ToString("yyyy-MM-dd HH:mm:ss.fffffff"));
+                                csvWriter.WriteField(dateValue.ToString("yyyy-MM-dd HH:mm:ss"));
                             }
                             else
                             {
@@ -679,20 +803,29 @@ namespace TmCGPTD.Models
                 using var transaction = connection.BeginTransaction();
                 try
                 {
+                    if (_appSettings.SyncIsOn && _supabase != null && _uid != null)
+                    {
+                        await _supabase.From<ChatRoom>()
+                                       .Where(x => x.Id == chatId)
+                                       .Delete();
+                    }
+
                     using (var command = new SQLiteCommand($"DELETE FROM chatlog WHERE id = '{chatId}'", connection, transaction))
                     {
                         await command.ExecuteNonQueryAsync();
                     }
-                    transaction.Commit();
+                    await transaction.CommitAsync();
                 }
                 catch (Exception)
                 {
-                    transaction.Rollback();
+                    await transaction.RollbackAsync();
+                    await DoSync();
                     throw;
                 }
             }
             // インメモリをいったん閉じてまた開く
-            await memoryConnection.CloseAsync();
+            await DoSync();
+            await memoryConnection!.CloseAsync();
             await DbLoadToMemoryAsync();
             return;
         }
@@ -702,6 +835,14 @@ namespace TmCGPTD.Models
         {
             try
             {
+                if (_appSettings.SyncIsOn && _supabase != null && _uid != null)
+                {
+                    var update = await _supabase.From<ChatRoom>()
+                                                .Where(x => x.Id == chatId)
+                                                .Set(x => x.Title!, title)
+                                                .Update();
+                }
+
                 using var connection = new SQLiteConnection($"Data Source={AppSettings.Instance.DbPath}");
                 await connection.OpenAsync();
 
@@ -713,10 +854,12 @@ namespace TmCGPTD.Models
             }
             catch (Exception)
             {
+                await DoSync();
                 throw;
             }
             // インメモリをいったん閉じてまた開く
-            await memoryConnection.CloseAsync();
+            await DoSync();
+            await memoryConnection!.CloseAsync();
             await DbLoadToMemoryAsync();
             VMLocator.DataGridViewModel.ChatList = await SearchChatDatabaseAsync();
         }
@@ -726,6 +869,14 @@ namespace TmCGPTD.Models
         {
             try
             {
+                if (_appSettings.SyncIsOn && _supabase != null && _uid != null)
+                {
+                    var update = await _supabase.From<ChatRoom>()
+                                                .Where(x => x.Id == chatId)
+                                                .Set(x => x.Category!, category)
+                                                .Update();
+                }
+
                 using var connection = new SQLiteConnection($"Data Source={AppSettings.Instance.DbPath}");
                 await connection.OpenAsync();
 
@@ -738,10 +889,12 @@ namespace TmCGPTD.Models
             }
             catch (Exception)
             {
+                await DoSync();
                 throw;
             }
             // インメモリをいったん閉じてまた開く
-            await memoryConnection.CloseAsync();
+            await DoSync();
+            await memoryConnection!.CloseAsync();
             await DbLoadToMemoryAsync();
             VMLocator.DataGridViewModel.ChatList = await SearchChatDatabaseAsync();
         }
@@ -749,104 +902,142 @@ namespace TmCGPTD.Models
         // Webチャットログのインポート--------------------------------------------------------------
         public async Task<string> InsertWebChatLogDatabaseAsync(string webChatTitle, List<Dictionary<string, object>> webConversationHistory, string webLog, string chatService)
         {
-            if (!string.IsNullOrEmpty(webLog))
+            if (string.IsNullOrEmpty(webLog))
             {
-                int? matchingId = null;
-                string query = "";
+                return "No chat log found.";
+            }
 
-                using (var command = new SQLiteCommand(memoryConnection))
+            int? matchingId = null;
+            string query = "";
+
+            using (var command = new SQLiteCommand(memoryConnection))
+            {
+                command.CommandText = "SELECT id FROM chatlog WHERE title = @webChatTitle LIMIT 1";
+                command.Parameters.AddWithValue("@webChatTitle", webChatTitle);
+
+                using var reader = await command.ExecuteReaderAsync();
+                if (await reader.ReadAsync())
                 {
-                    command.CommandText = "SELECT id FROM chatlog WHERE title = @webChatTitle LIMIT 1";
-                    command.Parameters.AddWithValue("@webChatTitle", webChatTitle);
-
-                    using var reader = await command.ExecuteReaderAsync();
-                    if (await reader.ReadAsync())
-                    {
-                        matchingId = reader.GetInt32(0);
-                    }
+                    matchingId = reader.GetInt32(0);
                 }
+            }
 
-                if (matchingId.HasValue)
+            DateTime date = DateTime.Now;
+            date = date.AddTicks(-(date.Ticks % TimeSpan.TicksPerSecond));
+
+            string jsonConversationHistory = JsonSerializer.Serialize(webConversationHistory);
+
+            if (matchingId.HasValue)
+            {
+                Console.WriteLine("Match found. ID: " + matchingId.Value);
+                var dialog = new ContentDialog() { Title = $"A chat log with the same name exists.{Environment.NewLine}Do you want to overwrite it? {Environment.NewLine}{Environment.NewLine}'{webChatTitle}'", PrimaryButtonText = "Overwrite", SecondaryButtonText = "Rename", CloseButtonText = "Cancel" };
+                var dialogResult = await VMLocator.MainViewModel.ContentDialogShowAsync(dialog);
+                if (dialogResult == ContentDialogResult.Primary)
                 {
-                    Console.WriteLine("Match found. ID: " + matchingId.Value);
-                    var dialog = new ContentDialog() { Title = $"A chat log with the same name exists.{Environment.NewLine}Do you want to overwrite it? {Environment.NewLine}{Environment.NewLine}'{webChatTitle}'", PrimaryButtonText = "Overwrite", SecondaryButtonText = "Rename", CloseButtonText = "Cancel" };
-                    var dialogResult = await VMLocator.MainViewModel.ContentDialogShowAsync(dialog);
-                    if (dialogResult == ContentDialogResult.Primary)
+                    if (_appSettings.SyncIsOn && _supabase != null && _uid != null)
                     {
-                        query = $"UPDATE chatlog SET date=@date, title=@title, json=@json, text=@text, category=category WHERE id={matchingId.Value}";
-                    }
-                    else if (dialogResult == ContentDialogResult.Secondary)
-                    {
-                        dialog = new ContentDialog()
-                        {
-                            Title = "Please enter a new chat name.",
-                            PrimaryButtonText = "OK",
-                            CloseButtonText = "Cancel"
-                        };
+                        var resultUpdate = await _supabase.From<ChatRoom>()
+                                                    .Where(x => x.Id == matchingId.Value)
+                                                    .Set(x => x.UpdatedOn!, date)
+                                                    .Set(x => x.Title!, webChatTitle)
+                                                    .Set(x => x.Category!, chatService)
+                                                    .Update();
+                        long chatRoomId = resultUpdate.Models[0].Id;
+                        var models = new List<Message>();
 
-                        var viewModel = new PhrasePresetsNameInputViewModel(dialog);
-                        dialog.Content = new PhrasePresetsNameInput()
-                        {
-                            DataContext = viewModel
-                        };
-                        dialogResult = await VMLocator.MainViewModel.ContentDialogShowAsync(dialog);
-                        if (dialogResult != ContentDialogResult.Primary || string.IsNullOrWhiteSpace(viewModel.UserInput))
-                        {
-                            return "Cancel";
-                        }
-                        else
-                        {
-                            webChatTitle = viewModel.UserInput;
-                            var msg = await InsertWebChatLogDatabaseAsync(webChatTitle, webConversationHistory, webLog, chatService);
-                            if (msg == "Cancel")
-                            {
-                                return "Cancel";
-                            }
-                            return "OK";
-                        }
+                        models.AddRange(_syncProcess.DivideMessage(webLog, chatRoomId, _uid));
+
+                        await _supabase.From<Message>().Insert(models);
+
                     }
-                    else
+                    query = $"UPDATE chatlog SET date=@date, title=@title, json=@json, text=@text, category=category WHERE id={matchingId.Value}";
+                }
+                else if (dialogResult == ContentDialogResult.Secondary)
+                {
+                    dialog = new ContentDialog()
+                    {
+                        Title = "Please enter a new chat name.",
+                        PrimaryButtonText = "OK",
+                        CloseButtonText = "Cancel"
+                    };
+
+                    var viewModel = new PhrasePresetsNameInputViewModel(dialog);
+                    dialog.Content = new PhrasePresetsNameInput()
+                    {
+                        DataContext = viewModel
+                    };
+                    dialogResult = await VMLocator.MainViewModel.ContentDialogShowAsync(dialog);
+                    if (dialogResult != ContentDialogResult.Primary || string.IsNullOrWhiteSpace(viewModel.UserInput))
                     {
                         return "Cancel";
                     }
+                    else
+                    {
+                        webChatTitle = viewModel.UserInput;
+                        var msg = await InsertWebChatLogDatabaseAsync(webChatTitle, webConversationHistory, webLog, chatService);
+                        if (msg == "Cancel")
+                        {
+                            return "Cancel";
+                        }
+                        return "OK";
+                    }
+                }
+                else
+                {
+                    return "Cancel";
+                }
+            }
+            else
+            {
+                if (_appSettings.SyncIsOn && _supabase != null && _uid != null)
+                {
+                    var resultInsert = await _supabase.From<ChatRoom>().Insert(new ChatRoom { UserId = _uid, UpdatedOn = date, Title = webChatTitle, Category = chatService, LastPrompt = "", Json = jsonConversationHistory, JsonPrev = ""});
+
+                    long chatRoomId = resultInsert.Models[0].Id;
+                    var models = new List<Message>();
+
+                    models.AddRange(_syncProcess.DivideMessage(webLog, chatRoomId, _uid));
+
+                    await _supabase.From<Message>().Insert(models);
+
+                    query = $"INSERT INTO chatlog(id, date, title, json, text, category) VALUES ({chatRoomId}, @date, @title, @json, @text, @category)";
                 }
                 else
                 {
                     query = "INSERT INTO chatlog(date, title, json, text, category) VALUES (@date, @title, @json, @text, @category)";
                 }
+            }
 
-                    DateTime nowDate = DateTime.Now;
-                string jsonConversationHistory = JsonSerializer.Serialize(webConversationHistory);
-
-                using var connection = new SQLiteConnection($"Data Source={AppSettings.Instance.DbPath}");
-                await connection.OpenAsync();
-                // トランザクションを開始する
-                using var transaction = connection.BeginTransaction();
-                try
+            using var connection = new SQLiteConnection($"Data Source={AppSettings.Instance.DbPath}");
+            await connection.OpenAsync();
+            // トランザクションを開始する
+            using var transaction = connection.BeginTransaction();
+            try
+            {
+                // logテーブルにデータをインサートする
+                using (var command = new SQLiteCommand(query, connection))
                 {
-                    // logテーブルにデータをインサートする
-                    using (var command = new SQLiteCommand(query, connection))
-                    {
-                        await Task.Run(() => command.Parameters.AddWithValue("@date", nowDate));
-                        await Task.Run(() => command.Parameters.AddWithValue("@title", webChatTitle));
-                        await Task.Run(() => command.Parameters.AddWithValue("@json", jsonConversationHistory));
-                        await Task.Run(() => command.Parameters.AddWithValue("@text", webLog));
-                        await Task.Run(() => command.Parameters.AddWithValue("@category", chatService));
-                        await command.ExecuteNonQueryAsync();
-                    }
+                    command.Parameters.AddWithValue("@date", date);
+                    command.Parameters.AddWithValue("@title", webChatTitle);
+                    command.Parameters.AddWithValue("@json", jsonConversationHistory);
+                    command.Parameters.AddWithValue("@text", webLog);
+                    command.Parameters.AddWithValue("@category", chatService);
+                    await command.ExecuteNonQueryAsync();
+                }
 
-                    // トランザクションをコミットする
-                    await Task.Run(() => transaction.Commit());
-                }
-                catch (Exception)
-                {
-                    // エラーが発生した場合、トランザクションをロールバックする
-                    transaction.Rollback();
-                    throw;
-                }
+                // トランザクションをコミットする
+                await transaction.CommitAsync();
+            }
+            catch (Exception)
+            {
+                // エラーが発生した場合、トランザクションをロールバックする
+                await transaction.RollbackAsync();
+                await DoSync();
+                throw;
             }
             // インメモリをいったん閉じてまた開く
-            await memoryConnection.CloseAsync();
+            await DoSync();
+            await memoryConnection!.CloseAsync();
             await DbLoadToMemoryAsync();
             VMLocator.DataGridViewModel.ChatList = await SearchChatDatabaseAsync();
             return "OK";
@@ -855,6 +1046,9 @@ namespace TmCGPTD.Models
         // データベースにTemplateをインサートする--------------------------------------------------------------
         public async Task InsertTemplateDatabasetAsync(string title)
         {
+            DateTime date = DateTime.Now;
+            date = date.AddTicks(-(date.Ticks % TimeSpan.TicksPerSecond));
+
             var _editorViewModel = VMLocator.EditorViewModel;
 
             List<string> inputText = new()
@@ -873,21 +1067,41 @@ namespace TmCGPTD.Models
             using var transaction = connection.BeginTransaction();
             try
             {
-                using (var command = new SQLiteCommand("INSERT INTO template(title, text) VALUES (@title, @text)", connection))
+                if (_appSettings.SyncIsOn && _supabase != null && _uid != null)
                 {
-                    command.Parameters.AddWithValue("@title", title);
-                    command.Parameters.AddWithValue("@text", finalText);
-                    await command.ExecuteNonQueryAsync();
+                    var result = await _supabase.From<Template>().Insert(new Template { UserId = _uid, Title = title, Content = finalText, Date = date });
+
+                    long templateId = result.Models[0].Id;
+
+                    using (var command = new SQLiteCommand("INSERT INTO template(id, title, text, date) VALUES (@id, @title, @text, @date)", connection))
+                    {
+                        command.Parameters.AddWithValue("@id", templateId);
+                        command.Parameters.AddWithValue("@title", title);
+                        command.Parameters.AddWithValue("@text", finalText);
+                        command.Parameters.AddWithValue("@date", date);
+                        await command.ExecuteNonQueryAsync();
+                    }
                 }
-                transaction.Commit();
+                else
+                {
+                    using (var command = new SQLiteCommand("INSERT INTO template(title, text, date) VALUES (@title, @text, @date)", connection))
+                    {
+                        command.Parameters.AddWithValue("@title", title);
+                        command.Parameters.AddWithValue("@text", finalText);
+                        command.Parameters.AddWithValue("@date", date);
+                        await command.ExecuteNonQueryAsync();
+                    }
+                }
+                await transaction.CommitAsync();
             }
             catch (Exception)
             {
-                transaction.Rollback();
+                await transaction.RollbackAsync();
+                await DoSync();
                 throw;
             }
-            // インメモリをいったん閉じてまた開く
-            await memoryConnection.CloseAsync();
+            await DoSync();
+            await memoryConnection!.CloseAsync();
             await DbLoadToMemoryAsync();
         }
 
@@ -912,6 +1126,14 @@ namespace TmCGPTD.Models
                 };
                 string finalText = string.Join(Environment.NewLine + "<---TMCGPT--->" + Environment.NewLine, inputText);
 
+                if (_appSettings.SyncIsOn && _supabase != null && _uid != null)
+                {
+                    var update = await _supabase.From<Template>()
+                                                .Where(x => x.Title == title)
+                                                .Set(x => x.Content!, finalText)
+                                                .Update();
+                }
+
                 using var command = new SQLiteCommand(connection)
                 {
                     CommandText = "UPDATE template SET text = @templateText WHERE title = @title;"
@@ -925,14 +1147,16 @@ namespace TmCGPTD.Models
                 {
                     throw new Exception("No matching record found to update.");
                 }
-                transaction.Commit();
+                await transaction.CommitAsync();
             }
             catch (Exception ex)
             {
-                transaction.Rollback();
+                await transaction.RollbackAsync();
+                await DoSync();
                 throw new Exception($"Updating template preset '{title}': {ex.Message}", ex);
             }
-            await memoryConnection.CloseAsync();
+            await DoSync();
+            await memoryConnection!.CloseAsync();
             await DbLoadToMemoryAsync();
         }
 
@@ -945,6 +1169,14 @@ namespace TmCGPTD.Models
             using var transaction = connection.BeginTransaction();
             try
             {
+                if (_appSettings.SyncIsOn && _supabase != null && _uid != null)
+                {
+                    var update = await _supabase.From<Template>()
+                                                .Where(x => x.Title == oldName)
+                                                .Set(x => x.Title!, newName)
+                                                .Update();
+                }
+
                 using var command = new SQLiteCommand(connection)
                 {
                     CommandText = "UPDATE template SET title = @newName WHERE title = @oldName;"
@@ -958,14 +1190,16 @@ namespace TmCGPTD.Models
                 {
                     throw new Exception("No matching record found to update.");
                 }
-                transaction.Commit();
+                await transaction.CommitAsync();
             }
             catch (Exception ex)
             {
-                transaction.Rollback();
+                await transaction.RollbackAsync();
+                await DoSync();
                 throw new Exception($"Updating the name from '{oldName}' to '{newName}': {ex.Message}", ex);
             }
-            await memoryConnection.CloseAsync();
+            await DoSync();
+            await memoryConnection!.CloseAsync();
             await DbLoadToMemoryAsync();
         }
 
@@ -980,6 +1214,13 @@ namespace TmCGPTD.Models
                 using var transaction = connection.BeginTransaction(System.Data.IsolationLevel.Serializable);
                 try
                 {
+                    if (_appSettings.SyncIsOn && _supabase != null && _uid != null)
+                    {
+                        await _supabase.From<Template>()
+                                       .Where(x => x.Title == selectedTemplateItem)
+                                       .Delete();
+                    }
+
                     string sql = "DELETE FROM template WHERE title = @selectedTemplateItem";
                     using var command = new SQLiteCommand(sql, connection, transaction);
                     command.Parameters.AddWithValue("@selectedTemplateItem", selectedTemplateItem);
@@ -990,14 +1231,17 @@ namespace TmCGPTD.Models
                 catch (Exception ex)
                 {
                     transaction.Rollback();
+                    await DoSync();
                     throw new Exception("Occurred while deleting the selected template.", ex);
                 }
             }
             catch (Exception ex)
             {
+                await DoSync();
                 throw new Exception("Occurred while connecting to the database.", ex);
             }
-            await memoryConnection.CloseAsync();
+            await DoSync();
+            await memoryConnection!.CloseAsync();
             await DbLoadToMemoryAsync();
         }
 
@@ -1036,7 +1280,7 @@ namespace TmCGPTD.Models
                     for (int i = 0, loopTo = Math.Min(texts.Length - 1, 4); i <= loopTo; i++) // 5要素目までを取得
                     {
                         string propertyName = $"Editor{i + 1}Text";
-                        PropertyInfo property = VMLocator.EditorViewModel.GetType().GetProperty(propertyName);
+                        PropertyInfo property = VMLocator.EditorViewModel.GetType().GetProperty(propertyName)!;
                         if (property != null)
                         {
                             property.SetValue(VMLocator.EditorViewModel, string.Empty);
@@ -1104,7 +1348,7 @@ namespace TmCGPTD.Models
                     for (int i = 0, loopTo = Math.Min(texts.Length - 1, 4); i <= loopTo; i++) // 5要素目までを取得
                     {
                         string propertyName = $"Editor{i + 1}Text";
-                        PropertyInfo property = VMLocator.EditorViewModel.GetType().GetProperty(propertyName);
+                        PropertyInfo property = VMLocator.EditorViewModel.GetType().GetProperty(propertyName)!;
                         if (property != null)
                         {
                             property.SetValue(VMLocator.EditorViewModel, string.Empty);
@@ -1138,7 +1382,8 @@ namespace TmCGPTD.Models
             };
             string finalText = string.Join(Environment.NewLine + "<---TMCGPT--->" + Environment.NewLine, inputText);
 
-            var now = DateTime.Now;
+            DateTime date = DateTime.Now;
+            date = date.AddTicks(-(date.Ticks % TimeSpan.TicksPerSecond));
 
             using var connection = new SQLiteConnection($"Data Source={AppSettings.Instance.DbPath}");
             await connection.OpenAsync();
@@ -1146,21 +1391,39 @@ namespace TmCGPTD.Models
             using var transaction = connection.BeginTransaction();
             try
             {
-                using (var command = new SQLiteCommand("INSERT INTO editorlog(date, text) VALUES (@date, @text)", connection))
+                if (_appSettings.SyncIsOn && _supabase != null && _uid != null)
                 {
-                    command.Parameters.AddWithValue("@date", now);
-                    command.Parameters.AddWithValue("@text", finalText);
-                    await command.ExecuteNonQueryAsync();
+                    var result = await _supabase.From<EditorLog>().Insert(new EditorLog { UserId = _uid, Date = date, Content = finalText });
+
+                    long resultId = result.Models[0].Id;
+
+                    using (var command = new SQLiteCommand("INSERT INTO editorlog(id, date, text) VALUES (@id, @date, @text)", connection))
+                    {
+                        command.Parameters.AddWithValue("@id", resultId);
+                        command.Parameters.AddWithValue("@date", date);
+                        command.Parameters.AddWithValue("@text", finalText);
+                        await command.ExecuteNonQueryAsync();
+                    }
                 }
-                transaction.Commit();
+                else
+                {
+                    using (var command = new SQLiteCommand("INSERT INTO editorlog(date, text) VALUES (@date, @text)", connection))
+                    {
+                        command.Parameters.AddWithValue("@date", date);
+                        command.Parameters.AddWithValue("@text", finalText);
+                        await command.ExecuteNonQueryAsync();
+                    }
+                }
+
+                await transaction.CommitAsync();
             }
             catch (Exception)
             {
-                transaction.Rollback();
+                await transaction.RollbackAsync();
                 throw;
             }
             // インメモリをいったん閉じてまた開く
-            await memoryConnection.CloseAsync();
+            await memoryConnection!.CloseAsync();
             await DbLoadToMemoryAsync();
         }
 
@@ -1212,7 +1475,7 @@ namespace TmCGPTD.Models
                     for (int i = 0, loopTo = Math.Min(texts.Length - 1, 4); i <= loopTo; i++) // 5要素目までを取得
                     {
                         string propertyName = $"Editor{i+1}Text";
-                        PropertyInfo property = VMLocator.EditorViewModel.GetType().GetProperty(propertyName);
+                        PropertyInfo property = VMLocator.EditorViewModel.GetType().GetProperty(propertyName)!;
                         if (property != null)
                         {
                             property.SetValue(VMLocator.EditorViewModel, string.Empty);
@@ -1234,16 +1497,29 @@ namespace TmCGPTD.Models
         // データベースのEditorログをクリンナップ--------------------------------------------------------------
         public async Task CleanUpEditorLogDatabaseAsync()
         {
-            // SQLiteデータベースに接続
+            if (_appSettings.SyncIsOn && _supabase != null && _uid != null)
+            {
+                int count = await _supabase
+                              .From<EditorLog>()
+                              .Count(Postgrest.Constants.CountType.Exact);
+
+                if (count > 200)
+                {
+                    // 最新の日付順に結果をソートし、200件以上を削除
+                     await _supabase.From<EditorLog>()
+                                    .Order(x => x.Date, Ordering.Descending)
+                                    .Range(200, count - 1)
+                                    .Delete();
+                }
+            }
+
             using SQLiteConnection connection = new SQLiteConnection($"Data Source={AppSettings.Instance.DbPath}");
             await connection.OpenAsync();
 
-            // テーブルの行数を取得
             using (SQLiteCommand command = new SQLiteCommand("SELECT COUNT(*) FROM editorlog", connection))
             {
                 var rowCount = (long)command.ExecuteScalar();
 
-                // 行数が200を超えている場合
                 if (rowCount > 200)
                 {
                     // 日付が新しいもの200を残して削除
@@ -1257,6 +1533,9 @@ namespace TmCGPTD.Models
         // チャットログを更新--------------------------------------------------------------
         public async Task InsertDatabaseChatAsync(DateTime postDate, string postText, DateTime resDate, string resText)
         {
+            postDate = postDate.AddTicks(-(postDate.Ticks % TimeSpan.TicksPerSecond));
+            resDate = resDate.AddTicks(-(resDate.Ticks % TimeSpan.TicksPerSecond));
+
             var insertText = new List<string>();
 
             if (!string.IsNullOrWhiteSpace(resText))
@@ -1376,6 +1655,24 @@ namespace TmCGPTD.Models
                             }
                         }
 
+                        if (_appSettings.SyncIsOn && _supabase != null && _uid != null)
+                        {
+                            var update = await _supabase.From<ChatRoom>()
+                                                        .Where(x => x.Id == (int)lastRowId)
+                                                        .Set(x => x.UpdatedOn!, resDate)
+                                                        .Set(x => x.Title!, titleText)
+                                                        .Set(x => x.Category!, categoryText)
+                                                        .Set(x => x.LastPrompt!, promptTextForSave)
+                                                        .Set(x => x.Json!, jsonConversationHistory)
+                                                        .Set(x => x.JsonPrev!, jsonLastConversationHistory)
+                                                        .Update();
+
+                            var models = new List<Message>();
+
+                            models.AddRange(_syncProcess.DivideMessage(string.Join(Environment.NewLine, insertText), (int)lastRowId, _uid));
+
+                            await _supabase.From<Message>().Upsert(models);
+                        }
 
                         // 既存のテキストに新しいメッセージを追加する
                         string newText = ( currentText + Environment.NewLine + string.Join(Environment.NewLine, insertText) ).Trim() + Environment.NewLine + Environment.NewLine;
@@ -1383,30 +1680,59 @@ namespace TmCGPTD.Models
                         // 指定されたIDに対してデータを更新する
                         using (var command = new SQLiteCommand("UPDATE chatlog SET date=@date, title=@title, json=@json, text=@text, category=@category, lastprompt=@lastprompt, jsonprev=@jsonprev WHERE id=@id", connection))
                         {
-                            await Task.Run(() => command.Parameters.AddWithValue("@date", resDate));
-                            await Task.Run(() => command.Parameters.AddWithValue("@title", titleText));
-                            await Task.Run(() => command.Parameters.AddWithValue("@json", jsonConversationHistory));
-                            await Task.Run(() => command.Parameters.AddWithValue("@text", newText));
-                            await Task.Run(() => command.Parameters.AddWithValue("@category", categoryText));
-                            await Task.Run(() => command.Parameters.AddWithValue("@lastprompt", promptTextForSave));
-                            await Task.Run(() => command.Parameters.AddWithValue("@jsonprev", jsonLastConversationHistory));
-                            await Task.Run(() => command.Parameters.AddWithValue("@id", lastRowId));
+                            command.Parameters.AddWithValue("@date", resDate);
+                            command.Parameters.AddWithValue("@title", titleText);
+                            command.Parameters.AddWithValue("@json", jsonConversationHistory);
+                            command.Parameters.AddWithValue("@text", newText);
+                            command.Parameters.AddWithValue("@category", categoryText);
+                            command.Parameters.AddWithValue("@lastprompt", promptTextForSave);
+                            command.Parameters.AddWithValue("@jsonprev", jsonLastConversationHistory);
+                            command.Parameters.AddWithValue("@id", lastRowId);
                             await command.ExecuteNonQueryAsync();
                         }
                     }
                     else
                     {
-                        // logテーブルにデータをインサートする
-                        using (var command = new SQLiteCommand("INSERT INTO chatlog(date, title, json, text, category, lastprompt, jsonprev) VALUES (@date, @title, @json, @text, @category, @lastprompt, @jsonprev)", connection))
+                        if (_appSettings.SyncIsOn && _supabase != null && _uid != null)
                         {
-                            await Task.Run(() => command.Parameters.AddWithValue("@date", resDate));
-                            await Task.Run(() => command.Parameters.AddWithValue("@title", titleText));
-                            await Task.Run(() => command.Parameters.AddWithValue("@json", jsonConversationHistory));
-                            await Task.Run(() => command.Parameters.AddWithValue("@text", string.Join(Environment.NewLine, insertText)));
-                            await Task.Run(() => command.Parameters.AddWithValue("@category", categoryText));
-                            await Task.Run(() => command.Parameters.AddWithValue("@lastprompt", promptTextForSave));
-                            await Task.Run(() => command.Parameters.AddWithValue("@jsonprev", jsonLastConversationHistory));
-                            await command.ExecuteNonQueryAsync();
+                            var result = await _supabase.From<ChatRoom>().Insert(new ChatRoom { UserId = _uid, UpdatedOn = resDate, Title = titleText, Category = categoryText, LastPrompt = promptTextForSave, Json = jsonConversationHistory, JsonPrev = jsonLastConversationHistory });
+
+                            int chatRoomId = result.Models[0].Id;
+
+                            var models = new List<Message>();
+
+                            models.AddRange(_syncProcess.DivideMessage(string.Join(Environment.NewLine, insertText), chatRoomId, _uid));
+
+                            await _supabase.From<Message>().Insert(models);
+
+                            // logテーブルにデータをインサートする
+                            using (var command = new SQLiteCommand("INSERT INTO chatlog(id, date, title, json, text, category, lastprompt, jsonprev) VALUES (@id, @date, @title, @json, @text, @category, @lastprompt, @jsonprev)", connection))
+                            {
+                                command.Parameters.AddWithValue("@id", chatRoomId);
+                                command.Parameters.AddWithValue("@date", resDate);
+                                command.Parameters.AddWithValue("@title", titleText);
+                                command.Parameters.AddWithValue("@json", jsonConversationHistory);
+                                command.Parameters.AddWithValue("@text", string.Join(Environment.NewLine, insertText));
+                                command.Parameters.AddWithValue("@category", categoryText);
+                                command.Parameters.AddWithValue("@lastprompt", promptTextForSave);
+                                command.Parameters.AddWithValue("@jsonprev", jsonLastConversationHistory);
+                                await command.ExecuteNonQueryAsync();
+                            }
+                        }
+                        else
+                        { 
+                            // logテーブルにデータをインサートする
+                            using (var command = new SQLiteCommand("INSERT INTO chatlog(date, title, json, text, category, lastprompt, jsonprev) VALUES (@date, @title, @json, @text, @category, @lastprompt, @jsonprev)", connection))
+                            {
+                                command.Parameters.AddWithValue("@date", resDate);
+                                command.Parameters.AddWithValue("@title", titleText);
+                                command.Parameters.AddWithValue("@json", jsonConversationHistory);
+                                command.Parameters.AddWithValue("@text", string.Join(Environment.NewLine, insertText));
+                                command.Parameters.AddWithValue("@category", categoryText);
+                                command.Parameters.AddWithValue("@lastprompt", promptTextForSave);
+                                command.Parameters.AddWithValue("@jsonprev", jsonLastConversationHistory);
+                                await command.ExecuteNonQueryAsync();
+                            }
                         }
 
                         // 更新中チャットのIDを取得
@@ -1421,7 +1747,7 @@ namespace TmCGPTD.Models
                         }
                     }
                     // トランザクションをコミットする
-                    await Task.Run(() => transaction.Commit());
+                    await transaction.CommitAsync();
 
                     // 成功したら各種変数を更新する
                     VMLocator.ChatViewModel.LastPrompt = promptTextForSave;
@@ -1430,14 +1756,16 @@ namespace TmCGPTD.Models
                 catch (Exception)
                 {
                     // エラーが発生した場合、トランザクションをロールバックする
-                    transaction.Rollback();
+                    await transaction.RollbackAsync();
+                    await DoSync();
                     //var dialog = new ContentDialog() { Title = "Error : " + ex.Message, PrimaryButtonText = "OK" };
                     //await VMLocator.MainViewModel.ContentDialogShowAsync(dialog);
                     throw;
                 }
             }
             // インメモリをいったん閉じてまた開く
-            await memoryConnection.CloseAsync();
+            await DoSync();
+            await memoryConnection!.CloseAsync();
             await DbLoadToMemoryAsync();
         }
 
@@ -1471,7 +1799,7 @@ namespace TmCGPTD.Models
                     }
 
                     // インメモリをいったん閉じる
-                    await memoryConnection.CloseAsync();
+                    await memoryConnection!.CloseAsync();
 
                     // すべてのテーブルが存在するため、true を返す
                     return true;

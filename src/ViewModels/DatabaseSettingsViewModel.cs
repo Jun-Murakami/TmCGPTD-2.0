@@ -46,30 +46,31 @@ namespace TmCGPTD.ViewModels
             }
         }
 
-        private bool _syncIsOn;
         public bool SyncIsOn
         {
             get => _appSettings.SyncIsOn;
             set
             {
-                if(SetProperty(ref _syncIsOn, value))
+                if(_appSettings.SyncIsOn != value)
                 {
                     _appSettings.SyncIsOn = value;
-                    if (value)
+                    OnPropertyChanged();
+
+                    if (_appSettings.SyncIsOn)
                     {
-                        ProcessLog = "You must be logged in with Google.";
+                        ProcessLog = "You must be sign in.";
                     }
                     else
                     {
                         _ = _supabaseProcess.SignOutAsync();
-                        ProcessLog = "You have logged out.";
+                        ProcessLog = "You have sign out.";
                     }
                 }
             }
         }
 
-        private string _processLog;
-        public string ProcessLog
+        private string? _processLog;
+        public string? ProcessLog
         {
             get => _processLog;
             set => SetProperty(ref _processLog, value);
@@ -88,7 +89,7 @@ namespace TmCGPTD.ViewModels
 
             try
             {
-                var result = await (Application.Current.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime).MainWindow.StorageProvider.SaveFilePickerAsync(dialog);
+                var result = await (Application.Current!.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)!.MainWindow!.StorageProvider.SaveFilePickerAsync(dialog);
 
                 if (result != null)
                 {
@@ -111,7 +112,7 @@ namespace TmCGPTD.ViewModels
                         File.Delete(DatabasePath);
 
                         DatabasePath = selectedFilePath;
-                        MainWindow mainWindow = (MainWindow)(Application.Current.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime).MainWindow;
+                        MainWindow mainWindow = (MainWindow)(Application.Current.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)!.MainWindow!;
                         mainWindow.SaveWindowSizeAndPosition();
                         ProcessLog = "Database file moved successfully.";
                     }
@@ -133,7 +134,7 @@ namespace TmCGPTD.ViewModels
                     {new("TXT files (*.db)") { Patterns = new[] { "*.db" } },
                     new("All files (*.*)") { Patterns = new[] { "*" } }}
             };
-            var result = await (Application.Current.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime).MainWindow.StorageProvider.OpenFilePickerAsync(dialog);
+            var result = await (Application.Current!.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)!.MainWindow!.StorageProvider.OpenFilePickerAsync(dialog);
 
             if (result.Count > 0)
             {
@@ -167,7 +168,7 @@ namespace TmCGPTD.ViewModels
                     VMLocator.EditorViewModel.SelectedEditorLogIndex = -1;
                     VMLocator.EditorViewModel.SelectedTemplateItemIndex = -1;
 
-                    MainWindow mainWindow = (MainWindow)(Application.Current.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime).MainWindow;
+                    MainWindow mainWindow = (MainWindow)(Application.Current.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)!.MainWindow!;
                     mainWindow.SaveWindowSizeAndPosition();
 
                     ProcessLog = "Database file loaded successfully.";

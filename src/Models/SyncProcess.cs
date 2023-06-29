@@ -18,6 +18,7 @@ using TmCGPTD.ViewModels;
 using TmCGPTD.Views;
 using System.Transactions;
 using System.Security.Cryptography;
+using Avalonia.Threading;
 
 namespace TmCGPTD.Models
 {
@@ -31,12 +32,12 @@ namespace TmCGPTD.Models
 
             try
             {
-                if (VMLocator.MainViewModel._supabase == null)
+                if (SupabaseStates.Instance.Supabase == null)
                 {
                     throw new Exception($"Supabase initialization failed.");
                 }
 
-                if (VMLocator.MainViewModel._supabase.Auth.CurrentUser == null)
+                if (SupabaseStates.Instance.Supabase.Auth.CurrentUser == null)
                 {
                     throw new Exception($"Failed to obtain Supabase user ID.");
                 }
@@ -53,8 +54,8 @@ namespace TmCGPTD.Models
                 return;
             }
 
-            var supabase = VMLocator.MainViewModel._supabase;
-            var uid = VMLocator.MainViewModel._supabase.Auth.CurrentUser.Id;
+            var supabase = SupabaseStates.Instance.Supabase;
+            var uid = SupabaseStates.Instance.Supabase!.Auth.CurrentUser!.Id;
 
             int cloudIsNewer = 0;
             int localIsNewer = 0;
@@ -255,17 +256,21 @@ namespace TmCGPTD.Models
                 }
                 else
                 {
-                    //競合が発生
-                    var cdialog = new ContentDialog
+                    ContentDialog? cdialog = null;
+                    await Dispatcher.UIThread.InvokeAsync(() =>
                     {
-                        Title = "Data conflicts.",
-                        Content = $"Please merge or select preferred data.\n*Note that data may be lost if you choose Cloud or Local.\n\nThis warning appears when data is deleted on the cloud side.\nBefore execution, the database is backed up to the folder.\n\nCloud records: {cloudRecords}, Local records: {localRecords}\nCloud is newer: {cloudIsNewer},  Local is newer: {localIsNewer},  Local unique ID: {localOnly}",
-                        PrimaryButtonText = "Merge",
-                        SecondaryButtonText = "Cloud",
-                        CloseButtonText = "Local"
-                    };
+                        //競合が発生
+                        cdialog = new ContentDialog
+                        {
+                            Title = "Data conflicts.",
+                            Content = $"Please merge or select preferred data.\n*Note that data may be lost if you choose Cloud or Local.\n\nThis warning appears when data is deleted either on the cloud side or on another computer.\nBefore execution, the database is backed up to the folder.\n\nCloud records: {cloudRecords}, Local records: {localRecords}\nCloud is newer: {cloudIsNewer},  Local is newer: {localIsNewer},  Local unique ID: {localOnly}",
+                            PrimaryButtonText = "Merge",
+                            SecondaryButtonText = "Cloud",
+                            CloseButtonText = "Local"
+                        };
+                    });
 
-                    var result = await VMLocator.MainViewModel.ContentDialogShowAsync(cdialog);
+                    var result = await VMLocator.MainViewModel.ContentDialogShowAsync(cdialog!);
                     if (result == ContentDialogResult.Primary) //マージ
                     {
                         VMLocator.MainViewModel.SyncLogText = "Now in sync.";
@@ -290,7 +295,6 @@ namespace TmCGPTD.Models
                         await CopyAllLocalToCloudDbAsync();
                         VMLocator.MainViewModel.SyncLogText = "Database sync completed.";
                     }
-
                 }
             }
             catch (Exception ex)
@@ -305,12 +309,10 @@ namespace TmCGPTD.Models
             }
         }
         // -------------------------------------------------------------------------------------------------------
-        // ローカルデータを更新した時は、このメソッドを直接呼び出してからその後にSyncDbAsync()でデータの整合性をチェックする
         public async Task UpsertToCloudDbAsync()
         {
-            var _dbProcess = DatabaseProcess.Instance;
-            var supabase = VMLocator.MainViewModel._supabase;
-            var uid = VMLocator.MainViewModel._supabase!.Auth.CurrentUser!.Id;
+            var supabase = SupabaseStates.Instance.Supabase;
+            var uid = SupabaseStates.Instance.Supabase!.Auth.CurrentUser!.Id;
 
             using SQLiteConnection connection = new SQLiteConnection($"Data Source={AppSettings.Instance.DbPath}");
             await connection.OpenAsync();
@@ -334,11 +336,11 @@ namespace TmCGPTD.Models
 
                     if (target == null || (reader["date"] != DBNull.Value && target.Date < (DateTime)reader["date"])) // クラウドにデータが無いか、ローカルの日付が新しい場合
                     {
-                        models.Add(new Phrase { UserId = uid, Name = (string)reader["name"], Content = (string)reader["phrase"], Date = (DateTime)reader["date"] });
+                        models.Add(new Phrase {Id = (long)reader["id"], UserId = uid, Name = (string)reader["name"], Content = (string)reader["phrase"], Date = (DateTime)reader["date"] });
                     }
                     else if (reader["date"] == DBNull.Value) // ローカルの日付がNullの場合
                     {
-                        models.Add(new Phrase { UserId = uid, Name = (string)reader["name"], Content = (string)reader["phrase"], Date = DateTime.Now });
+                        models.Add(new Phrase { Id = (long)reader["id"], UserId = uid, Name = (string)reader["name"], Content = (string)reader["phrase"], Date = DateTime.Now });
                     }
                 }
 
@@ -369,11 +371,11 @@ namespace TmCGPTD.Models
 
                     if (target == null || (reader["date"] != DBNull.Value && target.Date < (DateTime)reader["date"])) // クラウドにデータが無いか、ローカルの日付が新しい場合
                     {
-                        models.Add(new EditorLog { UserId = uid, Content = (string)reader["text"], Date = (DateTime)reader["date"] });
+                        models.Add(new EditorLog { Id = (long)reader["id"], UserId = uid, Content = (string)reader["text"], Date = (DateTime)reader["date"] });
                     }
                     else if (reader["date"] == DBNull.Value) // ローカルの日付がNullの場合
                     {
-                        models.Add(new EditorLog { UserId = uid, Content = (string)reader["text"], Date = DateTime.Now });
+                        models.Add(new EditorLog { Id = (long)reader["id"], UserId = uid, Content = (string)reader["text"], Date = DateTime.Now });
                     }
                 }
 
@@ -404,11 +406,11 @@ namespace TmCGPTD.Models
 
                     if (target == null || (reader["date"] != DBNull.Value && target.Date < (DateTime)reader["date"])) // クラウドにデータが無いか、ローカルの日付が新しい場合
                     {
-                        models.Add(new Template { UserId = uid, Title = (string)reader["title"], Content = (string)reader["text"], Date = (DateTime)reader["date"] });
+                        models.Add(new Template { Id = (long)reader["id"], UserId = uid, Title = (string)reader["title"], Content = (string)reader["text"], Date = (DateTime)reader["date"] });
                     }
                     else if (reader["date"] == DBNull.Value) // ローカルの日付がNullの場合
                     {
-                        models.Add(new Template { UserId = uid, Title = (string)reader["title"], Content = (string)reader["text"], Date = DateTime.Now });
+                        models.Add(new Template { Id = (long)reader["id"], UserId = uid, Title = (string)reader["title"], Content = (string)reader["text"], Date = DateTime.Now });
                     }
                 }
 
@@ -440,7 +442,7 @@ namespace TmCGPTD.Models
                     var models1 = new List<ChatRoom>();
                     if (target == null || (reader["date"] != DBNull.Value && target.UpdatedOn < (DateTime)reader["date"])) // クラウドにデータが無いか、ローカルの日付が新しい場合
                     {
-                        models1.Add(new ChatRoom { UserId = uid, Title = (string)reader["title"], Category = (string)reader["category"], LastPrompt = (string)reader["lastprompt"], Json = (string)reader["json"], JsonPrev = (string)reader["jsonprev"], UpdatedOn = (DateTime)reader["date"] });
+                        models1.Add(new ChatRoom { Id = (long)reader["id"], UserId = uid, Title = (string)reader["title"], Category = (string)reader["category"], LastPrompt = (string)reader["lastprompt"], Json = (string)reader["json"], JsonPrev = (string)reader["jsonprev"], UpdatedOn = (DateTime)reader["date"] });
 
                         var returnValue = await supabase.From<ChatRoom>().Upsert(models1, new QueryOptions { Returning = ReturnType.Representation });
 
@@ -450,7 +452,7 @@ namespace TmCGPTD.Models
                     }
                     else if (reader["date"] == DBNull.Value) // ローカルの日付がNullの場合
                     {
-                        models1.Add(new ChatRoom { UserId = uid, Title = (string)reader["title"], Category = (string)reader["category"], LastPrompt = (string)reader["lastprompt"], Json = (string)reader["json"], JsonPrev = (string)reader["jsonprev"], UpdatedOn = DateTime.Now });
+                        models1.Add(new ChatRoom { Id = (long)reader["id"], UserId = uid, Title = (string)reader["title"], Category = (string)reader["category"], LastPrompt = (string)reader["lastprompt"], Json = (string)reader["json"], JsonPrev = (string)reader["jsonprev"], UpdatedOn = DateTime.Now });
 
                         var returnValue = await supabase.From<ChatRoom>().Upsert(models1, new QueryOptions { Returning = ReturnType.Representation });
 
@@ -473,7 +475,7 @@ namespace TmCGPTD.Models
         public async Task UpsertToLocalDbAsync()
         {
             var _dbProcess = DatabaseProcess.Instance;
-            var supabase = VMLocator.MainViewModel._supabase;
+            var supabase = SupabaseStates.Instance.Supabase;
 
             using SQLiteConnection connection = new SQLiteConnection($"Data Source={AppSettings.Instance.DbPath}");
             await connection.OpenAsync();
@@ -509,7 +511,7 @@ namespace TmCGPTD.Models
                             updateCommand.Parameters.AddWithValue("@Id", cloudData.Id);
                             updateCommand.Parameters.AddWithValue("@Name", cloudData.Name);
                             updateCommand.Parameters.AddWithValue("@Content", cloudData.Content);
-                            updateCommand.Parameters.AddWithValue("@Date", cloudData.Date.ToString("yyyy-MM-dd HH:mm:ss.fff"));
+                            updateCommand.Parameters.AddWithValue("@Date", cloudData.Date);
 
                             await updateCommand.ExecuteNonQueryAsync();
                         }
@@ -556,7 +558,7 @@ namespace TmCGPTD.Models
                             command.Parameters.AddWithValue("@Id", cloudData.Id);
                             command.Parameters.AddWithValue("@Name", cloudData.Title);
                             command.Parameters.AddWithValue("@Content", cloudData.Content);
-                            command.Parameters.AddWithValue("@Date", cloudData.Date.ToString("yyyy-MM-dd HH:mm:ss.fff"));
+                            command.Parameters.AddWithValue("@Date", cloudData.Date);
 
                             await command.ExecuteNonQueryAsync();
                         }
@@ -601,7 +603,7 @@ namespace TmCGPTD.Models
                                               ON CONFLICT(id) DO UPDATE SET date = excluded.date, text = excluded.text;";
                             var command = new SQLiteCommand(updateSql, connection);
                             command.Parameters.AddWithValue("@Id", cloudData.Id);
-                            command.Parameters.AddWithValue("@Date", cloudData.Date.ToString("yyyy-MM-dd HH:mm:ss.fff"));
+                            command.Parameters.AddWithValue("@Date", cloudData.Date);
                             command.Parameters.AddWithValue("@Content", cloudData.Content);
 
                             await command.ExecuteNonQueryAsync();
@@ -651,7 +653,7 @@ namespace TmCGPTD.Models
                                 ON CONFLICT(id) DO UPDATE SET date = excluded.date, title = excluded.title, json = excluded.json, text = excluded.text, category = excluded.category, lastprompt = excluded.lastprompt, jsonprev = excluded.jsonprev;";
                             var command = new SQLiteCommand(updateSql, connection);
                             command.Parameters.AddWithValue("@Id", cloudData.Id);
-                            command.Parameters.AddWithValue("@UpdatedOn", cloudData.UpdatedOn.ToString("yyyy-MM-dd HH:mm:ss.fff"));
+                            command.Parameters.AddWithValue("@UpdatedOn", cloudData.UpdatedOn);
                             command.Parameters.AddWithValue("@Title", cloudData.Title);
                             command.Parameters.AddWithValue("@Json", cloudData.Json);
                             command.Parameters.AddWithValue("@Message", combinedMessage);
@@ -679,7 +681,9 @@ namespace TmCGPTD.Models
                 VMLocator.DataGridViewModel.SelectedItemIndex = -1;
                 await _dbProcess.GetEditorLogDatabaseAsync();
                 await _dbProcess.GetTemplateItemsAsync();
+                string selectedPhraseItem = VMLocator.MainViewModel.SelectedPhraseItem!;
                 await VMLocator.MainViewModel.LoadPhraseItemsAsync();
+                VMLocator.MainViewModel.SelectedPhraseItem = selectedPhraseItem;
                 VMLocator.EditorViewModel.SelectedEditorLogIndex = -1;
                 VMLocator.EditorViewModel.SelectedTemplateItemIndex = -1;
             }
@@ -693,8 +697,8 @@ namespace TmCGPTD.Models
             using SQLiteConnection connection = new SQLiteConnection($"Data Source={AppSettings.Instance.DbPath}");
             await connection.OpenAsync();
 
-            var supabase = VMLocator.MainViewModel._supabase;
-            var uid = VMLocator.MainViewModel._supabase!.Auth.CurrentUser!.Id;
+            var supabase = SupabaseStates.Instance.Supabase;
+            var uid = SupabaseStates.Instance.Supabase!.Auth.CurrentUser!.Id;
 
             var cdialog = new ContentDialog() { Title = $"Synchronizing..." };
             cdialog.Content = new ProgressView()
@@ -898,7 +902,7 @@ namespace TmCGPTD.Models
                         command.Parameters.AddWithValue("@Id", phrase.Id);
                         command.Parameters.AddWithValue("@Name", phrase.Name);
                         command.Parameters.AddWithValue("@Content", phrase.Content);
-                        command.Parameters.AddWithValue("@Date", phrase.Date.ToString("yyyy-MM-dd HH:mm:ss.fff"));
+                        command.Parameters.AddWithValue("@Date", phrase.Date);
 
                         await command.ExecuteNonQueryAsync();
                     }
@@ -923,7 +927,7 @@ namespace TmCGPTD.Models
                     {
                         var command = new SQLiteCommand("INSERT INTO editorlog (id, date, text) VALUES (@Id, @Date, @Content )", connection2);
                         command.Parameters.AddWithValue("@Id", editorLog.Id);
-                        command.Parameters.AddWithValue("@Date", editorLog.Date.ToString("yyyy-MM-dd HH:mm:ss.fff"));
+                        command.Parameters.AddWithValue("@Date", editorLog.Date);
                         command.Parameters.AddWithValue("@Content", editorLog.Content);
 
                         await command.ExecuteNonQueryAsync();
@@ -951,7 +955,7 @@ namespace TmCGPTD.Models
                         command.Parameters.AddWithValue("@Id", template.Id);
                         command.Parameters.AddWithValue("@Name", template.Title);
                         command.Parameters.AddWithValue("@Content", template.Content);
-                        command.Parameters.AddWithValue("@Date", template.Date.ToString("yyyy-MM-dd HH:mm:ss.fff"));
+                        command.Parameters.AddWithValue("@Date", template.Date);
 
                         await command.ExecuteNonQueryAsync();
                     }
@@ -982,7 +986,7 @@ namespace TmCGPTD.Models
 
                         var command = new SQLiteCommand("INSERT INTO chatlog (id, date, title, json, text, category, lastprompt, jsonprev) VALUES (@Id, @UpdatedOn, @Title, @Json, @Message, @Category, @LastPrompt, @JsonPrev)", connection2);
                         command.Parameters.AddWithValue("@Id", chatLog.Id);
-                        command.Parameters.AddWithValue("@UpdatedOn", chatLog.UpdatedOn.ToString("yyyy-MM-dd HH:mm:ss.fff"));
+                        command.Parameters.AddWithValue("@UpdatedOn", chatLog.UpdatedOn);
                         command.Parameters.AddWithValue("@Title", chatLog.Title);
                         command.Parameters.AddWithValue("@Json", chatLog.Json);
                         command.Parameters.AddWithValue("@Message", combinedMessage);
@@ -1018,7 +1022,9 @@ namespace TmCGPTD.Models
                 VMLocator.DataGridViewModel.SelectedItemIndex = -1;
                 await _dbProcess.GetEditorLogDatabaseAsync();
                 await _dbProcess.GetTemplateItemsAsync();
+                string selectedPhraseItem = VMLocator.MainViewModel.SelectedPhraseItem!;
                 await VMLocator.MainViewModel.LoadPhraseItemsAsync();
+                VMLocator.MainViewModel.SelectedPhraseItem = selectedPhraseItem;
                 VMLocator.EditorViewModel.SelectedEditorLogIndex = -1;
                 VMLocator.EditorViewModel.SelectedTemplateItemIndex = -1;
                 VMLocator.ProgressViewModel.Hide();
@@ -1051,7 +1057,7 @@ namespace TmCGPTD.Models
         }
 
         // -------------------------------------------------------------------------------------------------------
-        public List<Message> DivideMessage(string message, int roomId, string uid)
+        public List<Message> DivideMessage(string message, long roomId, string uid)
         {
             var models = new List<Message>();
 
@@ -1164,7 +1170,7 @@ namespace TmCGPTD.Models
         {
             try
             {
-                var supabase = VMLocator.MainViewModel._supabase;
+                var supabase = SupabaseStates.Instance.Supabase;
 
                 await supabase!
                         .From<ChatRoom>()

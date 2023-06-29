@@ -28,9 +28,6 @@ namespace TmCGPTD.ViewModels
     {
         SupabaseProcess _supabaseProcess = new SupabaseProcess();
         DatabaseProcess _dbProcess = new DatabaseProcess();
-        public Supabase.Client? _supabase = null;
-        public ProviderAuthState? _authState = null;
-        public Supabase.Gotrue.Session? _session = null;
 
         public MainViewModel()
         {
@@ -55,7 +52,7 @@ namespace TmCGPTD.ViewModels
             DeletePhrasesCommand = new AsyncRelayCommand(DeletePhrasesAsync);
             ImportPhrasesCommand = new AsyncRelayCommand(ImportPhrasesAsync);
             ExportPhrasesCommand = new AsyncRelayCommand(ExportPhrasesAsync);
-            ClearPhrasesCommand = new AsyncRelayCommand(ClearPhrasesAsync);
+            ClearPhrasesCommand = new RelayCommand(ClearPhrases);
 
             CopyToClipboardCommand = new AsyncRelayCommand(async () => await CopyToClipboard());
 
@@ -65,7 +62,6 @@ namespace TmCGPTD.ViewModels
             SystemMessageCommand = new RelayCommand(InsertSystemMessage);
             HotKeyDisplayCommand = new AsyncRelayCommand(HotKeyDisplayAsync);
             OpenApiSettingsCommand = new RelayCommand(OpenApiSettings);
-            SyncDatabaseSettingsCommand = new AsyncRelayCommand(SyncDatabaseSettingsAsync);
             ShowDatabaseSettingsCommand = new AsyncRelayCommand(ShowDatabaseSettingsAsync);
             PhrasePresetsItems = new ObservableCollection<string>();
         }
@@ -75,7 +71,7 @@ namespace TmCGPTD.ViewModels
         public IAsyncRelayCommand DeletePhrasesCommand { get; }
         public IAsyncRelayCommand ImportPhrasesCommand { get; }
         public IAsyncRelayCommand ExportPhrasesCommand { get; }
-        public IAsyncRelayCommand ClearPhrasesCommand { get; }
+        public ICommand ClearPhrasesCommand { get; }
         public IAsyncRelayCommand ImportChatLogCommand { get; }
         public IAsyncRelayCommand ExportChatLogCommand { get; }
         public IAsyncRelayCommand DeleteChatLogCommand { get; }
@@ -93,13 +89,12 @@ namespace TmCGPTD.ViewModels
         public ICommand EditorOneCommand { get; }
         public ICommand SystemMessageCommand { get; }
         public ICommand OpenApiSettingsCommand { get; }
-        public IAsyncRelayCommand SyncDatabaseSettingsCommand { get; }
         public IAsyncRelayCommand ShowDatabaseSettingsCommand { get; }
         public IAsyncRelayCommand HotKeyDisplayCommand { get; }
 
 
-        private string _searchLogKeyword;
-        public string SearchLogKeyword
+        private string? _searchLogKeyword;
+        public string? SearchLogKeyword
         {
             get => _searchLogKeyword;
             set
@@ -116,8 +111,8 @@ namespace TmCGPTD.ViewModels
             }
         }
 
-        private string _searchKeyword;
-        public string SearchKeyword
+        private string? _searchKeyword;
+        public string? SearchKeyword
         {
             get => _searchKeyword;
             set => SetProperty(ref _searchKeyword, value);
@@ -144,15 +139,15 @@ namespace TmCGPTD.ViewModels
             set => SetProperty(ref _logPainButtonIsVisible, value);
         }
 
-        private UserControl _selectedLeftView;
-        public UserControl SelectedLeftView
+        private UserControl? _selectedLeftView;
+        public UserControl? SelectedLeftView
         {
             get => _selectedLeftView;
             set => SetProperty(ref _selectedLeftView, value);
         }
 
-        private string _selectedLeftPane;
-        public string SelectedLeftPane
+        private string? _selectedLeftPane;
+        public string? SelectedLeftPane
         {
             get => _selectedLeftPane;
             set => SetProperty(ref _selectedLeftPane, value);
@@ -166,15 +161,15 @@ namespace TmCGPTD.ViewModels
         };
 
 
-        private UserControl _selectedRightView;
-        public UserControl SelectedRightView
+        private UserControl? _selectedRightView;
+        public UserControl? SelectedRightView
         {
             get => _selectedRightView;
             set => SetProperty(ref _selectedRightView, value);
         }
 
-        private string _selectedRightPane;
-        public string SelectedRightPane
+        private string? _selectedRightPane;
+        public string? SelectedRightPane
         {
             get => _selectedRightPane;
             set => SetProperty(ref _selectedRightPane, value);
@@ -191,22 +186,22 @@ namespace TmCGPTD.ViewModels
             "Chat List"
         };
 
-        private string _selectedLogPain;
-        public string SelectedLogPain
+        private string? _selectedLogPain;
+        public string? SelectedLogPain
         {
             get => _selectedLogPain;
             set => SetProperty(ref _selectedLogPain, value);
         }
 
-        private ObservableCollection<string> _phrasePresetsItems;
-        public ObservableCollection<string> PhrasePresetsItems
+        private ObservableCollection<string>? _phrasePresetsItems;
+        public ObservableCollection<string>? PhrasePresetsItems
         {
             get => _phrasePresetsItems;
             set => SetProperty(ref _phrasePresetsItems, value);
         }
 
-        private string _selectedPhraseItem;
-        public string SelectedPhraseItem
+        private string? _selectedPhraseItem;
+        public string? SelectedPhraseItem
         {
             get => _selectedPhraseItem;
             set
@@ -232,15 +227,15 @@ namespace TmCGPTD.ViewModels
             set => SetProperty(ref _isCopyButtonClicked, value);
         }
 
-        private string _postButtonText;
-        public string PostButtonText
+        private string? _postButtonText;
+        public string? PostButtonText
         {
             get => _postButtonText;
             set => SetProperty(ref _postButtonText, value);
         }
 
-        private string _inputTokens;
-        public string InputTokens
+        private string? _inputTokens;
+        public string? InputTokens
         {
             get => _inputTokens;
             set => SetProperty(ref _inputTokens, value);
@@ -253,34 +248,39 @@ namespace TmCGPTD.ViewModels
             set => SetProperty(ref _onLogin, value);
         }
 
-        private string _authCode;
-        public string AuthCode
+        private string? _authCode;
+        public string? AuthCode
         {
             get => _authCode;
             set
             {
                 if(SetProperty(ref _authCode, value))
                 {
-                    _ = _supabaseProcess.GetSessionAsync();
+                    GetSessionAdaptarAsync();
                 }
             }
         }
 
-        private Uri _loginUri;
-        public Uri LoginUri
+        private async void GetSessionAdaptarAsync()
+        {
+            await _supabaseProcess.GetSessionAsync();
+        }
+
+        private Uri? _loginUri;
+        public Uri? LoginUri
         {
             get => _loginUri;
             set => SetProperty(ref _loginUri, value);
         }
 
-        private string _syncLogText;
-        public string SyncLogText
+        private string? _syncLogText;
+        public string? SyncLogText
         {
             get => _syncLogText;
             set => SetProperty(ref _syncLogText, value);
         }
 
-
+        // ----------------------------------------------------------------------------------------------------------------------------
         // CancellationTokenSourceを作成
         private CancellationTokenSource cts = new CancellationTokenSource();
 
@@ -354,6 +354,8 @@ namespace TmCGPTD.ViewModels
             cts = new CancellationTokenSource(); // CancellationTokenSourceを作り直す
         }
 
+        // ----------------------------------------------------------------------------------------------------------------------------
+
         private async Task ImportChatLogAsync()
         {
             var dialog = new FilePickerOpenOptions
@@ -384,6 +386,7 @@ namespace TmCGPTD.ViewModels
                 VMLocator.DataGridViewModel.ChatList = await _dbProcess.SearchChatDatabaseAsync();
             }
         }
+        // ----------------------------------------------------------------------------------------------------------------------------
 
         private async Task ExportChatLogAsync()
         {
@@ -420,6 +423,7 @@ namespace TmCGPTD.ViewModels
                 }
             }
         }
+        // ----------------------------------------------------------------------------------------------------------------------------
 
         private async Task DeleteChatLogAsync()
         {
@@ -453,17 +457,19 @@ namespace TmCGPTD.ViewModels
                 await ContentDialogShowAsync(dialog);
             }
         }
+        // ----------------------------------------------------------------------------------------------------------------------------
 
         private async Task LoadChatListAsync(string keyword)
         {
             VMLocator.DataGridViewModel.ChatList = await _dbProcess.SearchChatDatabaseAsync(keyword);
         }
+        // ----------------------------------------------------------------------------------------------------------------------------
 
         private async void SelectedPhraseItemChangedAsync()
         {
             try
             {
-                var loadedPhrases = await _dbProcess.GetPhrasePresetsAsync(SelectedPhraseItem);
+                var loadedPhrases = await _dbProcess.GetPhrasePresetsAsync(SelectedPhraseItem!);
                 VMLocator.PhrasePresetsViewModel.Phrases.Clear();
                 foreach (var phrase in loadedPhrases)
                 {
@@ -474,10 +480,11 @@ namespace TmCGPTD.ViewModels
             {
                 var dialog = new ContentDialog(){ Title = $"Error: {ex.Message}", PrimaryButtonText = "OK" };
                 await ContentDialogShowAsync(dialog);
-                await ClearPhrasesAsync();
+                ClearPhrases();
             }
-            AppSettings.Instance.PhrasePreset = SelectedPhraseItem;
+            AppSettings.Instance.PhrasePreset = SelectedPhraseItem!;
         }
+        // ----------------------------------------------------------------------------------------------------------------------------
 
         private async Task SavePhrasesAsync()
         {
@@ -534,6 +541,7 @@ namespace TmCGPTD.ViewModels
                 await ContentDialogShowAsync(dialog);
             }
         }
+        // ----------------------------------------------------------------------------------------------------------------------------
 
         private async Task RenamePhrasesAsync()
         {
@@ -575,6 +583,7 @@ namespace TmCGPTD.ViewModels
             await LoadPhraseItemsAsync();
             SelectedPhraseItem = viewModel.UserInput;
         }
+        // ----------------------------------------------------------------------------------------------------------------------------
 
         private async Task DeletePhrasesAsync()
         {
@@ -608,6 +617,7 @@ namespace TmCGPTD.ViewModels
             await LoadPhraseItemsAsync();
             SelectedPhraseItem = "";
         }
+        // ----------------------------------------------------------------------------------------------------------------------------
 
         private async Task ImportPhrasesAsync()
         {
@@ -619,7 +629,7 @@ namespace TmCGPTD.ViewModels
                     {new("TXT files (*.txt)") { Patterns = new[] { "*.txt" } },
                     new("All files (*.*)") { Patterns = new[] { "*" } }}
             };
-            var result = await (Application.Current.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime).MainWindow.StorageProvider.OpenFilePickerAsync(dialog);
+            var result = await (Application.Current!.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)!.MainWindow!.StorageProvider.OpenFilePickerAsync(dialog);
 
             if (result.Count > 0)
             {
@@ -644,6 +654,7 @@ namespace TmCGPTD.ViewModels
                 }
             }
         }
+        // ----------------------------------------------------------------------------------------------------------------------------
 
         private async Task ExportPhrasesAsync()
         {
@@ -660,7 +671,7 @@ namespace TmCGPTD.ViewModels
                     new("All files (*.*)") { Patterns = new[] { "*" } }}
             };
 
-            var result = await (Application.Current.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime).MainWindow.StorageProvider.SaveFilePickerAsync(dialog);
+            var result = await (Application.Current!.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)!.MainWindow!.StorageProvider.SaveFilePickerAsync(dialog);
 
             if (result != null)
             {
@@ -686,23 +697,26 @@ namespace TmCGPTD.ViewModels
                 }
             }
         }
+        // ----------------------------------------------------------------------------------------------------------------------------
 
-        private async Task ClearPhrasesAsync()
+        private void ClearPhrases()
         {
             VMLocator.PhrasePresetsViewModel.Phrases = new ObservableCollection<string>(Enumerable.Repeat("", 20));
             SelectedPhraseItem = "";
         }
+        // ----------------------------------------------------------------------------------------------------------------------------
 
         public async Task LoadPhraseItemsAsync()
         {
             var phrases = await _dbProcess.GetPhrasesAsync();
-            PhrasePresetsItems.Clear();
+            PhrasePresetsItems!.Clear();
 
             foreach (var phrase in phrases)
             {
                 PhrasePresetsItems.Add(phrase);
             }
         }
+        // ----------------------------------------------------------------------------------------------------------------------------
 
         private void ExecuteClear(int editorNumber)
         {
@@ -737,6 +751,7 @@ namespace TmCGPTD.ViewModels
             VMLocator.EditorViewModel.SelectedEditorLogIndex = -1;
             VMLocator.EditorViewModel.SelectedTemplateItemIndex = -1;
         }
+        // ----------------------------------------------------------------------------------------------------------------------------
 
         private async Task CopyToClipboard()
         {
@@ -758,7 +773,7 @@ namespace TmCGPTD.ViewModels
             await Task.Delay(500);
             IsCopyButtonClicked = false;
         }
-
+        // ----------------------------------------------------------------------------------------------------------------------------
 
         private void SetEditorOne()
         {
@@ -782,12 +797,14 @@ namespace TmCGPTD.ViewModels
             }
             VMLocator.EditorViewModel.SeparatorResetFive();
         }
+        // ----------------------------------------------------------------------------------------------------------------------------
 
         private void InsertSystemMessage()
         {
-            Application.Current!.TryFindResource("My.Strings.SystemMessage", out object resource1);
+            Application.Current!.TryFindResource("My.Strings.SystemMessage", out object? resource1);
             VMLocator.EditorViewModel.Editor1Text = $"#System{Environment.NewLine}{Environment.NewLine}{resource1}";
         }
+        // ----------------------------------------------------------------------------------------------------------------------------
 
         public void OpenApiSettings()
         {
@@ -796,25 +813,11 @@ namespace TmCGPTD.ViewModels
             VMLocator.WebChatBardViewModel.WebChatBardViewIsVisible = false;
             VMLocator.MainWindowViewModel.ApiSettingIsOpened = true;
         }
-
-        public async Task SyncDatabaseSettingsAsync()
-        {
-            try
-            {
-                await _supabaseProcess.GetAuthAsync();
-                LoginUri = _authState.Uri;
-                OnLogin = true;
-            }
-            catch (Exception ex)
-            {
-                var cdialog = new ContentDialog() { Title = $"Error: {ex.Message}", PrimaryButtonText = "OK" };
-                await ContentDialogShowAsync(cdialog);
-            }
-        }
+        // ----------------------------------------------------------------------------------------------------------------------------
 
         private async Task ShowDatabaseSettingsAsync()
         {
-            Application.Current!.TryFindResource("My.Strings.DatabaseInfo", out object resource1);
+            Application.Current!.TryFindResource("My.Strings.DatabaseInfo", out object? resource1);
             var dialog = new ContentDialog()
             {
                 Title = resource1,
@@ -825,13 +828,14 @@ namespace TmCGPTD.ViewModels
             dialog.Content = new DatabaseSettingsView();
             await ContentDialogShowAsync(dialog);
 
-            if(VMLocator.DatabaseSettingsViewModel.SyncIsOn && _supabase!.Auth.CurrentSession == null)
+            if(AppSettings.Instance.SyncIsOn && SupabaseStates.Instance.Supabase!.Auth.CurrentSession == null)
             {
                 await _supabaseProcess.GetAuthAsync();
-                LoginUri = _authState!.Uri;
+                LoginUri = SupabaseStates.Instance.AuthState!.Uri;
                 OnLogin = true;
             }
         }
+        // ----------------------------------------------------------------------------------------------------------------------------
 
         private async Task HotKeyDisplayAsync()
         {
@@ -844,6 +848,7 @@ namespace TmCGPTD.ViewModels
             dialog.Content = new HotKeyDisplayView();
             await ContentDialogShowAsync(dialog);
         }
+        // ----------------------------------------------------------------------------------------------------------------------------
 
         public async Task<ContentDialogResult> ContentDialogShowAsync(ContentDialog dialog)
         {

@@ -153,7 +153,7 @@
 							BorderThickness="0"
 							Width="28"
 							Height="28"
-							Margin="0,0,210,0"
+							Margin="0,0,180,0"
 							Command="{Binding EditorOneCommand}">
 						<Image Source="/Assets/iconOne.png"
 								VerticalAlignment="Center" />
@@ -164,7 +164,7 @@
 						BorderThickness="0"
 						Width="28"
 						Height="28"
-						Margin="0,0,180,0"
+						Margin="0,0,150,0"
 						Command="{Binding EditorThreeCommand}">
 						<Image Source="/Assets/iconThree.png"
 								VerticalAlignment="Center" />
@@ -175,7 +175,7 @@
 							BorderThickness="0"
 							Width="28"
 							Height="28"
-							Margin="0,0,150,0"
+							Margin="0,0,120,0"
 							Command="{Binding EditorFiveCommand}">
 						<Image Source="/Assets/iconSeparator.png"
 								VerticalAlignment="Center" />
@@ -186,7 +186,7 @@
 							BorderThickness="0"
 							Width="28"
 							Height="28"
-							Margin="0,0,120,0"
+							Margin="0,0,90,0"
 							Command="{Binding SystemMessageCommand}">
 						<Image Source="/Assets/iconSystem.png"
 								VerticalAlignment="Center" />
@@ -197,20 +197,9 @@
 							BorderThickness="0"
 							Width="28"
 							Height="28"
-							Margin="0,0,90,0"
+							Margin="0,0,60,0"
 							Command="{Binding OpenApiSettingsCommand}">
 						<Image Source="/Assets/iconSetting.png"
-								VerticalAlignment="Center" />
-					</Button>
-					<Button ToolTip.Tip="Sync settings"
-							HorizontalAlignment="Right"
-							VerticalAlignment="Center"
-							BorderThickness="0"
-							Width="28"
-							Height="28"
-							Margin="0,0,60,0"
-							Command="{Binding SyncDatabaseSettingsCommand}">
-						<Image Source="/Assets/iconSync.png"
 								VerticalAlignment="Center" />
 					</Button>
 					<Button ToolTip.Tip="Database settings"

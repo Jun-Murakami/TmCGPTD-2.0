@@ -15,7 +15,7 @@ namespace TmCGPTD.Models
         public class ChatRoom : BaseModel
         {
             [PrimaryKey("id")]
-            public int Id { get; set; }
+            public long Id { get; set; }
 
             [Column("user_id")]
             public string? UserId { get; set; }
@@ -55,13 +55,13 @@ namespace TmCGPTD.Models
         public class Message : BaseModel
         {
             [PrimaryKey("id")]
-            public int Id { get; set; }
+            public long Id { get; set; }
 
             [Column("user_id")]
             public string? UserId { get; set; }
 
             [Column("room_id")]
-            public int? RoomId { get; set; }
+            public long? RoomId { get; set; }
 
             [Column("created_on")]
             public DateTime CreatedOn { get; set; }
@@ -92,7 +92,7 @@ namespace TmCGPTD.Models
         public class EditorLog : BaseModel
         {
             [PrimaryKey("id")]
-            public int Id { get; set; }
+            public long Id { get; set; }
 
             [Column("user_id")]
             public string? UserId { get; set; }
@@ -120,7 +120,7 @@ namespace TmCGPTD.Models
         public class Phrase : BaseModel
         {
             [PrimaryKey("id")]
-            public int Id { get; set; }
+            public long Id { get; set; }
 
             [Column("user_id")]
             public string? UserId { get; set; }
@@ -151,7 +151,7 @@ namespace TmCGPTD.Models
         public class Template : BaseModel
         {
             [PrimaryKey("id")]
-            public int Id { get; set; }
+            public long Id { get; set; }
 
             [Column("user_id")]
             public string? UserId { get; set; }

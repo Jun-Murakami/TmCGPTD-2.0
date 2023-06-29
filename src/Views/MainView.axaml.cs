@@ -42,8 +42,8 @@ namespace TmCGPTD.Views
             var lPane = this.FindControl<ListBox>("LeftPaneList");
             var rPane = this.FindControl<ListBox>("RightPaneList");
 
-            lPane.SelectionChanged += OnLeftListBoxSelectionChanged!;
-            rPane.SelectionChanged += OnRightListBoxSelectionChanged!;
+            lPane!.SelectionChanged += OnLeftListBoxSelectionChanged!;
+            rPane!.SelectionChanged += OnRightListBoxSelectionChanged!;
             lPane.SelectedIndex = 0;
             rPane.SelectedIndex = 0;
 
@@ -102,20 +102,24 @@ namespace TmCGPTD.Views
                     await Dispatcher.UIThread.InvokeAsync(() =>
                     {
                         _leftPane.Navigate(typeof(ChatView), null, new SuppressNavigationTransitionInfo());
-                        var cdialog = new ContentDialog() { Title = $"Login success.", PrimaryButtonText = "OK" };
-                        MainViewModel.ContentDialogShowAsync(cdialog);
                     });
 
                 }
             }
             else if (e.PropertyName == nameof(MainViewModel.SyncLogText))
             {
-                _syncLogBlock.Classes.Add("FadeOut");
+                await Dispatcher.UIThread.InvokeAsync(() =>
+                {
+                    _syncLogBlock.Classes.Add("FadeOut");
+                });
 
                 await Task.Delay(10000);
 
-                VMLocator.MainViewModel.SyncLogText = "";
-                _syncLogBlock.Classes.Remove("FadeOut");
+                await Dispatcher.UIThread.InvokeAsync(() =>
+                {
+                    VMLocator.MainViewModel.SyncLogText = "";
+                    _syncLogBlock.Classes.Remove("FadeOut");
+                });
             }
 
         }

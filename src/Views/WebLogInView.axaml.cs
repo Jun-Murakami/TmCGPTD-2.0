@@ -45,7 +45,7 @@ namespace TmCGPTD.Views
             browser.AttachedToVisualTree += Browser_AttachedToVisualTree;
             browser.DetachedFromVisualTree += Browser_DetachedFromVisualTree;
             browser.ContextMenuHandler = new CustomContextMenuHandler();
-            browserWrapper.Child = browser;
+            browserWrapper!.Child = browser;
 
 
             browser.AddressChanged += Browser_AddressChanged;
@@ -58,11 +58,11 @@ namespace TmCGPTD.Views
         }
 
         HtmlProcess _htmlProcess = new HtmlProcess();
-        private async void Browser_AttachedToVisualTree(object sender, VisualTreeAttachmentEventArgs e)
+        private async void Browser_AttachedToVisualTree(object? sender, VisualTreeAttachmentEventArgs e)
         {
             try
             {
-                browser.Address = VMLocator.MainViewModel.LoginUri.ToString();
+                browser.Address = VMLocator.MainViewModel.LoginUri!.ToString();
             }
             catch (Exception ex)
             {
@@ -76,7 +76,7 @@ namespace TmCGPTD.Views
             }
         }
 
-        private async void Browser_DetachedFromVisualTree(object sender, VisualTreeAttachmentEventArgs e)
+        private async void Browser_DetachedFromVisualTree(object? sender, VisualTreeAttachmentEventArgs e)
         {
             try
             {
@@ -94,7 +94,7 @@ namespace TmCGPTD.Views
             }
         }
 
-        private async void Browser_AddressChanged(object sender, string address)
+        private async void Browser_AddressChanged(object? sender, string address)
         {
             try
             {
@@ -129,11 +129,5 @@ namespace TmCGPTD.Views
         {
             AvaloniaXamlLoader.Load(this);
         }
-    }
-
-    internal class ClientOptions<T> : ClientOptions
-    {
-        public string? Url { get; set; }
-        public Dictionary<string, string> Headers { get; set; }
     }
 }

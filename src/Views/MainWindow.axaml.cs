@@ -52,7 +52,7 @@ namespace TmCGPTD.Views
             }
         }
 
-        private void MainWindow_KeyDown(object sender, KeyEventArgs e)
+        private void MainWindow_KeyDown(object? sender, KeyEventArgs e)
         {
             if (e.Key == Key.LeftAlt || e.Key == Key.RightAlt)
             {
@@ -64,7 +64,7 @@ namespace TmCGPTD.Views
             }
         }
 
-        private void MainWindow_KeyUp(object sender, KeyEventArgs e)
+        private void MainWindow_KeyUp(object? sender, KeyEventArgs e)
         {
             if (e.Key == Key.LeftAlt || e.Key == Key.RightAlt)
             {
@@ -78,7 +78,7 @@ namespace TmCGPTD.Views
 
         private double _previousWidth;
 
-        private async void MainWindow_Loaded(object sender, RoutedEventArgs e)
+        private async void MainWindow_Loaded(object? sender, RoutedEventArgs e)
         {
             try
             { 
@@ -195,17 +195,17 @@ namespace TmCGPTD.Views
 
                 
 
-                if (VMLocator.MainViewModel._supabase != null && VMLocator.DatabaseSettingsViewModel.SyncIsOn)
+                if (SupabaseStates.Instance.Supabase != null && settings.SyncIsOn)
                 {
-                    VMLocator.MainViewModel._supabase.Auth.LoadSession();
-                    await VMLocator.MainViewModel._supabase.Auth.RetrieveSessionAsync();
-                    if (VMLocator.MainViewModel._supabase.Auth.CurrentSession == null && AppSettings.Instance.Session !=null)
+                    SupabaseStates.Instance.Supabase.Auth.LoadSession();
+                    await SupabaseStates.Instance.Supabase.Auth.RetrieveSessionAsync();
+                    if (SupabaseStates.Instance.Supabase.Auth.CurrentSession == null && AppSettings.Instance.Session !=null)
                     {
-                        var dialog = new ContentDialog() { Title = "Cloud sync session expired. Please login again.", PrimaryButtonText = "OK" };
+                        var dialog = new ContentDialog() { Title = "Cloud sync session expired. Please sign in again.", PrimaryButtonText = "OK" };
                         await VMLocator.MainViewModel.ContentDialogShowAsync(dialog);
 
                         await _supabaseProcess.GetAuthAsync();
-                        VMLocator.MainViewModel.LoginUri = VMLocator.MainViewModel._authState!.Uri;
+                        VMLocator.MainViewModel.LoginUri = SupabaseStates.Instance.AuthState!.Uri;
                         VMLocator.MainViewModel.OnLogin = true;
                     }
                     else
@@ -297,14 +297,13 @@ namespace TmCGPTD.Views
 
             settings.SeparatorMode = VMLocator.EditorViewModel.EditorSeparateMode;
 
-            if(VMLocator.MainViewModel._supabase != null)
+            if(SupabaseStates.Instance.Supabase != null)
             {
-                if (VMLocator.MainViewModel._supabase.Auth.CurrentSession != null)
+                if (SupabaseStates.Instance.Supabase.Auth.CurrentSession != null)
                 {
-                    settings.Session = System.Text.Json.JsonSerializer.Serialize(VMLocator.MainViewModel._supabase.Auth.CurrentSession);
+                    settings.Session = System.Text.Json.JsonSerializer.Serialize(SupabaseStates.Instance.Supabase.Auth.CurrentSession);
                 }
             }
-            settings.SyncIsOn = VMLocator.DatabaseSettingsViewModel.SyncIsOn;
 
             SaveAppSettings(settings);
         }
@@ -317,7 +316,7 @@ namespace TmCGPTD.Views
 
         public void Translate(string targetLanguage)
         {
-            var translations = App.Current.Resources.MergedDictionaries.OfType<ResourceInclude>().FirstOrDefault(x => x.Source?.OriginalString?.Contains("/Lang/") ?? false);
+            var translations = App.Current!.Resources.MergedDictionaries.OfType<ResourceInclude>().FirstOrDefault(x => x.Source?.OriginalString?.Contains("/Lang/") ?? false);
 
             if (translations != null)
                 App.Current.Resources.MergedDictionaries.Remove(translations);

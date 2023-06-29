@@ -58,16 +58,16 @@ namespace TmCGPTD.ViewModels
         public IAsyncRelayCommand ExportTemplateCommand { get; }
 
 
-        private ObservableCollection<EditorLogs> _editorLogLists;
-        public ObservableCollection<EditorLogs> EditorLogLists
+        private ObservableCollection<EditorLogs>? _editorLogLists;
+        public ObservableCollection<EditorLogs>? EditorLogLists
         {
             get => _editorLogLists;
             set => SetProperty(ref _editorLogLists, value);
         }
 
 
-        private EditorLogs _selectedEditorLog;
-        public EditorLogs SelectedEditorLog
+        private EditorLogs? _selectedEditorLog;
+        public EditorLogs? SelectedEditorLog
         {
             get => _selectedEditorLog;
             set
@@ -278,7 +278,6 @@ namespace TmCGPTD.ViewModels
 
         private async Task SaveTemplateAsync()
         {
-            string phrasesText;
             ContentDialog dialog;
             ContentDialogResult dialogResult;
             try
@@ -289,7 +288,7 @@ namespace TmCGPTD.ViewModels
                     dialogResult = await VMLocator.MainViewModel.ContentDialogShowAsync(dialog);
                     if (dialogResult == ContentDialogResult.Primary)
                     {
-                        await _dbProcess.UpdateTemplateAsync(SelectedTemplateItem.Title);
+                        await _dbProcess.UpdateTemplateAsync(SelectedTemplateItem.Title!);
                         return;
                     }
                     else if (dialogResult != ContentDialogResult.Secondary)

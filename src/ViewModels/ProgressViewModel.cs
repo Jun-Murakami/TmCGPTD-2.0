@@ -35,7 +35,7 @@ namespace TmCGPTD.ViewModels
 
         public void Hide()
         {
-            dialog.Hide();
+            dialog!.Hide();
         }
     }
 }

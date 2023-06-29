@@ -83,14 +83,14 @@ namespace TmCGPTD.ViewModels
                 _chatViewModel.ChatTitle = result[0];
                 if (!string.IsNullOrWhiteSpace(result[1]))
                 {
-                    _chatViewModel.ConversationHistory = JsonSerializer.Deserialize<List<Dictionary<string, object>>>(result[1]);
+                    _chatViewModel.ConversationHistory = JsonSerializer.Deserialize<List<Dictionary<string, object>>>(result[1])!;
                 }
                 _chatViewModel.HtmlContent = await _htmlProcess.ConvertChatLogToHtml(result[2]);
                 _chatViewModel.ChatCategory = result[3];
                 _chatViewModel.LastPrompt = result[4];
                 if (!string.IsNullOrWhiteSpace(result[5]))
                 {
-                    _chatViewModel.LastConversationHistory = JsonSerializer.Deserialize<List<Dictionary<string, object>>>(result[5]);
+                    _chatViewModel.LastConversationHistory = JsonSerializer.Deserialize<List<Dictionary<string, object>>>(result[5])!;
                 }
 
                 if (VMLocator.MainViewModel.SelectedLeftPane != "API Chat")

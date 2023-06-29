@@ -584,7 +584,7 @@ namespace TmCGPTD.ViewModels
             for (int i = 0, loopTo = Math.Min(texts.Length - 1, 4); i <= loopTo; i++) // 5—v‘f–Ú‚Ü‚Å‚ðŽæ“¾
             {
                 string propertyName = $"Editor{i + 1}Text";
-                PropertyInfo property = VMLocator.EditorViewModel.GetType().GetProperty(propertyName);
+                PropertyInfo property = VMLocator.EditorViewModel.GetType().GetProperty(propertyName)!;
                 if (property != null)
                 {
                     property.SetValue(VMLocator.EditorViewModel, string.Empty);
@@ -620,7 +620,7 @@ namespace TmCGPTD.ViewModels
             if (string.IsNullOrEmpty(SystemMessage))
             {
                 Avalonia.Application.Current!.TryFindResource("My.Strings.SystemMessageInfo", out object? resource1);
-                SystemMessage = resource1.ToString();
+                SystemMessage = resource1!.ToString();
             }
 
             string escapedHtml = JsonSerializer.Serialize(SystemMessage);
