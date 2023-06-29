@@ -28,6 +28,7 @@ namespace TmCGPTD.ViewModels
     {
         SupabaseProcess _supabaseProcess = new SupabaseProcess();
         DatabaseProcess _dbProcess = new DatabaseProcess();
+        SyncProcess _syncProcess = new SyncProcess();
 
         public MainViewModel()
         {
@@ -833,6 +834,18 @@ namespace TmCGPTD.ViewModels
                 await _supabaseProcess.GetAuthAsync();
                 LoginUri = SupabaseStates.Instance.AuthState!.Uri;
                 OnLogin = true;
+
+                int timeOut = 0;
+                while (SupabaseStates.Instance.Supabase.Auth.CurrentSession == null && timeOut < 600)
+                {
+                    await Task.Delay(1000);
+                    timeOut++;
+                }
+
+                if (SupabaseStates.Instance.Supabase.Auth.CurrentSession != null)
+                {
+                    await _syncProcess.SyncDbAsync();
+                }
             }
         }
         // ----------------------------------------------------------------------------------------------------------------------------

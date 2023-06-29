@@ -19,6 +19,7 @@ using TmCGPTD.Views;
 using System.Transactions;
 using System.Security.Cryptography;
 using Avalonia.Threading;
+using ReverseMarkdown.Converters;
 
 namespace TmCGPTD.Models
 {
@@ -273,7 +274,6 @@ namespace TmCGPTD.Models
                     var result = await VMLocator.MainViewModel.ContentDialogShowAsync(cdialog!);
                     if (result == ContentDialogResult.Primary) //マージ
                     {
-                        VMLocator.MainViewModel.SyncLogText = "Now in sync.";
                         BackupDb();
                         await UpsertToCloudDbAsync();
                         await UpsertToLocalDbAsync();
@@ -281,7 +281,6 @@ namespace TmCGPTD.Models
                     }
                     else if (result == ContentDialogResult.Secondary) //クラウドを優先
                     {
-                        VMLocator.MainViewModel.SyncLogText = "Now in sync.";
                         BackupDb();
                         await DeleteLocalDbAsync();
                         await UpsertToLocalDbAsync();
@@ -289,7 +288,6 @@ namespace TmCGPTD.Models
                     }
                     else if (result == ContentDialogResult.None) //ローカルを優先
                     {
-                        VMLocator.MainViewModel.SyncLogText = "Now in sync.";
                         BackupDb();
                         await DeleteCloudDbAsync();
                         await CopyAllLocalToCloudDbAsync();
@@ -336,15 +334,18 @@ namespace TmCGPTD.Models
 
                     if (target == null || (reader["date"] != DBNull.Value && target.Date < (DateTime)reader["date"])) // クラウドにデータが無いか、ローカルの日付が新しい場合
                     {
-                        models.Add(new Phrase {Id = (long)reader["id"], UserId = uid, Name = (string)reader["name"], Content = (string)reader["phrase"], Date = (DateTime)reader["date"] });
+                        DateTime date = (DateTime)reader["date"];
+                        date = date.AddTicks(-(date.Ticks % TimeSpan.TicksPerSecond));
+                        models.Add(new Phrase {Id = (long)reader["id"], UserId = uid, Name = (string)reader["name"], Content = (string)reader["phrase"], Date = date });
                     }
-                    else if (reader["date"] == DBNull.Value) // ローカルの日付がNullの場合
+                    else if (reader["date"] == DBNull.Value || (string)reader["date"] == "") // ローカルの日付がNullの場合
                     {
-                        models.Add(new Phrase { Id = (long)reader["id"], UserId = uid, Name = (string)reader["name"], Content = (string)reader["phrase"], Date = DateTime.Now });
+                        DateTime date = DateTime.Now;
+                        date = date.AddTicks(-(date.Ticks % TimeSpan.TicksPerSecond));
+                        models.Add(new Phrase { Id = (long)reader["id"], UserId = uid, Name = (string)reader["name"], Content = (string)reader["phrase"], Date = date });
                     }
                 }
-
-                await supabase!.From<Phrase>().Upsert(models);
+                if (models.Count > 0) await supabase!.From<Phrase>().Upsert(models);
             }
             catch (Exception ex)
             {
@@ -371,15 +372,19 @@ namespace TmCGPTD.Models
 
                     if (target == null || (reader["date"] != DBNull.Value && target.Date < (DateTime)reader["date"])) // クラウドにデータが無いか、ローカルの日付が新しい場合
                     {
-                        models.Add(new EditorLog { Id = (long)reader["id"], UserId = uid, Content = (string)reader["text"], Date = (DateTime)reader["date"] });
+                        DateTime date = (DateTime)reader["date"];
+                        date = date.AddTicks(-(date.Ticks % TimeSpan.TicksPerSecond));
+                        models.Add(new EditorLog { Id = (long)reader["id"], UserId = uid, Content = (string)reader["text"], Date = date });
                     }
-                    else if (reader["date"] == DBNull.Value) // ローカルの日付がNullの場合
+                    else if (reader["date"] == DBNull.Value || (string)reader["date"] == "") // ローカルの日付がNullの場合
                     {
-                        models.Add(new EditorLog { Id = (long)reader["id"], UserId = uid, Content = (string)reader["text"], Date = DateTime.Now });
+                        DateTime date = DateTime.Now;
+                        date = date.AddTicks(-(date.Ticks % TimeSpan.TicksPerSecond));
+                        models.Add(new EditorLog { Id = (long)reader["id"], UserId = uid, Content = (string)reader["text"], Date = date });
                     }
                 }
 
-                await supabase.From<EditorLog>().Upsert(models);
+                if (models.Count > 0) await supabase.From<EditorLog>().Upsert(models);
             }
             catch (Exception ex)
             {
@@ -406,15 +411,19 @@ namespace TmCGPTD.Models
 
                     if (target == null || (reader["date"] != DBNull.Value && target.Date < (DateTime)reader["date"])) // クラウドにデータが無いか、ローカルの日付が新しい場合
                     {
-                        models.Add(new Template { Id = (long)reader["id"], UserId = uid, Title = (string)reader["title"], Content = (string)reader["text"], Date = (DateTime)reader["date"] });
+                        DateTime date = (DateTime)reader["date"];
+                        date = date.AddTicks(-(date.Ticks % TimeSpan.TicksPerSecond));
+                        models.Add(new Template { Id = (long)reader["id"], UserId = uid, Title = (string)reader["title"], Content = (string)reader["text"], Date = date });
                     }
-                    else if (reader["date"] == DBNull.Value) // ローカルの日付がNullの場合
+                    else if (reader["date"] == DBNull.Value || (string)reader["date"] == "") // ローカルの日付がNullの場合
                     {
-                        models.Add(new Template { Id = (long)reader["id"], UserId = uid, Title = (string)reader["title"], Content = (string)reader["text"], Date = DateTime.Now });
+                        DateTime date = DateTime.Now;
+                        date = date.AddTicks(-(date.Ticks % TimeSpan.TicksPerSecond));
+                        models.Add(new Template { Id = (long)reader["id"], UserId = uid, Title = (string)reader["title"], Content = (string)reader["text"], Date = date });
                     }
                 }
 
-                await supabase.From<Template>().Insert(models);
+                if (models.Count > 0) await supabase.From<Template>().Upsert(models);
             }
             catch (Exception ex)
             {
@@ -442,19 +451,35 @@ namespace TmCGPTD.Models
                     var models1 = new List<ChatRoom>();
                     if (target == null || (reader["date"] != DBNull.Value && target.UpdatedOn < (DateTime)reader["date"])) // クラウドにデータが無いか、ローカルの日付が新しい場合
                     {
-                        models1.Add(new ChatRoom { Id = (long)reader["id"], UserId = uid, Title = (string)reader["title"], Category = (string)reader["category"], LastPrompt = (string)reader["lastprompt"], Json = (string)reader["json"], JsonPrev = (string)reader["jsonprev"], UpdatedOn = (DateTime)reader["date"] });
+                        DateTime date = (DateTime)reader["date"];
+                        date = date.AddTicks(-(date.Ticks % TimeSpan.TicksPerSecond));
+                        if (target != null) // クラウドにデータがある場合は一旦削除（カスケードでメッセージを一旦消す）
+                        {
+                            await supabase.From<ChatRoom>()
+                                           .Where(x => x.Id == target.Id)
+                                           .Delete();
+                        }
+                        models1.Add(new ChatRoom { Id = (long)reader["id"], UserId = uid, Title = (string)reader["title"], Category = (string)reader["category"], LastPrompt = (string)reader["lastprompt"], Json = (string)reader["json"], JsonPrev = (string)reader["jsonprev"], UpdatedOn = date });
 
-                        var returnValue = await supabase.From<ChatRoom>().Upsert(models1, new QueryOptions { Returning = ReturnType.Representation });
+                        var returnValue = await supabase.From<ChatRoom>().Insert(models1, new QueryOptions { Returning = ReturnType.Representation });
 
                         var roomId = returnValue.Models[0].Id;
 
                         models2.AddRange(DivideMessage((string)reader["text"], roomId, uid!)); // メッセージを分割して追加
                     }
-                    else if (reader["date"] == DBNull.Value) // ローカルの日付がNullの場合
+                    else if (reader["date"] == DBNull.Value|| (string)reader["date"] == "") // ローカルの日付がNullの場合
                     {
-                        models1.Add(new ChatRoom { Id = (long)reader["id"], UserId = uid, Title = (string)reader["title"], Category = (string)reader["category"], LastPrompt = (string)reader["lastprompt"], Json = (string)reader["json"], JsonPrev = (string)reader["jsonprev"], UpdatedOn = DateTime.Now });
+                        DateTime date = DateTime.Now;
+                        date = date.AddTicks(-(date.Ticks % TimeSpan.TicksPerSecond));
+                        if (target != null) // クラウドにデータがある場合は一旦削除（カスケードでメッセージを一旦消す）
+                        {
+                            await supabase.From<ChatRoom>()
+                                           .Where(x => x.Id == target.Id)
+                                           .Delete();
+                        }
+                        models1.Add(new ChatRoom { Id = (long)reader["id"], UserId = uid, Title = (string)reader["title"], Category = (string)reader["category"], LastPrompt = (string)reader["lastprompt"], Json = (string)reader["json"], JsonPrev = (string)reader["jsonprev"], UpdatedOn = date });
 
-                        var returnValue = await supabase.From<ChatRoom>().Upsert(models1, new QueryOptions { Returning = ReturnType.Representation });
+                        var returnValue = await supabase.From<ChatRoom>().Insert(models1, new QueryOptions { Returning = ReturnType.Representation });
 
                         var roomId = returnValue.Models[0].Id;
 
@@ -462,7 +487,7 @@ namespace TmCGPTD.Models
                     }
                 }
 
-                await supabase.From<Message>().Upsert(models2);
+                if (models2.Count > 0) await supabase.From<Message>().Insert(models2);
             }
             catch (Exception ex)
             {
@@ -517,11 +542,11 @@ namespace TmCGPTD.Models
                         }
                     }
 
-                    transaction.Commit();
+                    await transaction.CommitAsync();
                 }
                 catch (Exception ex)
                 {
-                    transaction.Rollback();
+                    await transaction.RollbackAsync();
                     throw new Exception($"Failed to download phrase presets: {ex.Message}\n{ex.StackTrace}");
                 }
             }
@@ -564,11 +589,11 @@ namespace TmCGPTD.Models
                         }
                     }
 
-                    transaction2.Commit();
+                    await transaction2.CommitAsync();
                 }
                 catch (Exception ex)
                 {
-                    transaction2.Rollback();
+                    await transaction2.RollbackAsync();
                     throw new Exception($"Failed to download template presets: {ex.Message}\n{ex.StackTrace}");
                 }
             }
@@ -610,11 +635,11 @@ namespace TmCGPTD.Models
                         }
                     }
 
-                    transaction3.Commit();
+                    await transaction3.CommitAsync();
                 }
                 catch (Exception ex)
                 {
-                    transaction3.Rollback();
+                    await transaction3.RollbackAsync();
                     throw new Exception($"Failed to download editor logs: {ex.Message}\n{ex.StackTrace}");
                 }
             }
@@ -665,11 +690,11 @@ namespace TmCGPTD.Models
                         }
                     }
 
-                    transaction4.Commit();
+                    await transaction4.CommitAsync();
                 }
                 catch (Exception ex)
                 {
-                    transaction4.Rollback();
+                    await transaction4.RollbackAsync();
                     throw new Exception($"Failed to download chat logs: {ex.Message}\n{ex.StackTrace}");
                 }
 
@@ -727,13 +752,17 @@ namespace TmCGPTD.Models
                 {
                     i++;
                     VMLocator.ProgressViewModel.ProgressValue = ((double)i / countTable);
-                    if (reader["date"] == DBNull.Value)
+                    if (reader["date"] == DBNull.Value || (string)reader["date"] == "")
                     {
-                        models.Add(new Phrase { UserId = uid, Name = (string)reader["name"], Content = (string)reader["phrase"], Date = DateTime.Now });
+                        DateTime date = DateTime.Now;
+                        date = date.AddTicks(-(date.Ticks % TimeSpan.TicksPerSecond));
+                        models.Add(new Phrase { UserId = uid, Name = (string)reader["name"], Content = (string)reader["phrase"], Date = date });
                     }
                     else
                     {
-                        models.Add(new Phrase { UserId = uid, Name = (string)reader["name"], Content = (string)reader["phrase"], Date = (DateTime)reader["date"] });
+                        DateTime date = (DateTime)reader["date"];
+                        date = date.AddTicks(-(date.Ticks % TimeSpan.TicksPerSecond));
+                        models.Add(new Phrase { UserId = uid, Name = (string)reader["name"], Content = (string)reader["phrase"], Date = date });
                     }
                     await Task.Delay(10);
                 }
@@ -766,13 +795,17 @@ namespace TmCGPTD.Models
                 {
                     i++;
                     VMLocator.ProgressViewModel.ProgressValue = ((double)i / countTable);
-                    if (reader["date"] == DBNull.Value)
+                    if (reader["date"] == DBNull.Value || (string)reader["date"] == "")
                     {
-                        models.Add(new EditorLog { UserId = uid, Content = (string)reader["text"], Date = DateTime.Now });
+                        DateTime date = DateTime.Now;
+                        date = date.AddTicks(-(date.Ticks % TimeSpan.TicksPerSecond));
+                        models.Add(new EditorLog { UserId = uid, Content = (string)reader["text"], Date = date });
                     }
                     else
                     {
-                        models.Add(new EditorLog { UserId = uid, Content = (string)reader["text"], Date = (DateTime)reader["date"] });
+                        DateTime date = (DateTime)reader["date"];
+                        date = date.AddTicks(-(date.Ticks % TimeSpan.TicksPerSecond));
+                        models.Add(new EditorLog { UserId = uid, Content = (string)reader["text"], Date = date });
                     }
                     await Task.Delay(10);
                 }
@@ -805,13 +838,17 @@ namespace TmCGPTD.Models
                 {
                     i++;
                     VMLocator.ProgressViewModel.ProgressValue = ((double)i / countTable);
-                    if (reader["date"] == DBNull.Value)
+                    if (reader["date"] == DBNull.Value || (string)reader["date"] == "")
                     {
-                        models.Add(new Template { UserId = uid, Title = (string)reader["title"], Content = (string)reader["text"], Date = DateTime.Now });
+                        DateTime date = DateTime.Now;
+                        date = date.AddTicks(-(date.Ticks % TimeSpan.TicksPerSecond));
+                        models.Add(new Template { UserId = uid, Title = (string)reader["title"], Content = (string)reader["text"], Date = date });
                     }
                     else
                     {
-                        models.Add(new Template { UserId = uid, Title = (string)reader["title"], Content = (string)reader["text"], Date = (DateTime)reader["date"] });
+                        DateTime date = (DateTime)reader["date"];
+                        date = date.AddTicks(-(date.Ticks % TimeSpan.TicksPerSecond));
+                        models.Add(new Template { UserId = uid, Title = (string)reader["title"], Content = (string)reader["text"], Date = date });
                     }
                     await Task.Delay(10);
                 }
@@ -846,13 +883,17 @@ namespace TmCGPTD.Models
                     VMLocator.ProgressViewModel.ProgressValue = ((double)j / countTable);
                     var models1 = new List<ChatRoom>();
 
-                    if (reader["date"] == DBNull.Value)
+                    if (reader["date"] == DBNull.Value || (string)reader["date"] == "")
                     {
-                        models1.Add(new ChatRoom { UserId = uid, Title = (string)reader["title"], Category = (string)reader["category"], LastPrompt = (string)reader["lastprompt"], Json = (string)reader["json"], JsonPrev = (string)reader["jsonprev"], UpdatedOn = DateTime.Now });
+                        DateTime date = DateTime.Now;
+                        date = date.AddTicks(-(date.Ticks % TimeSpan.TicksPerSecond));
+                        models1.Add(new ChatRoom { UserId = uid, Title = (string)reader["title"], Category = (string)reader["category"], LastPrompt = (string)reader["lastprompt"], Json = (string)reader["json"], JsonPrev = (string)reader["jsonprev"], UpdatedOn = date });
                     }
                     else
                     {
-                        models1.Add(new ChatRoom { UserId = uid, Title = (string)reader["title"], Category = (string)reader["category"], LastPrompt = (string)reader["lastprompt"], Json = (string)reader["json"], JsonPrev = (string)reader["jsonprev"], UpdatedOn = (DateTime)reader["date"] });
+                        DateTime date = (DateTime)reader["date"];
+                        date = date.AddTicks(-(date.Ticks % TimeSpan.TicksPerSecond));
+                        models1.Add(new ChatRoom { UserId = uid, Title = (string)reader["title"], Category = (string)reader["category"], LastPrompt = (string)reader["lastprompt"], Json = (string)reader["json"], JsonPrev = (string)reader["jsonprev"], UpdatedOn = date });
                     }
 
                     var returnValue = await supabase.From<ChatRoom>().Insert(models1, new QueryOptions { Returning = ReturnType.Representation });
@@ -906,7 +947,7 @@ namespace TmCGPTD.Models
 
                         await command.ExecuteNonQueryAsync();
                     }
-                    transaction.Commit();
+                    await transaction.CommitAsync();
                 }
                 catch (Exception ex)
                 {
@@ -932,7 +973,7 @@ namespace TmCGPTD.Models
 
                         await command.ExecuteNonQueryAsync();
                     }
-                    transaction.Commit();
+                    await transaction.CommitAsync();
                 }
                 catch (Exception ex)
                 {
@@ -959,7 +1000,7 @@ namespace TmCGPTD.Models
 
                         await command.ExecuteNonQueryAsync();
                     }
-                    transaction.Commit();
+                    await transaction.CommitAsync();
                 }
                 catch (Exception ex)
                 {
@@ -996,11 +1037,11 @@ namespace TmCGPTD.Models
 
                         await command.ExecuteNonQueryAsync();
                     }
-                    transaction.Commit();
+                    await transaction.CommitAsync();
                 }
                 catch (Exception ex)
                 {
-                    transaction.Rollback();
+                    await transaction.RollbackAsync();
                     VMLocator.ProgressViewModel.Hide();
                     throw new Exception($"Failed to download chat logs: {ex.Message} {ex.StackTrace}");
                 }

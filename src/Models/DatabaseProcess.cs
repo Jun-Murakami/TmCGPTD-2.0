@@ -1697,7 +1697,7 @@ namespace TmCGPTD.Models
                         {
                             var result = await _supabase.From<ChatRoom>().Insert(new ChatRoom { UserId = _uid, UpdatedOn = resDate, Title = titleText, Category = categoryText, LastPrompt = promptTextForSave, Json = jsonConversationHistory, JsonPrev = jsonLastConversationHistory });
 
-                            int chatRoomId = result.Models[0].Id;
+                            long chatRoomId = result.Models[0].Id;
 
                             var models = new List<Message>();
 

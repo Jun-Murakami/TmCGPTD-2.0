@@ -9,7 +9,7 @@ namespace TmCGPTD
 {
     public class CustomNumericUpDown : NumericUpDown, IStyleable
     {
-        private TextBox _textBox;
+        private TextBox? _textBox;
 
         Type IStyleable.StyleKey => typeof(NumericUpDown);
 
@@ -26,7 +26,7 @@ namespace TmCGPTD
             this.DetachedFromVisualTree += OnDetachedFromVisualTree;
         }
 
-        private void TextBox_KeyDown(object sender, KeyEventArgs e)
+        private void TextBox_KeyDown(object? sender, KeyEventArgs e)
         {
             var key = e.Key;
             var isCtrl = e.KeyModifiers.HasFlag(KeyModifiers.Control);
@@ -44,7 +44,7 @@ namespace TmCGPTD
             }
         }
 
-        private void OnDetachedFromVisualTree(object sender, VisualTreeAttachmentEventArgs e)
+        private void OnDetachedFromVisualTree(object? sender, VisualTreeAttachmentEventArgs e)
         {
             if (_textBox != null)
             {

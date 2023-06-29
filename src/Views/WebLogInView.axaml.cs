@@ -44,6 +44,7 @@ namespace TmCGPTD.Views
             };
             browser.AttachedToVisualTree += Browser_AttachedToVisualTree;
             browser.DetachedFromVisualTree += Browser_DetachedFromVisualTree;
+            browser.LoadEnd += Browser_LoadEnd;
             browser.ContextMenuHandler = new CustomContextMenuHandler();
             browserWrapper!.Child = browser;
 
@@ -58,6 +59,14 @@ namespace TmCGPTD.Views
         }
 
         HtmlProcess _htmlProcess = new HtmlProcess();
+
+        private void Browser_LoadEnd(object? sender, LoadEndEventArgs e)
+        {
+            string jsCode = @"document.body.style.backgroundColor = '#343541';
+                                 document.documentElement.style.backgroundColor = '#343541';";
+            browser.ExecuteJavaScript(jsCode);
+        }
+
         private async void Browser_AttachedToVisualTree(object? sender, VisualTreeAttachmentEventArgs e)
         {
             try

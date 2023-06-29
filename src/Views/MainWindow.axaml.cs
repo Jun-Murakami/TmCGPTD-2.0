@@ -95,7 +95,7 @@ namespace TmCGPTD.Views
                 else
                 {
                     var screen = Screens.Primary;
-                    var workingArea = screen.WorkingArea;
+                    var workingArea = screen!.WorkingArea;
 
                     double dpiScaling = screen.PixelDensity;
                     this.Width = 1300 * dpiScaling;
@@ -179,7 +179,6 @@ namespace TmCGPTD.Views
                 VMLocator.EditorViewModel.SelectedLangIndex = settings.SyntaxHighlighting;
                 VMLocator.EditorViewModel.EditorSeparateMode = settings.SeparatorMode;
 
-                await _dbProcess.CleanUpEditorLogDatabaseAsync();
                 VMLocator.EditorViewModel.SelectedEditorLogIndex = -1;
 
                 if (string.IsNullOrWhiteSpace(VMLocator.MainWindowViewModel.ApiKey))
@@ -193,8 +192,6 @@ namespace TmCGPTD.Views
 
                 await _supabaseProcess.InitializeSupabaseAsync();
 
-                
-
                 if (SupabaseStates.Instance.Supabase != null && settings.SyncIsOn)
                 {
                     SupabaseStates.Instance.Supabase.Auth.LoadSession();
@@ -207,12 +204,26 @@ namespace TmCGPTD.Views
                         await _supabaseProcess.GetAuthAsync();
                         VMLocator.MainViewModel.LoginUri = SupabaseStates.Instance.AuthState!.Uri;
                         VMLocator.MainViewModel.OnLogin = true;
+
+                        int timeOut = 0;
+                        while(SupabaseStates.Instance.Supabase.Auth.CurrentSession == null && timeOut < 600)
+                        {
+                            await Task.Delay(1000);
+                            timeOut++;
+                        }
+
+                        if(SupabaseStates.Instance.Supabase.Auth.CurrentSession != null)
+                        {
+                            await _syncProcess.SyncDbAsync();
+                        }
                     }
                     else
                     {
                         await _syncProcess.SyncDbAsync();
                     }
                 }
+
+                await _dbProcess.CleanUpEditorLogDatabaseAsync();
             }
             catch (Exception ex)
             {
@@ -266,11 +277,11 @@ namespace TmCGPTD.Views
                 {
                     var dialog = new ContentDialog() { Title = $"Invalid setting file. Reset to default values.", PrimaryButtonText = "OK" };
                     await VMLocator.MainViewModel.ContentDialogShowAsync(dialog);
-                    File.Delete(Path.Combine(settings.AppDataPath, "settings.json"));
+                    File.Delete(Path.Combine(settings!.AppDataPath, "settings.json"));
                 }
             }
 
-            return settings;
+            return settings!;
         }
 
         public void SaveWindowSizeAndPosition()
@@ -285,7 +296,7 @@ namespace TmCGPTD.Views
 
             settings.EditorMode = VMLocator.EditorViewModel.EditorModeIsChecked;
             settings.EditorFontSize = VMLocator.EditorViewModel.EditorCommonFontSize;
-            settings.PhrasePreset = VMLocator.MainViewModel.SelectedPhraseItem;
+            settings.PhrasePreset = VMLocator.MainViewModel.SelectedPhraseItem!;
             settings.SyntaxHighlighting = VMLocator.EditorViewModel.SelectedLangIndex;
             settings.PhraseExpanderMode = VMLocator.MainViewModel.PhraseExpanderIsOpened;
 

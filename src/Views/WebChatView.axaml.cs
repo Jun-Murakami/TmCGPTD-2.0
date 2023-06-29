@@ -28,15 +28,15 @@ namespace TmCGPTD.Views
             };
             browser.Address = "https://chat.openai.com/";
             browser.ContextMenuHandler = new CustomContextMenuHandler();
-            browserWrapper.Child = browser;
+            browserWrapper!.Child = browser;
             WebChatViewModel.SetBrowser(browser);
             //browser.Focusable = false;
             browser.LoadEnd += Browser_LoadEnd;
 
-            _searchBox = this.FindControl<TextBox>("SearchBox");
+            _searchBox = this.FindControl<TextBox>("SearchBox")!;
         }
 
-        private void FocusSearchBox(object sender, RoutedEventArgs e)
+        private void FocusSearchBox(object? sender, RoutedEventArgs e)
         {
             if (VMLocator.MainViewModel.SelectedLeftPane == "Web Chat")
             {
@@ -54,7 +54,7 @@ namespace TmCGPTD.Views
             browser.Dispose();
         }
 
-        private async void Browser_LoadEnd(object sender, LoadEndEventArgs e)
+        private void Browser_LoadEnd(object? sender, LoadEndEventArgs e)
         {
             string addElementsCode = @"
                                     var button;
