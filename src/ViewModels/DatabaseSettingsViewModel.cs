@@ -46,29 +46,6 @@ namespace TmCGPTD.ViewModels
             }
         }
 
-        public bool SyncIsOn
-        {
-            get => _appSettings.SyncIsOn;
-            set
-            {
-                if(_appSettings.SyncIsOn != value)
-                {
-                    _appSettings.SyncIsOn = value;
-                    OnPropertyChanged();
-
-                    if (_appSettings.SyncIsOn)
-                    {
-                        ProcessLog = "You must be sign in.";
-                    }
-                    else
-                    {
-                        _ = _supabaseProcess.SignOutAsync();
-                        ProcessLog = "You have sign out.";
-                    }
-                }
-            }
-        }
-
         private string? _processLog;
         public string? ProcessLog
         {

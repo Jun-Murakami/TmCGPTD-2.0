@@ -9,76 +9,76 @@ using System.Windows.Input;
 
 namespace TmCGPTD.ViewModels
 {
-    public class WebChatBardViewModel : ViewModelBase
+  public class WebChatBardViewModel : ViewModelBase
+  {
+    private AvaloniaCefBrowser _browser;
+    HtmlProcess _htmlProcess = new HtmlProcess();
+
+    public WebChatBardViewModel()
     {
-        private AvaloniaCefBrowser _browser;
-        HtmlProcess _htmlProcess = new HtmlProcess();
+      SearchPrev = new AsyncRelayCommand(async () => await TextSearch(VMLocator.MainViewModel.SearchKeyword, false));
+      SearchNext = new AsyncRelayCommand(async () => await TextSearch(VMLocator.MainViewModel.SearchKeyword, true));
 
-        public WebChatBardViewModel()
-        {
-            SearchPrev = new AsyncRelayCommand(async () => await TextSearch(VMLocator.MainViewModel.SearchKeyword, false));
-            SearchNext = new AsyncRelayCommand(async () => await TextSearch(VMLocator.MainViewModel.SearchKeyword, true));
+      ImportWebChatLogCommand = new AsyncRelayCommand(async () => await ImportWebChatLog());
+      UpdateBrowserCommand = new RelayCommand(UpdateBrowser);
 
-            ImportWebChatLogCommand = new AsyncRelayCommand(async () => await ImportWebChatLog());
-            UpdateBrowserCommand = new RelayCommand(UpdateBrowser);
+      WebChatBardViewIsVisible = true;
+    }
 
-            WebChatBardViewIsVisible = true;
-        }
+    public async Task PostWebChat()
+    {
+      try
+      {
+        string escapedString = JsonSerializer.Serialize(VMLocator.EditorViewModel.GetRecentText());
 
-        public async Task PostWebChat()
-        {
-            try
-            {
-                string escapedString = JsonSerializer.Serialize(VMLocator.EditorViewModel.GetRecentText());
-
-                string script = @"const mainTag = document.querySelector('main');
+        string script = @"const mainTag = document.querySelector('main');
                         const textarea = mainTag.querySelector('textarea');" +
-                        $"textarea.value = {escapedString};";
-                await _browser.EvaluateJavaScript<string>(script);
+                $"textarea.value = {escapedString};";
+        await _browser.EvaluateJavaScript<string>(script);
 
-                await Task.Delay(300);
+        await Task.Delay(300);
 
-                script = @"const mainTag = document.querySelector('main');
+        script = @"const mainTag = document.querySelector('main');
                         const textarea = mainTag.querySelector('textarea');
-                        var event = new Event('input', { bubbles: true });  // ÉCÉxÉìÉgÇçÏê¨
-                        textarea.dispatchEvent(event);  // ÉCÉxÉìÉgÇÉfÉBÉXÉpÉbÉ`";
-                await _browser.EvaluateJavaScript<string>(script);
+                        var event = new Event('input', { bubbles: true });  // „Ç§„Éô„É≥„Éà„Çí‰ΩúÊàê
+                        textarea.dispatchEvent(event);  // „Ç§„Éô„É≥„Éà„Çí„Éá„Ç£„Çπ„Éë„ÉÉ„ÉÅ";
+        await _browser.EvaluateJavaScript<string>(script);
 
-                await Task.Delay(300);
+        await Task.Delay(300);
 
-                script = @"const mainTag = document.querySelector('main');
+        script = @"const mainTag = document.querySelector('main');
                         const sendDiv = mainTag.querySelector('div.send-button-container');
                         const button = sendDiv.querySelector('button');
                         button.click();";
-                await _browser.EvaluateJavaScript<string>(script);
-            }
-            catch (Exception ex)
-            {
-                var dialog = new ContentDialog() { Title = "Error : " + ex.Message, PrimaryButtonText = "OK" };
-                await VMLocator.MainViewModel.ContentDialogShowAsync(dialog);
-                throw;
-            }
-        }
-        public async Task ImportWebChatLog()
-        {
-            var htmlSource = await _browser.EvaluateJavaScript<string>("return document.documentElement.outerHTML;");
-            var msg = await _htmlProcess.GetWebChatLogBardAsync(htmlSource);
-            if (msg == "Cancel")
-            {
-                return;
-            }
-            //var dialog = new ContentDialog() { Title = msg, PrimaryButtonText = "OK" };
-            //await VMLocator.MainViewModel.ContentDialogShowAsync(dialog);
-        }
+        await _browser.EvaluateJavaScript<string>(script);
+      }
+      catch (Exception ex)
+      {
+        var dialog = new ContentDialog() { Title = "Error : " + ex.Message, PrimaryButtonText = "OK" };
+        await VMLocator.MainViewModel.ContentDialogShowAsync(dialog);
+        throw;
+      }
+    }
+    public async Task ImportWebChatLog()
+    {
+      var htmlSource = await _browser.EvaluateJavaScript<string>("return document.documentElement.outerHTML;");
+      var msg = await _htmlProcess.GetWebChatLogBardAsync(htmlSource);
+      if (msg == "Cancel")
+      {
+        return;
+      }
+      //var dialog = new ContentDialog() { Title = msg, PrimaryButtonText = "OK" };
+      //await VMLocator.MainViewModel.ContentDialogShowAsync(dialog);
+    }
 
-        public async Task TextSearch(string searchKeyword, bool searchDirection, bool searchReset = false)
-        {
-            if (_browser == null || string.IsNullOrEmpty(searchKeyword))
-            {
-                return;
-            }
+    public async Task TextSearch(string searchKeyword, bool searchDirection, bool searchReset = false)
+    {
+      if (_browser == null || string.IsNullOrEmpty(searchKeyword))
+      {
+        return;
+      }
 
-            string searchTextFunction = @"if (!window.myCustomSearchFunction) {
+      string searchTextFunction = @"if (!window.myCustomSearchFunction) {
                 let lastKeyword = """";
                 let currentSearchIndex = 0;
                 let firstSearch = true;
@@ -89,26 +89,26 @@ namespace TmCGPTD.ViewModels
                 
 
                 function findOverflowYAutoElement(element) {
-                    // éqóvëfÇéÊìæ
+                    // Â≠êË¶ÅÁ¥†„ÇíÂèñÂæó
                     const children = element.children;
 
                     for (let i = 0; i < children.length; i++) {
                         const child = children[i];
                         const style = window.getComputedStyle(child);
 
-                        // overflow-yÇ™autoÇÃèÍçáÅAÇªÇÃóvëfÇï‘Ç∑
+                        // overflow-y„Ååauto„ÅÆÂ†¥Âêà„ÄÅ„Åù„ÅÆË¶ÅÁ¥†„ÇíËøî„Åô
                         if (style.overflowY === 'auto') {
                             return child;
                         }
 
-                        // éqóvëfÇ™Ç≥ÇÁÇ…éqóvëfÇéùÇ¡ÇƒÇ¢ÇÈèÍçáÅAçƒãAìIÇ…åüçı
+                        // Â≠êË¶ÅÁ¥†„Åå„Åï„Çâ„Å´Â≠êË¶ÅÁ¥†„ÇíÊåÅ„Å£„Å¶„ÅÑ„ÇãÂ†¥Âêà„ÄÅÂÜçÂ∏∞ÁöÑ„Å´Ê§úÁ¥¢
                         const result = findOverflowYAutoElement(child);
                         if (result) {
                             return result;
                         }
                     }
 
-                    // å©Ç¬Ç©ÇÁÇ»Ç©Ç¡ÇΩèÍçáÇÕnullÇï‘Ç∑
+                    // Ë¶ã„Å§„Åã„Çâ„Å™„Åã„Å£„ÅüÂ†¥Âêà„ÅØnull„ÇíËøî„Åô
                     return null;
                 }
 
@@ -153,20 +153,20 @@ namespace TmCGPTD.ViewModels
                 searchText(keyword, searchForward);
 
                 function searchText(keyword, searchForward, resetSearchIndex = false) {
-                  // åüçıÉLÅ[ÉèÅ[ÉhÇè¨ï∂éöÇ…ïœä∑
+                  // Ê§úÁ¥¢„Ç≠„Éº„ÉØ„Éº„Éâ„ÇíÂ∞èÊñáÂ≠ó„Å´Â§âÊèõ
                   keyword = keyword.toLowerCase();
 
-                  // ëOâÒÇÃÉLÅ[ÉèÅ[ÉhÇ∆î‰ärÇµÅAàŸÇ»ÇÈèÍçáÇÕåüçıÉCÉìÉfÉbÉNÉXÇÉäÉZÉbÉg
+                  // ÂâçÂõû„ÅÆ„Ç≠„Éº„ÉØ„Éº„Éâ„Å®ÊØîËºÉ„Åó„ÄÅÁï∞„Å™„ÇãÂ†¥Âêà„ÅØÊ§úÁ¥¢„Ç§„É≥„Éá„ÉÉ„ÇØ„Çπ„Çí„É™„Çª„ÉÉ„Éà
                   if (lastKeyword !== keyword || resetSearchIndex) {
                     currentSearchIndex = 0;
                     lastKeyword = keyword;
                     firstSearch = true;
                   }
 
-                  // ÉyÅ[ÉWì‡ÇÃmainÉ^ÉOóvëfÇéÊìæ
+                  // „Éö„Éº„Ç∏ÂÜÖ„ÅÆmain„Çø„Ç∞Ë¶ÅÁ¥†„ÇíÂèñÂæó
                   const mainElement = document.querySelector('main');
 
-                  // mainÉ^ÉOà»â∫ÇÃÉeÉLÉXÉgóvëfÇéÊìæ
+                  // main„Çø„Ç∞‰ª•‰∏ã„ÅÆ„ÉÜ„Ç≠„Çπ„ÉàË¶ÅÁ¥†„ÇíÂèñÂæó
                   const textNodes = [];
                   const walk = document.createTreeWalker(mainElement, NodeFilter.SHOW_TEXT, null, false);
                   let node;
@@ -174,7 +174,7 @@ namespace TmCGPTD.ViewModels
                     textNodes.push(node);
                   }
 
-                  // åüçıåãâ ÉäÉXÉgÇê∂ê¨
+                  // Ê§úÁ¥¢ÁµêÊûú„É™„Çπ„Éà„ÇíÁîüÊàê
                   const searchResults = [];
                   textNodes.forEach((textNode, index) => {
                     const content = textNode.textContent.toLowerCase();
@@ -196,7 +196,7 @@ namespace TmCGPTD.ViewModels
                     }
                   });
 
-                  // åüçıÉqÉbÉgêîÇ™0ÇÃèÍçáÅAÅuNo match found.ÅvÇï\é¶
+                  // Ê§úÁ¥¢„Éí„ÉÉ„ÉàÊï∞„Åå0„ÅÆÂ†¥Âêà„ÄÅ„ÄåNo match found.„Äç„ÇíË°®Á§∫
                   if (searchResults.length === 0) {
                     const searchDisplay = document.getElementById('searchDisplay');
                     searchDisplay.textContent = 'No match found.';
@@ -213,7 +213,7 @@ namespace TmCGPTD.ViewModels
                     return;
                   }
 
-                  // åüçıÉCÉìÉfÉbÉNÉXÇÃåvéZ
+                  // Ê§úÁ¥¢„Ç§„É≥„Éá„ÉÉ„ÇØ„Çπ„ÅÆË®àÁÆó
                   if (searchForward) {
                     if (!firstSearch) {
                       currentSearchIndex = (currentSearchIndex + 1) % searchResults.length;
@@ -223,7 +223,7 @@ namespace TmCGPTD.ViewModels
                   }
                   firstSearch = false;
 
-                  // ÉeÉLÉXÉgÇëIëèÛë‘Ç…Ç∑ÇÈ
+                  // „ÉÜ„Ç≠„Çπ„Éà„ÇíÈÅ∏ÊäûÁä∂ÊÖã„Å´„Åô„Çã
                   const selectedResult = searchResults[currentSearchIndex];
                   const range = document.createRange();
                   range.setStart(selectedResult.node, selectedResult.keywordIndex);
@@ -232,7 +232,7 @@ namespace TmCGPTD.ViewModels
                   selection.removeAllRanges();
                   selection.addRange(range);
 
-                  // ëIëÇµÇΩÉeÉLÉXÉgÇ‹Ç≈ÉXÉNÉçÅ[Éã
+                  // ÈÅ∏Êäû„Åó„Åü„ÉÜ„Ç≠„Çπ„Éà„Åæ„Åß„Çπ„ÇØ„É≠„Éº„É´
                   const rect = range.getBoundingClientRect();
                   const scrollParent = findOverflowYAutoElement(mainElement);
                   if (scrollParent) {
@@ -246,24 +246,24 @@ namespace TmCGPTD.ViewModels
 
                   const searchDisplay = document.getElementById(""searchDisplay"");
 
-                  // åüçıÇ™ÉqÉbÉgÇµÇΩèÍçá
+                  // Ê§úÁ¥¢„Åå„Éí„ÉÉ„Éà„Åó„ÅüÂ†¥Âêà
                   if (searchResults.length > 0) {
                     searchDisplay.textContent = `${currentSearchIndex + 1} / ${searchResults.length} results`;
                   }
 
-                  // OpacityÇ∆DisplayÇê›íË
+                  // Opacity„Å®Display„ÇíË®≠ÂÆö
                   searchDisplay.style.display = ""block"";
                   searchDisplay.style.opacity = ""0.9"";
 
-                  // É^ÉCÉÄÉAÉEÉgÇ™ê›íËÇ≥ÇÍÇƒÇ¢ÇΩèÍçáÅAÉNÉäÉA
+                  // „Çø„Ç§„É†„Ç¢„Ç¶„Éà„ÅåË®≠ÂÆö„Åï„Çå„Å¶„ÅÑ„ÅüÂ†¥Âêà„ÄÅ„ÇØ„É™„Ç¢
                   if (timeoutID1) clearTimeout(timeoutID1);
                   if (timeoutID2) clearTimeout(timeoutID2);
 
-                  // OpacityÇ0Ç…ñﬂÇ∑É^ÉCÉÄÉAÉEÉgÇê›íË
+                  // Opacity„Çí0„Å´Êàª„Åô„Çø„Ç§„É†„Ç¢„Ç¶„Éà„ÇíË®≠ÂÆö
                   timeoutID1 = setTimeout(() => {
                     searchDisplay.style.opacity = ""0"";
 
-                    // DisplayÇnoneÇ…ñﬂÇ∑É^ÉCÉÄÉAÉEÉgÇê›íË
+                    // Display„Çínone„Å´Êàª„Åô„Çø„Ç§„É†„Ç¢„Ç¶„Éà„ÇíË®≠ÂÆö
                     timeoutID2 = setTimeout(() => {
                       searchDisplay.style.display = ""none"";
                     }, 3000);
@@ -273,40 +273,40 @@ namespace TmCGPTD.ViewModels
               };
             }";
 
-            try
-            {
-                string script = $"{searchTextFunction} window.myCustomSearchFunction('{searchKeyword}', {searchDirection.ToString().ToLower()});";
-                await _browser.EvaluateJavaScript<ValueTuple<int, int>>(script);
-            }
-            catch (Exception ex)
-            {
-                var dialog = new ContentDialog() { Title = "Error : " + ex.Message, PrimaryButtonText = "OK" };
-                await VMLocator.MainViewModel.ContentDialogShowAsync(dialog);
-            }
-            return;
-        }
-
-        private void UpdateBrowser()
-        {
-            _browser?.Reload();
-        }
-
-        // BrowserÉCÉìÉXÉ^ÉìÉXÇéÛÇØéÊÇÈ
-        public void SetBrowser(AvaloniaCefBrowser browser)
-        {
-            _browser = browser;
-        }
-
-        public IAsyncRelayCommand SearchPrev { get; }
-        public IAsyncRelayCommand SearchNext { get; }
-        public IAsyncRelayCommand ImportWebChatLogCommand { get; }
-        public ICommand UpdateBrowserCommand { get; }
-
-        private bool _webChatBardViewIsVisible;
-        public bool WebChatBardViewIsVisible//É_ÉCÉAÉçÉOï\é¶óp
-        {
-            get => _webChatBardViewIsVisible;
-            set => SetProperty(ref _webChatBardViewIsVisible, value);
-        }
+      try
+      {
+        string script = $"{searchTextFunction} window.myCustomSearchFunction('{searchKeyword}', {searchDirection.ToString().ToLower()});";
+        await _browser.EvaluateJavaScript<ValueTuple<int, int>>(script);
+      }
+      catch (Exception ex)
+      {
+        var dialog = new ContentDialog() { Title = "Error : " + ex.Message, PrimaryButtonText = "OK" };
+        await VMLocator.MainViewModel.ContentDialogShowAsync(dialog);
+      }
+      return;
     }
+
+    private void UpdateBrowser()
+    {
+      _browser?.Reload();
+    }
+
+    // Browser„Ç§„É≥„Çπ„Çø„É≥„Çπ„ÇíÂèó„ÅëÂèñ„Çã
+    public void SetBrowser(AvaloniaCefBrowser browser)
+    {
+      _browser = browser;
+    }
+
+    public IAsyncRelayCommand SearchPrev { get; }
+    public IAsyncRelayCommand SearchNext { get; }
+    public IAsyncRelayCommand ImportWebChatLogCommand { get; }
+    public ICommand UpdateBrowserCommand { get; }
+
+    private bool _webChatBardViewIsVisible;
+    public bool WebChatBardViewIsVisible//„ÉÄ„Ç§„Ç¢„É≠„Ç∞Ë°®Á§∫Áî®
+    {
+      get => _webChatBardViewIsVisible;
+      set => SetProperty(ref _webChatBardViewIsVisible, value);
+    }
+  }
 }

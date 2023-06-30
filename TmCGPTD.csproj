@@ -78,4 +78,13 @@
     </AvaloniaResource>
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Update="src\Views\CloudLoggedinView .axaml.cs">
+      <DependentUpon>CloudLoggedinView .axaml</DependentUpon>
+    </Compile>
+    <Compile Update="src\Views\CloudLoginView.axaml.cs">
+      <DependentUpon>CloudLoginView.axaml</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
 </Project>

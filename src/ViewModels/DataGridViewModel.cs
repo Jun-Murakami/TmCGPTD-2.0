@@ -23,15 +23,15 @@ namespace TmCGPTD.ViewModels
             set => SetProperty(ref _dataGridIsFocused, value);
         }
 
-        private DataGridCollectionView _dataGridCollection;
-        public DataGridCollectionView DataGridCollection
+        private DataGridCollectionView? _dataGridCollection;
+        public DataGridCollectionView? DataGridCollection
         {
             get => _dataGridCollection;
             set => SetProperty(ref _dataGridCollection, value);
         }
 
-        private ObservableCollection<ChatList> _chatList;
-        public ObservableCollection<ChatList> ChatList
+        private ObservableCollection<ChatList>? _chatList;
+        public ObservableCollection<ChatList>? ChatList
         {
             get => _chatList;
             set
@@ -44,8 +44,8 @@ namespace TmCGPTD.ViewModels
             }
         }
 
-        private ChatList _selectedItem;
-        public ChatList SelectedItem
+        private ChatList? _selectedItem;
+        public ChatList? SelectedItem
         {
             get => _selectedItem;
             set
@@ -93,9 +93,10 @@ namespace TmCGPTD.ViewModels
                     _chatViewModel.LastConversationHistory = JsonSerializer.Deserialize<List<Dictionary<string, object>>>(result[5])!;
                 }
 
-                if (VMLocator.MainViewModel.SelectedLeftPane != "API Chat")
+                if (VMLocator.MainViewModel.SelectedLeftPane != "API Chat" || VMLocator.MainViewModel.LoginStatus != 4)
                 {
                     VMLocator.MainViewModel.SelectedLeftPane = "API Chat";
+                    VMLocator.MainViewModel.LoginStatus = 4;
                 }
             }
         }

@@ -3,23 +3,15 @@ using System.IO;
 using System.Collections.Generic;
 using System.Data.SQLite;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using static TmCGPTD.Models.PostageSqlModels;
-using System.Diagnostics;
 using System.Text.RegularExpressions;
-using System.Reactive.Joins;
 using FluentAvalonia.UI.Controls;
 using Postgrest;
 using static Postgrest.QueryOptions;
-using System.Reflection;
 using static Postgrest.Constants;
-using TmCGPTD.ViewModels;
 using TmCGPTD.Views;
-using System.Transactions;
-using System.Security.Cryptography;
 using Avalonia.Threading;
-using ReverseMarkdown.Converters;
 
 namespace TmCGPTD.Models
 {
@@ -29,8 +21,6 @@ namespace TmCGPTD.Models
 
         public async Task SyncDbAsync()
         {
-            VMLocator.MainViewModel.SyncLogText = "Now in sync.";
-
             try
             {
                 if (SupabaseStates.Instance.Supabase == null)
@@ -330,15 +320,15 @@ namespace TmCGPTD.Models
 
                 while (await reader.ReadAsync())
                 {
-                    var target = resultPhrase.Models.FirstOrDefault(x => x.Id == (long)reader["id"]); 
+                    var target = resultPhrase.Models.FirstOrDefault(x => x.Id == (long)reader["id"]);
 
                     if (target == null || (reader["date"] != DBNull.Value && target.Date < (DateTime)reader["date"])) // クラウドにデータが無いか、ローカルの日付が新しい場合
                     {
                         DateTime date = (DateTime)reader["date"];
                         date = date.AddTicks(-(date.Ticks % TimeSpan.TicksPerSecond));
-                        models.Add(new Phrase {Id = (long)reader["id"], UserId = uid, Name = (string)reader["name"], Content = (string)reader["phrase"], Date = date });
+                        models.Add(new Phrase { Id = (long)reader["id"], UserId = uid, Name = (string)reader["name"], Content = (string)reader["phrase"], Date = date });
                     }
-                    else if (reader["date"] == DBNull.Value || (string)reader["date"] == "") // ローカルの日付がNullの場合
+                    else if (reader["date"] == DBNull.Value || (DateTime)reader["date"] == DateTime.MinValue) // ローカルの日付がNullの場合
                     {
                         DateTime date = DateTime.Now;
                         date = date.AddTicks(-(date.Ticks % TimeSpan.TicksPerSecond));
@@ -376,7 +366,7 @@ namespace TmCGPTD.Models
                         date = date.AddTicks(-(date.Ticks % TimeSpan.TicksPerSecond));
                         models.Add(new EditorLog { Id = (long)reader["id"], UserId = uid, Content = (string)reader["text"], Date = date });
                     }
-                    else if (reader["date"] == DBNull.Value || (string)reader["date"] == "") // ローカルの日付がNullの場合
+                    else if (reader["date"] == DBNull.Value || (DateTime)reader["date"] == DateTime.MinValue) // ローカルの日付がNullの場合
                     {
                         DateTime date = DateTime.Now;
                         date = date.AddTicks(-(date.Ticks % TimeSpan.TicksPerSecond));
@@ -415,7 +405,7 @@ namespace TmCGPTD.Models
                         date = date.AddTicks(-(date.Ticks % TimeSpan.TicksPerSecond));
                         models.Add(new Template { Id = (long)reader["id"], UserId = uid, Title = (string)reader["title"], Content = (string)reader["text"], Date = date });
                     }
-                    else if (reader["date"] == DBNull.Value || (string)reader["date"] == "") // ローカルの日付がNullの場合
+                    else if (reader["date"] == DBNull.Value || (DateTime)reader["date"] == DateTime.MinValue) // ローカルの日付がNullの場合
                     {
                         DateTime date = DateTime.Now;
                         date = date.AddTicks(-(date.Ticks % TimeSpan.TicksPerSecond));
@@ -467,7 +457,7 @@ namespace TmCGPTD.Models
 
                         models2.AddRange(DivideMessage((string)reader["text"], roomId, uid!)); // メッセージを分割して追加
                     }
-                    else if (reader["date"] == DBNull.Value|| (string)reader["date"] == "") // ローカルの日付がNullの場合
+                    else if (reader["date"] == DBNull.Value || (DateTime)reader["date"] == DateTime.MinValue) // ローカルの日付がNullの場合
                     {
                         DateTime date = DateTime.Now;
                         date = date.AddTicks(-(date.Ticks % TimeSpan.TicksPerSecond));
@@ -576,7 +566,7 @@ namespace TmCGPTD.Models
                     {
                         // クラウドの日付が新しいか、ローカルの日付がNull、またはローカルにデータが存在しない場合
                         if (!localData.TryGetValue(cloudData.Id, out DateTime? localDate) || localDate == null || cloudData.Date > localDate)
-                        { 
+                        {
                             var updateSql = @"INSERT INTO template (id, title, text, date) VALUES (@Id, @Name, @Content, @Date) 
                                               ON CONFLICT(id) DO UPDATE SET title = excluded.title, text = excluded.text, date = excluded.date;";
                             var command = new SQLiteCommand(updateSql, connection);
@@ -752,7 +742,7 @@ namespace TmCGPTD.Models
                 {
                     i++;
                     VMLocator.ProgressViewModel.ProgressValue = ((double)i / countTable);
-                    if (reader["date"] == DBNull.Value || (string)reader["date"] == "")
+                    if (reader["date"] == DBNull.Value)
                     {
                         DateTime date = DateTime.Now;
                         date = date.AddTicks(-(date.Ticks % TimeSpan.TicksPerSecond));
@@ -795,7 +785,7 @@ namespace TmCGPTD.Models
                 {
                     i++;
                     VMLocator.ProgressViewModel.ProgressValue = ((double)i / countTable);
-                    if (reader["date"] == DBNull.Value || (string)reader["date"] == "")
+                    if (reader["date"] == DBNull.Value)
                     {
                         DateTime date = DateTime.Now;
                         date = date.AddTicks(-(date.Ticks % TimeSpan.TicksPerSecond));
@@ -838,7 +828,7 @@ namespace TmCGPTD.Models
                 {
                     i++;
                     VMLocator.ProgressViewModel.ProgressValue = ((double)i / countTable);
-                    if (reader["date"] == DBNull.Value || (string)reader["date"] == "")
+                    if (reader["date"] == DBNull.Value)
                     {
                         DateTime date = DateTime.Now;
                         date = date.AddTicks(-(date.Ticks % TimeSpan.TicksPerSecond));
@@ -883,7 +873,7 @@ namespace TmCGPTD.Models
                     VMLocator.ProgressViewModel.ProgressValue = ((double)j / countTable);
                     var models1 = new List<ChatRoom>();
 
-                    if (reader["date"] == DBNull.Value || (string)reader["date"] == "")
+                    if (reader["date"] == DBNull.Value)
                     {
                         DateTime date = DateTime.Now;
                         date = date.AddTicks(-(date.Ticks % TimeSpan.TicksPerSecond));
@@ -1094,6 +1084,7 @@ namespace TmCGPTD.Models
                 combinedMessage = $"{combinedMessage}{message.Content}{br}{br}{message.Usage}";
                 combinedMessage = combinedMessage.Trim() + br + br;
             }
+            combinedMessage = combinedMessage.Trim();
             return combinedMessage;
         }
 
@@ -1105,7 +1096,7 @@ namespace TmCGPTD.Models
             string normarizedContent = Regex.Replace(message, @"\r\n|\r|\n", Environment.NewLine);
 
             var chatLogRegex = new Regex(@"^\[(.+)\] by (You|AI)", RegexOptions.Multiline);
-            var usageRegex = new Regex(@"^usage=.+$", RegexOptions.Multiline);
+            var usageRegex = new Regex(@"(^usage=)|(^(\[tokens\]))", RegexOptions.Multiline);
             var systemOffRegex = new Regex(@$"#(\s*)(?i)system({Environment.NewLine})*?---({Environment.NewLine})*", RegexOptions.Singleline);
             var systemMessageRegex = new Regex(@$"#(\s*)(?i)system({Environment.NewLine})*(.+?)---({Environment.NewLine})*", RegexOptions.Singleline);
 
@@ -1140,7 +1131,14 @@ namespace TmCGPTD.Models
                 var systemMessageMatch = systemMessageRegex.Match(content);
                 if (systemMessageMatch.Success)
                 {
-                    models.Add(new Message { UserId = uid, RoomId = roomId, CreatedOn = timestamp, Content = systemMessageMatch.Value, Role = "system", Usage = "" });
+                    if(content.Contains("(!--editable--)"))
+                    {
+                        models.Add(new Message { UserId = uid, RoomId = roomId, CreatedOn = timestamp, Content = systemMessageMatch.Value + "(!--editable--)", Role = "system", Usage = "" });
+                    }
+                    else
+                    {
+                        models.Add(new Message { UserId = uid, RoomId = roomId, CreatedOn = timestamp, Content = systemMessageMatch.Value, Role = "system", Usage = "" });
+                    }
                     content = content.Replace(systemMessageMatch.Value, "").Trim('\r', '\n');
                 }
 
@@ -1157,7 +1155,7 @@ namespace TmCGPTD.Models
                 else
                 {
                     content = content.Trim('\r', '\n');
-                    if (content.Length > 0)
+                    if (content.Length > 0 && content != "(!--editable--)")
                     {
                         models.Add(new Message { UserId = uid, RoomId = roomId, CreatedOn = timestamp, Content = content, Role = role, Usage = "" });
                     }

@@ -8,7 +8,7 @@
         x:Class="TmCGPTD.Views.WebLogInView">
 	<Grid VerticalAlignment="Stretch" >
 		<Border BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}" BorderThickness="1">
-			<Decorator x:Name="WebLogInBrowserWrapper" Focusable="False"/>
+			<Decorator x:Name="WebLogInBrowserWrapper" Focusable="False" IsVisible="{Binding WebLoginViewIsVisible}"/>
 		</Border>
 	</Grid>
 </UserControl>

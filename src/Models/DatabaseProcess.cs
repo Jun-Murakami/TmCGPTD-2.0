@@ -33,33 +33,28 @@ namespace TmCGPTD.Models
         {
             get
             {
-                if (_instance == null)
-                {
-                    _instance = new DatabaseProcess();
-                }
-
-                return _instance;
+                return _instance ??= new DatabaseProcess();
             }
         }
 
-        SyncProcess _syncProcess = new SyncProcess();
-        private AppSettings _appSettings => AppSettings.Instance;
-        private Client? _supabase => SupabaseStates.Instance.Supabase;
-        private string? _uid => SupabaseStates.Instance.Supabase?.Auth.CurrentSession?.User?.Id;
+        readonly SyncProcess _syncProcess = new();
+        private static AppSettings AppSettings => AppSettings.Instance;
+        private static Client? Supabase => SupabaseStates.Instance.Supabase;
+        private static string? Uid => SupabaseStates.Instance.Supabase?.Auth.CurrentSession?.User?.Id;
 
         public static SQLiteConnection? memoryConnection; // メモリ上のSQLコネクション
 
         //---------------------------------------------------------------------------
         private async Task DoSync()
         {
-            if (_appSettings.SyncIsOn && _supabase != null && _uid != null)
+            if (AppSettings.SyncIsOn && Supabase != null && Uid != null)
             {
                 await _syncProcess.SyncDbAsync();
             }
         }
 
         // SQL db初期化--------------------------------------------------------------
-        public void CreateDatabase()
+        public static void CreateDatabase()
         {
             using var connection = new SQLiteConnection($"Data Source={AppSettings.Instance.DbPath}");
             string sql = "CREATE TABLE phrase (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL DEFAULT '', phrase TEXT NOT NULL DEFAULT '', date DATE);";
@@ -111,7 +106,7 @@ namespace TmCGPTD.Models
             try
             {
                 // SQLiteデータベースに接続
-                using SQLiteConnection connection = new SQLiteConnection($"Data Source={AppSettings.Instance.DbPath}");
+                using SQLiteConnection connection = new($"Data Source={AppSettings.Instance.DbPath}");
                 await connection.OpenAsync();
 
                 bool categoryExists = false;
@@ -287,9 +282,9 @@ namespace TmCGPTD.Models
             using var transaction = connection.BeginTransaction();
             try
             {
-                if (_appSettings.SyncIsOn && _supabase != null && _uid != null)
+                if (AppSettings.SyncIsOn && Supabase != null && Uid != null)
                 {
-                    var result = await _supabase.From<Phrase>().Insert(new Phrase { UserId = _uid, Name = name, Content = phrasesText, Date = now });
+                    var result = await Supabase.From<Phrase>().Insert(new Phrase { UserId = Uid, Name = name, Content = phrasesText, Date = now });
 
                     string sql = $"INSERT INTO phrase (id, name, phrase, date) VALUES (@id, @name, @phrase, @date)";
 
@@ -372,9 +367,9 @@ namespace TmCGPTD.Models
             using var transaction = connection.BeginTransaction();
             try
             {
-                if (_appSettings.SyncIsOn && _supabase != null && _uid != null)
+                if (AppSettings.SyncIsOn && Supabase != null && Uid != null)
                 {
-                    var update = await _supabase.From<Phrase>()
+                    var update = await Supabase.From<Phrase>()
                                                 .Where(x => x.Name == oldName)
                                                 .Set(x => x.Name!, newName)
                                                 .Update();
@@ -415,15 +410,15 @@ namespace TmCGPTD.Models
             using var transaction = connection.BeginTransaction();
             try
             {
-                if (_appSettings.SyncIsOn && _supabase != null && _uid != null)
+                if (AppSettings.SyncIsOn && Supabase != null && Uid != null)
                 {
-                    var update = await _supabase.From<Phrase>()
+                    var update = await Supabase.From<Phrase>()
                                                 .Where(x => x.Name == name)
                                                 .Set(x => x.Content!, phrasesText)
                                                 .Update();
                 }
 
-                    using var command = new SQLiteCommand(connection)
+                using var command = new SQLiteCommand(connection)
                 {
                     CommandText = "UPDATE phrase SET phrase = @phrasesText WHERE name = @name;"
                 };
@@ -460,9 +455,9 @@ namespace TmCGPTD.Models
                 using var transaction = connection.BeginTransaction(System.Data.IsolationLevel.Serializable);
                 try
                 {
-                    if (_appSettings.SyncIsOn && _supabase != null && _uid != null)
+                    if (AppSettings.SyncIsOn && Supabase != null && Uid != null)
                     {
-                        await _supabase.From<Phrase>()
+                        await Supabase.From<Phrase>()
                                        .Where(x => x.Name == selectedPhraseItem)
                                        .Delete();
                     }
@@ -573,7 +568,7 @@ namespace TmCGPTD.Models
                             for (int i = 1, loopTo = columnEnd; i <= loopTo; i++)
                                 rowData.Add(csvReader.GetField(i)!);
 
-                            if (_appSettings.SyncIsOn && _supabase != null && _uid != null)
+                            if (AppSettings.SyncIsOn && Supabase != null && Uid != null)
                             {
                                 if (tableName == "editorlog")
                                 {
@@ -581,8 +576,8 @@ namespace TmCGPTD.Models
                                     if (success)
                                     {
                                         date = date.AddTicks(-(date.Ticks % TimeSpan.TicksPerSecond));  // ミリ秒以下を切り捨てる
-                                        var resultEditor = await _supabase.From<EditorLog>()
-                                             .Insert(new EditorLog { UserId = _uid, Date = date, Content = rowData[1] });
+                                        var resultEditor = await Supabase.From<EditorLog>()
+                                             .Insert(new EditorLog { UserId = Uid, Date = date, Content = rowData[1] });
 
                                         long editorId = resultEditor.Models[0].Id;
 
@@ -602,15 +597,15 @@ namespace TmCGPTD.Models
                                     if (success)
                                     {
                                         date = date.AddTicks(-(date.Ticks % TimeSpan.TicksPerSecond));
-                                        var resultChatRoom = await _supabase.From<ChatRoom>()
-                                                                        .Insert(new ChatRoom { UserId = _uid, UpdatedOn = date, Title = rowData[1], Json = rowData[2], Category = rowData[4], LastPrompt = rowData[5], JsonPrev = rowData[6] });
+                                        var resultChatRoom = await Supabase.From<ChatRoom>()
+                                                                        .Insert(new ChatRoom { UserId = Uid, UpdatedOn = date, Title = rowData[1], Json = rowData[2], Category = rowData[4], LastPrompt = rowData[5], JsonPrev = rowData[6] });
                                         long chatRoomId = resultChatRoom.Models[0].Id;
 
                                         var models = new List<Message>();
 
-                                        models.AddRange(_syncProcess.DivideMessage(rowData[3], chatRoomId, _uid));
+                                        models.AddRange(_syncProcess.DivideMessage(rowData[3], chatRoomId, Uid));
 
-                                        await _supabase.From<Message>().Upsert(models);
+                                        await Supabase.From<Message>().Upsert(models);
 
                                         // INSERT文を作成
                                         string values = string.Join(", ", Enumerable.Range(0, rowData.Count).Select(i => $"@value{i}"));
@@ -803,9 +798,9 @@ namespace TmCGPTD.Models
                 using var transaction = connection.BeginTransaction();
                 try
                 {
-                    if (_appSettings.SyncIsOn && _supabase != null && _uid != null)
+                    if (AppSettings.SyncIsOn && Supabase != null && Uid != null)
                     {
-                        await _supabase.From<ChatRoom>()
+                        await Supabase.From<ChatRoom>()
                                        .Where(x => x.Id == chatId)
                                        .Delete();
                     }
@@ -835,9 +830,9 @@ namespace TmCGPTD.Models
         {
             try
             {
-                if (_appSettings.SyncIsOn && _supabase != null && _uid != null)
+                if (AppSettings.SyncIsOn && Supabase != null && Uid != null)
                 {
-                    var update = await _supabase.From<ChatRoom>()
+                    var update = await Supabase.From<ChatRoom>()
                                                 .Where(x => x.Id == chatId)
                                                 .Set(x => x.Title!, title)
                                                 .Update();
@@ -869,9 +864,9 @@ namespace TmCGPTD.Models
         {
             try
             {
-                if (_appSettings.SyncIsOn && _supabase != null && _uid != null)
+                if (AppSettings.SyncIsOn && Supabase != null && Uid != null)
                 {
-                    var update = await _supabase.From<ChatRoom>()
+                    var update = await Supabase.From<ChatRoom>()
                                                 .Where(x => x.Id == chatId)
                                                 .Set(x => x.Category!, category)
                                                 .Update();
@@ -934,9 +929,9 @@ namespace TmCGPTD.Models
                 var dialogResult = await VMLocator.MainViewModel.ContentDialogShowAsync(dialog);
                 if (dialogResult == ContentDialogResult.Primary)
                 {
-                    if (_appSettings.SyncIsOn && _supabase != null && _uid != null)
+                    if (AppSettings.SyncIsOn && Supabase != null && Uid != null)
                     {
-                        var resultUpdate = await _supabase.From<ChatRoom>()
+                        var resultUpdate = await Supabase.From<ChatRoom>()
                                                     .Where(x => x.Id == matchingId.Value)
                                                     .Set(x => x.UpdatedOn!, date)
                                                     .Set(x => x.Title!, webChatTitle)
@@ -945,9 +940,9 @@ namespace TmCGPTD.Models
                         long chatRoomId = resultUpdate.Models[0].Id;
                         var models = new List<Message>();
 
-                        models.AddRange(_syncProcess.DivideMessage(webLog, chatRoomId, _uid));
+                        models.AddRange(_syncProcess.DivideMessage(webLog, chatRoomId, Uid));
 
-                        await _supabase.From<Message>().Insert(models);
+                        await Supabase.From<Message>().Insert(models);
 
                     }
                     query = $"UPDATE chatlog SET date=@date, title=@title, json=@json, text=@text, category=category WHERE id={matchingId.Value}";
@@ -989,16 +984,16 @@ namespace TmCGPTD.Models
             }
             else
             {
-                if (_appSettings.SyncIsOn && _supabase != null && _uid != null)
+                if (AppSettings.SyncIsOn && Supabase != null && Uid != null)
                 {
-                    var resultInsert = await _supabase.From<ChatRoom>().Insert(new ChatRoom { UserId = _uid, UpdatedOn = date, Title = webChatTitle, Category = chatService, LastPrompt = "", Json = jsonConversationHistory, JsonPrev = ""});
+                    var resultInsert = await Supabase.From<ChatRoom>().Insert(new ChatRoom { UserId = Uid, UpdatedOn = date, Title = webChatTitle, Category = chatService, LastPrompt = "", Json = jsonConversationHistory, JsonPrev = "" });
 
                     long chatRoomId = resultInsert.Models[0].Id;
                     var models = new List<Message>();
 
-                    models.AddRange(_syncProcess.DivideMessage(webLog, chatRoomId, _uid));
+                    models.AddRange(_syncProcess.DivideMessage(webLog, chatRoomId, Uid));
 
-                    await _supabase.From<Message>().Insert(models);
+                    await Supabase.From<Message>().Insert(models);
 
                     query = $"INSERT INTO chatlog(id, date, title, json, text, category) VALUES ({chatRoomId}, @date, @title, @json, @text, @category)";
                 }
@@ -1067,9 +1062,9 @@ namespace TmCGPTD.Models
             using var transaction = connection.BeginTransaction();
             try
             {
-                if (_appSettings.SyncIsOn && _supabase != null && _uid != null)
+                if (AppSettings.SyncIsOn && Supabase != null && Uid != null)
                 {
-                    var result = await _supabase.From<Template>().Insert(new Template { UserId = _uid, Title = title, Content = finalText, Date = date });
+                    var result = await Supabase.From<Template>().Insert(new Template { UserId = Uid, Title = title, Content = finalText, Date = date });
 
                     long templateId = result.Models[0].Id;
 
@@ -1126,9 +1121,9 @@ namespace TmCGPTD.Models
                 };
                 string finalText = string.Join(Environment.NewLine + "<---TMCGPT--->" + Environment.NewLine, inputText);
 
-                if (_appSettings.SyncIsOn && _supabase != null && _uid != null)
+                if (AppSettings.SyncIsOn && Supabase != null && Uid != null)
                 {
-                    var update = await _supabase.From<Template>()
+                    var update = await Supabase.From<Template>()
                                                 .Where(x => x.Title == title)
                                                 .Set(x => x.Content!, finalText)
                                                 .Update();
@@ -1169,9 +1164,9 @@ namespace TmCGPTD.Models
             using var transaction = connection.BeginTransaction();
             try
             {
-                if (_appSettings.SyncIsOn && _supabase != null && _uid != null)
+                if (AppSettings.SyncIsOn && Supabase != null && Uid != null)
                 {
-                    var update = await _supabase.From<Template>()
+                    var update = await Supabase.From<Template>()
                                                 .Where(x => x.Title == oldName)
                                                 .Set(x => x.Title!, newName)
                                                 .Update();
@@ -1214,9 +1209,9 @@ namespace TmCGPTD.Models
                 using var transaction = connection.BeginTransaction(System.Data.IsolationLevel.Serializable);
                 try
                 {
-                    if (_appSettings.SyncIsOn && _supabase != null && _uid != null)
+                    if (AppSettings.SyncIsOn && Supabase != null && Uid != null)
                     {
-                        await _supabase.From<Template>()
+                        await Supabase.From<Template>()
                                        .Where(x => x.Title == selectedTemplateItem)
                                        .Delete();
                     }
@@ -1391,9 +1386,9 @@ namespace TmCGPTD.Models
             using var transaction = connection.BeginTransaction();
             try
             {
-                if (_appSettings.SyncIsOn && _supabase != null && _uid != null)
+                if (AppSettings.SyncIsOn && Supabase != null && Uid != null)
                 {
-                    var result = await _supabase.From<EditorLog>().Insert(new EditorLog { UserId = _uid, Date = date, Content = finalText });
+                    var result = await Supabase.From<EditorLog>().Insert(new EditorLog { UserId = Uid, Date = date, Content = finalText });
 
                     long resultId = result.Models[0].Id;
 
@@ -1431,7 +1426,7 @@ namespace TmCGPTD.Models
         public async Task GetEditorLogDatabaseAsync()
         {
             try
-            { 
+            {
                 string query = $"SELECT id, text FROM editorlog ORDER BY date DESC LIMIT 200";
 
                 using var cmd = new SQLiteCommand(query, memoryConnection);
@@ -1453,7 +1448,7 @@ namespace TmCGPTD.Models
 
                 VMLocator.EditorViewModel.EditorLogLists = dropList;
             }
-            catch(Exception)
+            catch (Exception)
             {
                 throw;
             }
@@ -1474,7 +1469,7 @@ namespace TmCGPTD.Models
                     string[] texts = text.Split(new[] { "<---TMCGPT--->" }, StringSplitOptions.None);
                     for (int i = 0, loopTo = Math.Min(texts.Length - 1, 4); i <= loopTo; i++) // 5要素目までを取得
                     {
-                        string propertyName = $"Editor{i+1}Text";
+                        string propertyName = $"Editor{i + 1}Text";
                         PropertyInfo property = VMLocator.EditorViewModel.GetType().GetProperty(propertyName)!;
                         if (property != null)
                         {
@@ -1497,19 +1492,19 @@ namespace TmCGPTD.Models
         // データベースのEditorログをクリンナップ--------------------------------------------------------------
         public async Task CleanUpEditorLogDatabaseAsync()
         {
-            if (_appSettings.SyncIsOn && _supabase != null && _uid != null)
+            if (AppSettings.SyncIsOn && Supabase != null && Uid != null)
             {
-                int count = await _supabase
+                int count = await Supabase
                               .From<EditorLog>()
                               .Count(Postgrest.Constants.CountType.Exact);
 
                 if (count > 200)
                 {
                     // 最新の日付順に結果をソートし、200件以上を削除
-                     await _supabase.From<EditorLog>()
-                                    .Order(x => x.Date, Ordering.Descending)
-                                    .Range(200, count - 1)
-                                    .Delete();
+                    await Supabase.From<EditorLog>()
+                                   .Order(x => x.Date, Ordering.Descending)
+                                   .Range(200, count - 1)
+                                   .Delete();
                 }
             }
 
@@ -1573,13 +1568,13 @@ namespace TmCGPTD.Models
             string promptTextForSave = string.Join(Environment.NewLine + "<---TMCGPT--->" + Environment.NewLine, inputText);
 
             long lastRowId = VMLocator.ChatViewModel.LastId;
-            string titleText = VMLocator.ChatViewModel.ChatTitle;
+            string titleText = VMLocator.ChatViewModel.ChatTitle!;
             if (string.IsNullOrWhiteSpace(titleText))
             {
                 titleText = "";
             }
 
-            string categoryText = VMLocator.ChatViewModel.ChatCategory;
+            string categoryText = VMLocator.ChatViewModel.ChatCategory!;
             if (string.IsNullOrWhiteSpace(categoryText))
             {
                 categoryText = "";
@@ -1655,9 +1650,9 @@ namespace TmCGPTD.Models
                             }
                         }
 
-                        if (_appSettings.SyncIsOn && _supabase != null && _uid != null)
+                        if (AppSettings.SyncIsOn && Supabase != null && Uid != null)
                         {
-                            var update = await _supabase.From<ChatRoom>()
+                            var update = await Supabase.From<ChatRoom>()
                                                         .Where(x => x.Id == (int)lastRowId)
                                                         .Set(x => x.UpdatedOn!, resDate)
                                                         .Set(x => x.Title!, titleText)
@@ -1669,13 +1664,13 @@ namespace TmCGPTD.Models
 
                             var models = new List<Message>();
 
-                            models.AddRange(_syncProcess.DivideMessage(string.Join(Environment.NewLine, insertText), (int)lastRowId, _uid));
+                            models.AddRange(_syncProcess.DivideMessage(string.Join(Environment.NewLine, insertText), (int)lastRowId, Uid));
 
-                            await _supabase.From<Message>().Upsert(models);
+                            await Supabase.From<Message>().Upsert(models);
                         }
 
                         // 既存のテキストに新しいメッセージを追加する
-                        string newText = ( currentText + Environment.NewLine + string.Join(Environment.NewLine, insertText) ).Trim() + Environment.NewLine + Environment.NewLine;
+                        string newText = (currentText + Environment.NewLine + string.Join(Environment.NewLine, insertText)).Trim() + Environment.NewLine + Environment.NewLine;
 
                         // 指定されたIDに対してデータを更新する
                         using (var command = new SQLiteCommand("UPDATE chatlog SET date=@date, title=@title, json=@json, text=@text, category=@category, lastprompt=@lastprompt, jsonprev=@jsonprev WHERE id=@id", connection))
@@ -1693,17 +1688,17 @@ namespace TmCGPTD.Models
                     }
                     else
                     {
-                        if (_appSettings.SyncIsOn && _supabase != null && _uid != null)
+                        if (AppSettings.SyncIsOn && Supabase != null && Uid != null)
                         {
-                            var result = await _supabase.From<ChatRoom>().Insert(new ChatRoom { UserId = _uid, UpdatedOn = resDate, Title = titleText, Category = categoryText, LastPrompt = promptTextForSave, Json = jsonConversationHistory, JsonPrev = jsonLastConversationHistory });
+                            var result = await Supabase.From<ChatRoom>().Insert(new ChatRoom { UserId = Uid, UpdatedOn = resDate, Title = titleText, Category = categoryText, LastPrompt = promptTextForSave, Json = jsonConversationHistory, JsonPrev = jsonLastConversationHistory });
 
                             long chatRoomId = result.Models[0].Id;
 
                             var models = new List<Message>();
 
-                            models.AddRange(_syncProcess.DivideMessage(string.Join(Environment.NewLine, insertText), chatRoomId, _uid));
+                            models.AddRange(_syncProcess.DivideMessage(string.Join(Environment.NewLine, insertText), chatRoomId, Uid));
 
-                            await _supabase.From<Message>().Insert(models);
+                            await Supabase.From<Message>().Insert(models);
 
                             // logテーブルにデータをインサートする
                             using (var command = new SQLiteCommand("INSERT INTO chatlog(id, date, title, json, text, category, lastprompt, jsonprev) VALUES (@id, @date, @title, @json, @text, @category, @lastprompt, @jsonprev)", connection))
@@ -1720,7 +1715,7 @@ namespace TmCGPTD.Models
                             }
                         }
                         else
-                        { 
+                        {
                             // logテーブルにデータをインサートする
                             using (var command = new SQLiteCommand("INSERT INTO chatlog(date, title, json, text, category, lastprompt, jsonprev) VALUES (@date, @title, @json, @text, @category, @lastprompt, @jsonprev)", connection))
                             {
@@ -1810,6 +1805,6 @@ namespace TmCGPTD.Models
             {
                 throw;
             }
-         }
+        }
     }
 }

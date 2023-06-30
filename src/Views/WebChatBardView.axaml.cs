@@ -33,7 +33,7 @@ namespace TmCGPTD.Views
             //browser.Focusable = false;
             browser.LoadEnd += Browser_LoadEnd;
 
-            _searchBox = this.FindControl<TextBox>("SearchBox");
+            _searchBox = this.FindControl<TextBox>("SearchBox")!;
         }
 
         private void FocusSearchBox(object sender, RoutedEventArgs e)
@@ -54,7 +54,7 @@ namespace TmCGPTD.Views
             browser.Dispose();
         }
 
-        private async void Browser_LoadEnd(object sender, LoadEndEventArgs e)
+        private void Browser_LoadEnd(object? sender, LoadEndEventArgs e)
         {
             string addElementsCode = @"
                                     var button;

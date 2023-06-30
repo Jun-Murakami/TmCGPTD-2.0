@@ -84,7 +84,7 @@ namespace TmCGPTD.Models
 
             var chatLogRegex = new Regex(@"^\[(.+)\] by (You|AI)", RegexOptions.Multiline);
             var codeSnippetRegex = new Regex(@"^```(?:([\w-+#.]+)\s+)?([\s\S]*?)(^```)", RegexOptions.Multiline);
-            var usageRegex = new Regex(@"^usage=", RegexOptions.Multiline);
+            var usageRegex = new Regex(@"(^usage=)|(^(\[tokens\]))", RegexOptions.Multiline);
 
             var scrollableWrapperNode = doc.DocumentNode.SelectSingleNode("//div[@id='scrollableWrapper']");
             var chatHtml = string.Empty;
@@ -204,8 +204,8 @@ namespace TmCGPTD.Models
                 HtmlAgilityPack.HtmlDocument htmlDoc = new HtmlAgilityPack.HtmlDocument();
                 htmlDoc.LoadHtml(htmlSource);
 
-                Avalonia.Application.Current!.TryFindResource("My.Strings.ChatScreenInfo", out object resource1);
-                string resourceString = resource1.ToString();
+                Avalonia.Application.Current!.TryFindResource("My.Strings.ChatScreenInfo", out object? resource1);
+                string resourceString = resource1!.ToString()!;
 
                 HtmlNode titleNode = htmlDoc.DocumentNode.SelectSingleNode("//title");
 
@@ -478,8 +478,8 @@ namespace TmCGPTD.Models
                 HtmlAgilityPack.HtmlDocument htmlDoc = new HtmlAgilityPack.HtmlDocument();
                 htmlDoc.LoadHtml(htmlSource);
 
-                Avalonia.Application.Current!.TryFindResource("My.Strings.ChatScreenInfo", out object resource1);
-                string resourceString = resource1.ToString();
+                Avalonia.Application.Current!.TryFindResource("My.Strings.ChatScreenInfo", out object? resource1);
+                string resourceString = resource1!.ToString()!;
 
                 HtmlNode titleNode = htmlDoc.DocumentNode.SelectSingleNode("//title");
 

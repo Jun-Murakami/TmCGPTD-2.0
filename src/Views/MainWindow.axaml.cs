@@ -24,9 +24,9 @@ namespace TmCGPTD.Views
     public partial class MainWindow : Window
     {
         public MainWindowViewModel MainWindowViewModel { get; } = new MainWindowViewModel();
-        DatabaseProcess _dbProcess = new DatabaseProcess();
-        SupabaseProcess _supabaseProcess = new SupabaseProcess();
-        SyncProcess _syncProcess = new SyncProcess();
+        readonly DatabaseProcess _dbProcess = new();
+        readonly SupabaseProcess _supabaseProcess = new();
+        readonly SyncProcess _syncProcess = new SyncProcess();
 
         public MainWindow()
         {
@@ -39,14 +39,14 @@ namespace TmCGPTD.Views
             DataContext = MainWindowViewModel;
             VMLocator.MainWindowViewModel = MainWindowViewModel;
 
-            // キーイベントハンドラ
+            // 繧ｭ繝ｼ繧､繝吶Φ繝医ワ繝ｳ繝峨Λ
             this.KeyDown += MainWindow_KeyDown;
             this.KeyUp += MainWindow_KeyUp;
 
 
             // Get the current culture info
             var cultureInfo = CultureInfo.CurrentCulture;
-            if(cultureInfo.Name == "ja-JP")
+            if (cultureInfo.Name == "ja-JP")
             {
                 Translate("ja-JP");
             }
@@ -81,7 +81,7 @@ namespace TmCGPTD.Views
         private async void MainWindow_Loaded(object? sender, RoutedEventArgs e)
         {
             try
-            { 
+            {
                 var settings = await LoadAppSettingsAsync();
 
                 if (File.Exists(Path.Combine(settings.AppDataPath, "settings.json")))
@@ -105,11 +105,10 @@ namespace TmCGPTD.Views
                 }
 
                 VMLocator.DatabaseSettingsViewModel.DatabasePath = settings.DbPath;
-                VMLocator.DatabaseSettingsViewModel.SyncIsOn = settings.SyncIsOn;
 
                 if (!File.Exists(settings.DbPath))
                 {
-                    _dbProcess.CreateDatabase();
+                    DatabaseProcess.CreateDatabase();
                 }
 
                 await _dbProcess.DbLoadToMemoryAsync();
@@ -127,7 +126,7 @@ namespace TmCGPTD.Views
                 VMLocator.EditorViewModel.EditorCommonFontSize = settings.EditorFontSize > 0 ? settings.EditorFontSize : 1;
                 VMLocator.MainViewModel.SelectedPhraseItem = settings.PhrasePreset;
                 VMLocator.EditorViewModel.EditorModeIsChecked = true;
-            
+
                 VMLocator.MainWindowViewModel.ApiMaxTokens = settings.ApiMaxTokens;
                 VMLocator.MainWindowViewModel.ApiTemperature = settings.ApiTemperature;
                 VMLocator.MainWindowViewModel.ApiTopP = settings.ApiTopP;
@@ -192,38 +191,30 @@ namespace TmCGPTD.Views
 
                 await _supabaseProcess.InitializeSupabaseAsync();
 
-                if (SupabaseStates.Instance.Supabase != null && settings.SyncIsOn)
+                if (SupabaseStates.Instance.Supabase != null && AppSettings.Instance.Session != null)
                 {
                     SupabaseStates.Instance.Supabase.Auth.LoadSession();
-                    await SupabaseStates.Instance.Supabase.Auth.RetrieveSessionAsync();
-                    if (SupabaseStates.Instance.Supabase.Auth.CurrentSession == null && AppSettings.Instance.Session !=null)
+                    var session = await SupabaseStates.Instance.Supabase.Auth.RetrieveSessionAsync();
+                    if (session == null && AppSettings.Instance.Session != null)
                     {
                         var dialog = new ContentDialog() { Title = "Cloud sync session expired. Please sign in again.", PrimaryButtonText = "OK" };
                         await VMLocator.MainViewModel.ContentDialogShowAsync(dialog);
 
-                        await _supabaseProcess.GetAuthAsync();
-                        VMLocator.MainViewModel.LoginUri = SupabaseStates.Instance.AuthState!.Uri;
-                        VMLocator.MainViewModel.OnLogin = true;
-
-                        int timeOut = 0;
-                        while(SupabaseStates.Instance.Supabase.Auth.CurrentSession == null && timeOut < 600)
-                        {
-                            await Task.Delay(1000);
-                            timeOut++;
-                        }
-
-                        if(SupabaseStates.Instance.Supabase.Auth.CurrentSession != null)
-                        {
-                            await _syncProcess.SyncDbAsync();
-                        }
+                        VMLocator.MainViewModel.LoginStatus = 1;
+                        VMLocator.CloudLoggedinViewModel.Provider = "";
                     }
                     else
                     {
+                        VMLocator.CloudLoggedinViewModel.Provider = settings.Provider;
+                        await _dbProcess.CleanUpEditorLogDatabaseAsync();
                         await _syncProcess.SyncDbAsync();
                     }
                 }
+                else
+                {
+                    await _dbProcess.CleanUpEditorLogDatabaseAsync();
+                }
 
-                await _dbProcess.CleanUpEditorLogDatabaseAsync();
             }
             catch (Exception ex)
             {
@@ -308,12 +299,18 @@ namespace TmCGPTD.Views
 
             settings.SeparatorMode = VMLocator.EditorViewModel.EditorSeparateMode;
 
-            if(SupabaseStates.Instance.Supabase != null)
+            if (SupabaseStates.Instance.Supabase != null && SupabaseStates.Instance.Supabase.Auth.CurrentSession != null)
             {
-                if (SupabaseStates.Instance.Supabase.Auth.CurrentSession != null)
-                {
-                    settings.Session = System.Text.Json.JsonSerializer.Serialize(SupabaseStates.Instance.Supabase.Auth.CurrentSession);
-                }
+                SupabaseStates.Instance.Supabase.Auth.RefreshSession();
+                settings.Session = System.Text.Json.JsonSerializer.Serialize(SupabaseStates.Instance.Supabase.Auth.CurrentSession);
+                settings.Provider = VMLocator.CloudLoggedinViewModel.Provider;
+                settings.SyncIsOn = true;
+            }
+            else
+            {
+                settings.Session = null;
+                settings.Provider = null;
+                settings.SyncIsOn = false;
             }
 
             SaveAppSettings(settings);

@@ -16,8 +16,8 @@ namespace TmCGPTD.ViewModels
             this.dialog = dialog;
         }
 
-        private string _UserInput;
-        public string UserInput
+        private string? _UserInput;
+        public string? UserInput
         {
             get => _UserInput;
             set

@@ -47,13 +47,13 @@ namespace TmCGPTD.Views
             _browser.Focusable = false;
             ChatViewModel.SetBrowser(_browser);
 
-            _button = this.FindControl<Button>("ButtonWrite");
+            _button = this!.FindControl<Button>("ButtonWrite")!;
             ChatViewModel.SetButtonWrite(_button);
 
-            _button2 = this.FindControl<Button>("ButtonWrite2");
+            _button2 = this!.FindControl<Button>("ButtonWrite2")!;
             ChatViewModel.SetButtonWrite2(_button2);
 
-            _searchBox = this.FindControl<TextBox>("SearchBox");
+            _searchBox = this!.FindControl<TextBox>("SearchBox")!;
         }
 
         private async void Browser_LoadStart(object sender, LoadStartEventArgs e)
@@ -95,18 +95,18 @@ namespace TmCGPTD.Views
             if (_browser != null && DataContext is ChatViewModel viewModel)
             {
                 _browser.Opacity = 0;
-                string htmlContent = ChatViewModel.HtmlContent;
+                string? htmlContent = ChatViewModel.HtmlContent;
 
                 int byteCount = Encoding.UTF8.GetByteCount(htmlContent);
 
-                // ƒoƒCƒg”‚É‰‚¶‚Ä“Ç‚İ‚İ•û–@‚ğ‘I‘ğ
+                // ï¿½oï¿½Cï¿½gï¿½ï¿½ï¿½É‰ï¿½ï¿½ï¿½ï¿½Ä“Ç‚İï¿½ï¿½İ•ï¿½ï¿½@ï¿½ï¿½Iï¿½ï¿½
                 if (byteCount > 1000000) //
                 {
-                    // ˆêƒtƒ@ƒCƒ‹‚ÉHTMLƒRƒ“ƒeƒ“ƒc‚ğ‘‚«‚Ş
+                    // ï¿½êï¿½tï¿½@ï¿½Cï¿½ï¿½ï¿½ï¿½HTMLï¿½Rï¿½ï¿½ï¿½eï¿½ï¿½ï¿½cï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
                     string tempFilePath = System.IO.Path.Combine(AppSettings.Instance.AppDataPath, "tempHtmlFile.html");
                     await File.WriteAllTextAsync(tempFilePath, htmlContent);
 
-                    // ˆêƒtƒ@ƒCƒ‹‚ÌƒpƒX‚ğ_browser.Address‚Éİ’è‚·‚é
+                    // ï¿½êï¿½tï¿½@ï¿½Cï¿½ï¿½ï¿½Ìƒpï¿½Xï¿½ï¿½_browser.Addressï¿½Éİ’è‚·ï¿½ï¿½
                     _browser.Address = tempFilePath;
                 }
                 else

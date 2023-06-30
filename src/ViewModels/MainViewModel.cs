@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using System.Collections.ObjectModel;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.Json;
 using System.Windows.Input;
 using CommunityToolkit.Mvvm.Input;
 using System.IO;
@@ -14,21 +13,15 @@ using TmCGPTD.Models;
 using FluentAvalonia.UI.Controls;
 using Avalonia;
 using Avalonia.Platform.Storage;
-using Avalonia.Platform;
-using System.Diagnostics;
 using System.Threading;
-using static Supabase.Gotrue.Constants;
-using Supabase.Gotrue;
-using Supabase;
-using static TmCGPTD.Views.WebLogInView;
 
 namespace TmCGPTD.ViewModels
 {
     public partial class MainViewModel : ViewModelBase
     {
-        SupabaseProcess _supabaseProcess = new SupabaseProcess();
-        DatabaseProcess _dbProcess = new DatabaseProcess();
-        SyncProcess _syncProcess = new SyncProcess();
+        readonly SupabaseProcess _supabaseProcess = new();
+        readonly DatabaseProcess _dbProcess = new();
+        readonly SyncProcess _syncProcess = new();
 
         public MainViewModel()
         {
@@ -44,7 +37,7 @@ namespace TmCGPTD.ViewModels
             ImportChatLogCommand = new AsyncRelayCommand(ImportChatLogAsync);
             ExportChatLogCommand = new AsyncRelayCommand(ExportChatLogAsync);
             DeleteChatLogCommand = new AsyncRelayCommand(DeleteChatLogAsync);
-            LoadChatListCommand = new RelayCommand<string>(async (keyword) => await LoadChatListAsync(keyword));
+            LoadChatListCommand = new RelayCommand<string>(async (keyword) => await LoadChatListAsync(keyword!));
 
             PostCommand = new AsyncRelayCommand(PostAsync);
 
@@ -63,6 +56,7 @@ namespace TmCGPTD.ViewModels
             SystemMessageCommand = new RelayCommand(InsertSystemMessage);
             HotKeyDisplayCommand = new AsyncRelayCommand(HotKeyDisplayAsync);
             OpenApiSettingsCommand = new RelayCommand(OpenApiSettings);
+            CloudSyncCommand = new AsyncRelayCommand(CloudSyncAsync);
             ShowDatabaseSettingsCommand = new AsyncRelayCommand(ShowDatabaseSettingsAsync);
             PhrasePresetsItems = new ObservableCollection<string>();
         }
@@ -90,6 +84,7 @@ namespace TmCGPTD.ViewModels
         public ICommand EditorOneCommand { get; }
         public ICommand SystemMessageCommand { get; }
         public ICommand OpenApiSettingsCommand { get; }
+        public IAsyncRelayCommand CloudSyncCommand { get; }
         public IAsyncRelayCommand ShowDatabaseSettingsCommand { get; }
         public IAsyncRelayCommand HotKeyDisplayCommand { get; }
 
@@ -242,11 +237,11 @@ namespace TmCGPTD.ViewModels
             set => SetProperty(ref _inputTokens, value);
         }
 
-        private bool _onLogin;
-        public bool OnLogin
+        private int _loginStatus;
+        public int LoginStatus
         {
-            get => _onLogin;
-            set => SetProperty(ref _onLogin, value);
+            get => _loginStatus;
+            set => SetProperty(ref _loginStatus, value);
         }
 
         private string? _authCode;
@@ -255,7 +250,7 @@ namespace TmCGPTD.ViewModels
             get => _authCode;
             set
             {
-                if(SetProperty(ref _authCode, value))
+                if (SetProperty(ref _authCode, value))
                 {
                     GetSessionAdaptarAsync();
                 }
@@ -298,7 +293,7 @@ namespace TmCGPTD.ViewModels
 
             try
             {
-                if(VMLocator.ChatViewModel.ReEditIsOn && SelectedLeftPane == "API Chat")
+                if (VMLocator.ChatViewModel.ReEditIsOn && SelectedLeftPane == "API Chat")
                 {
                     string? jsonCopy = System.Text.Json.JsonSerializer.Serialize(VMLocator.ChatViewModel.ConversationHistory);
                     backupConversationHistory = System.Text.Json.JsonSerializer.Deserialize<List<Dictionary<string, object>>>(jsonCopy);
@@ -428,7 +423,7 @@ namespace TmCGPTD.ViewModels
 
         private async Task DeleteChatLogAsync()
         {
-            if (VMLocator.DataGridViewModel.SelectedItem == null)
+            if (VMLocator.DataGridViewModel.SelectedItem == null || VMLocator.DataGridViewModel.SelectedItemIndex == -1)
             {
                 return;
             }
@@ -451,6 +446,7 @@ namespace TmCGPTD.ViewModels
                 await _dbProcess.DeleteChatLogDatabaseAsync(VMLocator.DataGridViewModel.SelectedItem.Id);
                 await VMLocator.ChatViewModel.InitializeChatAsync();
                 VMLocator.DataGridViewModel.ChatList = await _dbProcess.SearchChatDatabaseAsync();
+                VMLocator.DataGridViewModel.SelectedItemIndex = -1;
             }
             catch (Exception ex)
             {
@@ -479,7 +475,7 @@ namespace TmCGPTD.ViewModels
             }
             catch (Exception ex)
             {
-                var dialog = new ContentDialog(){ Title = $"Error: {ex.Message}", PrimaryButtonText = "OK" };
+                var dialog = new ContentDialog() { Title = $"Error: {ex.Message}", PrimaryButtonText = "OK" };
                 await ContentDialogShowAsync(dialog);
                 ClearPhrases();
             }
@@ -504,7 +500,7 @@ namespace TmCGPTD.ViewModels
                         await _dbProcess.UpdatePhrasePresetAsync(SelectedPhraseItem, phrasesText);
                         return;
                     }
-                    else if(dialogResult != ContentDialogResult.Secondary)
+                    else if (dialogResult != ContentDialogResult.Secondary)
                     {
                         return;
                     }
@@ -546,7 +542,7 @@ namespace TmCGPTD.ViewModels
 
         private async Task RenamePhrasesAsync()
         {
-            if(string.IsNullOrWhiteSpace(SelectedPhraseItem))
+            if (string.IsNullOrWhiteSpace(SelectedPhraseItem))
             {
                 return;
             }
@@ -635,7 +631,7 @@ namespace TmCGPTD.ViewModels
             if (result.Count > 0)
             {
                 try
-                { 
+                {
                     var selectedFilePath = result[0].Path.LocalPath;
                     var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(selectedFilePath);
 
@@ -648,7 +644,7 @@ namespace TmCGPTD.ViewModels
                     await LoadPhraseItemsAsync();
                     SelectedPhraseItem = fileNameWithoutExtension;
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     var cdialog = new ContentDialog() { Title = $"Error: {ex.Message}", PrimaryButtonText = "OK" };
                     await ContentDialogShowAsync(cdialog);
@@ -807,7 +803,7 @@ namespace TmCGPTD.ViewModels
         }
         // ----------------------------------------------------------------------------------------------------------------------------
 
-        public void OpenApiSettings()
+        public static void OpenApiSettings()
         {
             VMLocator.ChatViewModel.ChatViewIsVisible = false;
             VMLocator.WebChatViewModel.WebChatViewIsVisible = false;
@@ -819,46 +815,44 @@ namespace TmCGPTD.ViewModels
         private async Task ShowDatabaseSettingsAsync()
         {
             Application.Current!.TryFindResource("My.Strings.DatabaseInfo", out object? resource1);
-            var dialog = new ContentDialog()
+            var dialog = new ContentDialog
             {
                 Title = resource1,
                 PrimaryButtonText = "OK",
-                DataContext = VMLocator.DatabaseSettingsViewModel
+                DataContext = VMLocator.DatabaseSettingsViewModel,
+                Content = new DatabaseSettingsView()
             };
-
-            dialog.Content = new DatabaseSettingsView();
             await ContentDialogShowAsync(dialog);
+        }
+        // ----------------------------------------------------------------------------------------------------------------------------
 
-            if(AppSettings.Instance.SyncIsOn && SupabaseStates.Instance.Supabase!.Auth.CurrentSession == null)
+        private async Task CloudSyncAsync()
+        {
+            if (SupabaseStates.Instance.Supabase == null)
             {
-                await _supabaseProcess.GetAuthAsync();
-                LoginUri = SupabaseStates.Instance.AuthState!.Uri;
-                OnLogin = true;
+                await _supabaseProcess.InitializeSupabaseAsync();
+            }
 
-                int timeOut = 0;
-                while (SupabaseStates.Instance.Supabase.Auth.CurrentSession == null && timeOut < 600)
-                {
-                    await Task.Delay(1000);
-                    timeOut++;
-                }
-
-                if (SupabaseStates.Instance.Supabase.Auth.CurrentSession != null)
-                {
-                    await _syncProcess.SyncDbAsync();
-                }
+            //1=ログイン前、2=ログイン中、3=ログイン後
+            if (SupabaseStates.Instance.Supabase != null && SupabaseStates.Instance.Supabase.Auth.CurrentSession == null)
+            {
+                LoginStatus = 1;
+            }
+            else if (SupabaseStates.Instance.Supabase?.Auth.CurrentSession != null)
+            {
+                LoginStatus = 3;
             }
         }
         // ----------------------------------------------------------------------------------------------------------------------------
 
         private async Task HotKeyDisplayAsync()
         {
-            var dialog = new ContentDialog()
+            var dialog = new ContentDialog
             {
-                Title = $"Keyboard shortcuts",
-                PrimaryButtonText = "OK"
+                Title = "Keyboard shortcuts",
+                PrimaryButtonText = "OK",
+                Content = new HotKeyDisplayView()
             };
-
-            dialog.Content = new HotKeyDisplayView();
             await ContentDialogShowAsync(dialog);
         }
         // ----------------------------------------------------------------------------------------------------------------------------

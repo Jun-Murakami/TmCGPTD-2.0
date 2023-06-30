@@ -38,7 +38,7 @@ namespace TmCGPTD.Models
             [Column("json_prev")]
             public string? JsonPrev { get; set; }
 
-            public override bool Equals(object obj)
+            public override bool Equals(object? obj)
             {
                 return obj is ChatRoom chatroom &&
                         Id == chatroom.Id;
@@ -75,7 +75,7 @@ namespace TmCGPTD.Models
             [Column("usage")]
             public string? Usage { get; set; }
 
-            public override bool Equals(object obj)
+            public override bool Equals(object? obj)
             {
                 return obj is Message message &&
                         Id == message.Id;
@@ -103,7 +103,7 @@ namespace TmCGPTD.Models
             [Column("content")]
             public string? Content { get; set; }
 
-            public override bool Equals(object obj)
+            public override bool Equals(object? obj)
             {
                 return obj is EditorLog editorlog &&
                         Id == editorlog.Id;
@@ -134,7 +134,7 @@ namespace TmCGPTD.Models
             [Column("date")]
             public DateTime Date { get; set; }
 
-            public override bool Equals(object obj)
+            public override bool Equals(object? obj)
             {
                 return obj is Phrase phrase &&
                         Id == phrase.Id;
@@ -165,7 +165,7 @@ namespace TmCGPTD.Models
             [Column("date")]
             public DateTime Date { get; set; }
 
-            public override bool Equals(object obj)
+            public override bool Equals(object? obj)
             {
                 return obj is Template templete &&
                         Id == templete.Id;

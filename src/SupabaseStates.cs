@@ -1,32 +1,22 @@
 ﻿using Supabase.Gotrue;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace TmCGPTD
 {
-    public class SupabaseStates
+  public class SupabaseStates : ObservableObject
+  {
+    private static SupabaseStates? _instance;
+    public static SupabaseStates Instance
     {
-        private static SupabaseStates? _instance;
+      get
+      {
+        _instance ??= new SupabaseStates();
 
-        public static SupabaseStates Instance
-        {
-            get
-            {
-                if (_instance == null)
-                {
-                    _instance = new SupabaseStates();
-                }
-
-                return _instance;
-            }
-        }
-
-        public Supabase.Client? Supabase { get; set; }
-        public ProviderAuthState? AuthState { get; set; }
-
-
+        return _instance;
+      }
     }
+
+    public Supabase.Client? Supabase { get; set; }
+    public ProviderAuthState? AuthState { get; set; }
+  }
 }

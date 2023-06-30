@@ -1,18 +1,13 @@
 ﻿using Avalonia.Platform;
-using CommunityToolkit.Mvvm.ComponentModel;
 using FluentAvalonia.UI.Controls;
 using Supabase.Gotrue;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Diagnostics;
-using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 using static TmCGPTD.Views.WebLogInView;
-using TmCGPTD.Views;
 using Supabase;
-using TmCGPTD.Models;
+using System.Collections.Generic;
 
 namespace TmCGPTD.Models
 {
@@ -45,7 +40,35 @@ namespace TmCGPTD.Models
             }
         }
 
-        public async Task GetAuthAsync()
+        public async Task DeleteAccountAsync()
+        {
+            var dict = new Dictionary<string, object>();
+            await SupabaseStates.Instance.Supabase!.Rpc("deleteUser", dict);
+        }
+
+        public async Task ChangeEmailAsync(string email)
+        {
+            var attrs = new UserAttributes { Email = email };
+            await SupabaseStates.Instance.Supabase!.Auth.Update(attrs);
+        }
+
+        public async Task<bool> PasswordResetAsync(string email)
+        {
+            return await SupabaseStates.Instance.Supabase!.Auth.ResetPasswordForEmail(email);
+        }
+
+        public async Task<Session> EmailLoginAsync(string email, string password)
+        {
+            Session? session = await SupabaseStates.Instance.Supabase!.Auth.SignIn(email, password);
+            return session!;
+        }
+        public async Task<Session> EmailSignUpAsync(string email, string password)
+        {
+            Session? session = await SupabaseStates.Instance.Supabase!.Auth.SignUp(email, password);
+            return session!;
+        }
+
+        public async Task GoogleAuthAsync()
         {
             SupabaseStates.Instance.AuthState = await SupabaseStates.Instance.Supabase!.Auth.SignIn(Constants.Provider.Google, new SignInOptions
             {
@@ -54,20 +77,24 @@ namespace TmCGPTD.Models
             });
         }
 
-        public async Task GetSessionAsync()
+        public async Task MicrosoftAuthAsync()
         {
-            var session = await SupabaseStates.Instance.Supabase!.Auth.ExchangeCodeForSession(SupabaseStates.Instance.AuthState!.PKCEVerifier!, VMLocator.MainViewModel.AuthCode!);
-            VMLocator.MainViewModel.OnLogin = false;
-            if(session != null)
+            SupabaseStates.Instance.AuthState = await SupabaseStates.Instance.Supabase!.Auth.SignIn(Constants.Provider.Azure, new SignInOptions
             {
-                VMLocator.MainViewModel.SyncLogText = "Signed in.";
-            }
+                FlowType = Constants.OAuthFlowType.PKCE,
+                Scopes = "openid profile email offline_access",
+                RedirectTo = "http://localhost:3000/oauth/callback"
+            });
         }
 
-        public async Task SignOutAsync()
+        public async Task GetSessionAsync()
+        {
+            await SupabaseStates.Instance.Supabase!.Auth.ExchangeCodeForSession(SupabaseStates.Instance.AuthState!.PKCEVerifier!, VMLocator.MainViewModel.AuthCode!);
+        }
+
+        public async Task LogOutAsync()
         {
             await SupabaseStates.Instance.Supabase!.Auth.SignOut();
-            VMLocator.MainViewModel.SyncLogText = "Signed out.";
         }
     }
 }

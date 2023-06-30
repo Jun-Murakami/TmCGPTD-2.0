@@ -9,7 +9,6 @@
 			<RowDefinition Height="Auto"/>
 			<RowDefinition Height="Auto"/>
 			<RowDefinition Height="Auto"/>
-			<RowDefinition Height="Auto"/>
 		</Grid.RowDefinitions>
 		<Grid.ColumnDefinitions>
 			<ColumnDefinition Width="Auto"/>
@@ -34,14 +33,7 @@
 				Content="Load Database"
 				Margin="0,10,0,10"
 				Command="{Binding LoadDatabaseCommand}"/>
-		<ToggleSwitch Grid.Row="2"
-					  Grid.Column="2"
-					  IsChecked="{Binding SyncIsOn}"
-					  OnContent="Cloud Sync (beta)"
-					  OffContent="Cloud Sync (beta)"
-					  Margin="20,0,10,0"
-					  VerticalAlignment="Center"/>
-		<TextBlock Grid.Row="3"
+		<TextBlock Grid.Row="2"
 				   Grid.ColumnSpan="3"
 				   Text="{Binding ProcessLog}"
 				   Margin="0,0,0,10"/>
