@@ -13,6 +13,8 @@ namespace TmCGPTD.ViewModels
         readonly SyncProcess _syncProcess = new();
         public CloudLoginViewModel()
         {
+            _email = AppSettings.Instance.Email;
+            _password = AppSettings.Instance.Password;
             EmailLoginCommand = new AsyncRelayCommand(EmailLoginAsync);
             EmailSignupCommand = new AsyncRelayCommand(EmailSignupAsync);
             GoogleLoginCommand = new AsyncRelayCommand(GoogleLoginAsync);
@@ -68,6 +70,8 @@ namespace TmCGPTD.ViewModels
                     AppSettings.Instance.SyncIsOn = true;
                     VMLocator.CloudLoggedinViewModel.Provider = "You are logged in with Email.";
                     AppSettings.Instance.Provider = "You are logged in with Email.";
+                    AppSettings.Instance.Email = SupabaseStates.Instance.Supabase.Auth.CurrentSession.User!.Email;
+                    VMLocator.CloudLoggedinViewModel.Email = SupabaseStates.Instance.Supabase.Auth.CurrentSession.User!.Email;
                     await SupabaseStates.Instance.Supabase.Auth.RefreshSession();
                     await _databaseProcess.CleanUpEditorLogDatabaseAsync();
                     await _syncProcess.SyncDbAsync();
@@ -207,6 +211,8 @@ namespace TmCGPTD.ViewModels
                         VMLocator.MainViewModel.LoginStatus = 3;
                         AppSettings.Instance.SyncIsOn = true;
                         VMLocator.CloudLoggedinViewModel.Provider = "You are logged in with Google.";
+                        AppSettings.Instance.Email = SupabaseStates.Instance.Supabase.Auth.CurrentSession.User!.Email;
+                        VMLocator.CloudLoggedinViewModel.Email = SupabaseStates.Instance.Supabase.Auth.CurrentSession.User!.Email;
                         AppSettings.Instance.Provider = "You are logged in with Google.";
                         await SupabaseStates.Instance.Supabase.Auth.RefreshSession();
                         await _databaseProcess.CleanUpEditorLogDatabaseAsync();
@@ -252,6 +258,8 @@ namespace TmCGPTD.ViewModels
                         AppSettings.Instance.SyncIsOn = true;
                         VMLocator.CloudLoggedinViewModel.Provider = "You are logged in with Microsoft.";
                         AppSettings.Instance.Provider = "You are logged in with Microsoft.";
+                        AppSettings.Instance.Email = SupabaseStates.Instance.Supabase.Auth.CurrentSession.User!.Email;
+                        VMLocator.CloudLoggedinViewModel.Email = SupabaseStates.Instance.Supabase.Auth.CurrentSession.User!.Email;
                         await SupabaseStates.Instance.Supabase.Auth.RefreshSession();
                         await _databaseProcess.CleanUpEditorLogDatabaseAsync();
                         await _syncProcess.SyncDbAsync();

@@ -13,17 +13,16 @@ namespace TmCGPTD.ViewModels
     public class CloudLoggedinViewModel : ViewModelBase
     {
         readonly SupabaseProcess _supabaseProcess = new();
-        readonly SupabaseStates _supabaseStates = SupabaseStates.Instance;
         public CloudLoggedinViewModel()
         {
             if (!string.IsNullOrWhiteSpace(AppSettings.Instance.Provider))
             {
-                Provider = AppSettings.Instance.Provider;
+                _provider = AppSettings.Instance.Provider;
             }
 
             if (SupabaseStates.Instance.Supabase?.Auth.CurrentSession != null)
             {
-                Email = SupabaseStates.Instance.Supabase.Auth.CurrentSession!.User!.Email;
+                _email = SupabaseStates.Instance.Supabase.Auth.CurrentSession!.User!.Email;
             }
 
             LogOutCommand = new AsyncRelayCommand(LogOutAsync);
@@ -50,7 +49,7 @@ namespace TmCGPTD.ViewModels
             set => SetProperty(ref _email, value);
         }
 
-        private async Task LogOutAsync()
+        public async Task LogOutAsync()
         {
             await _supabaseProcess.LogOutAsync();
             VMLocator.MainViewModel.SyncLogText = "Logged out.";

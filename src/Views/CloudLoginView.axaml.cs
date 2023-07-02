@@ -1,5 +1,6 @@
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
+using System.Diagnostics;
 using TmCGPTD.ViewModels;
 
 namespace TmCGPTD.Views
@@ -14,6 +15,7 @@ namespace TmCGPTD.Views
             DataContext = CloudLoginViewModel;
             VMLocator.CloudLoginViewModel = CloudLoginViewModel;
         }
+
         private void InitializeComponent()
         {
             AvaloniaXamlLoader.Load(this);

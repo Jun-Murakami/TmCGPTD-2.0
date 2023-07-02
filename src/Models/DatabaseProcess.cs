@@ -38,8 +38,6 @@ namespace TmCGPTD.Models
         }
 
         readonly SyncProcess _syncProcess = new();
-        private static AppSettings AppSettings => AppSettings.Instance;
-        private static Client? Supabase => SupabaseStates.Instance.Supabase;
         private static string? Uid => SupabaseStates.Instance.Supabase?.Auth.CurrentSession?.User?.Id;
 
         public static SQLiteConnection? memoryConnection; // メモリ上のSQLコネクション
@@ -47,7 +45,7 @@ namespace TmCGPTD.Models
         //---------------------------------------------------------------------------
         private async Task DoSync()
         {
-            if (AppSettings.SyncIsOn && Supabase != null && Uid != null)
+            if (AppSettings.Instance.SyncIsOn && SupabaseStates.Instance.Supabase != null && Uid != null)
             {
                 await _syncProcess.SyncDbAsync();
             }
@@ -98,6 +96,11 @@ namespace TmCGPTD.Models
             sql = "CREATE INDEX idx_template_text ON template (text);";
             command.CommandText = sql;
             command.ExecuteNonQuery();
+
+            // managementテーブル作成
+            sql = "CREATE TABLE management (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id TEXT NOT NULL DEFAULT '', delete_table TEXT NOT NULL DEFAULT '', delete_id INTEGER, date DATE);";
+            command.CommandText = sql;
+            command.ExecuteNonQuery();
         }
 
         // データベースのチャットログをバージョンアップ--------------------------------------------------------------
@@ -115,6 +118,8 @@ namespace TmCGPTD.Models
 
                 bool phraseDateExists = false;
                 bool templateDateExists = false;
+
+                object? result;
 
                 using (var command = new SQLiteCommand(connection))
                 {
@@ -166,9 +171,13 @@ namespace TmCGPTD.Models
                         }
                     }
 
+                    // Check table
+                    command.CommandText = $"SELECT name FROM sqlite_master WHERE type='table' AND name='management';";
+                    // テーブルが存在しない場合、ExecuteScalar() は null を返す
+                    result = await command.ExecuteScalarAsync();
 
                     // Backup database
-                    if (!categoryExists || !lastPromptExists || !jsonPrevExists || !phraseDateExists || !templateDateExists)
+                    if (!categoryExists || !lastPromptExists || !jsonPrevExists || !phraseDateExists || !templateDateExists || result == null)
                     {
                         string sourceFile = AppSettings.Instance.DbPath;
                         string backupFile = AppSettings.Instance.DbPath + ".backupV2.5";
@@ -181,6 +190,13 @@ namespace TmCGPTD.Models
 
                         // Copy the file.
                         File.Copy(sourceFile, backupFile);
+                    }
+
+                    if (result == null)
+                    {
+                        // managementテーブル作成
+                        command.CommandText = "CREATE TABLE management (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id TEXT NOT NULL DEFAULT '', delete_table TEXT NOT NULL DEFAULT '', delete_id INTEGER, date DATE);";
+                        await command.ExecuteNonQueryAsync();
                     }
 
                     // Add 'category' column
@@ -219,7 +235,7 @@ namespace TmCGPTD.Models
                     }
                 }
 
-                if (!categoryExists || !lastPromptExists || !jsonPrevExists || !phraseDateExists || !templateDateExists)
+                if (!categoryExists || !lastPromptExists || !jsonPrevExists || !phraseDateExists || !templateDateExists || result == null)
                 {
                     Application.Current!.TryFindResource("My.Strings.DatabaseUpdate", out object? resource1);
                     var dialog = new ContentDialog()
@@ -282,9 +298,9 @@ namespace TmCGPTD.Models
             using var transaction = connection.BeginTransaction();
             try
             {
-                if (AppSettings.SyncIsOn && Supabase != null && Uid != null)
+                if (AppSettings.Instance.SyncIsOn && SupabaseStates.Instance.Supabase != null && Uid != null)
                 {
-                    var result = await Supabase.From<Phrase>().Insert(new Phrase { UserId = Uid, Name = name, Content = phrasesText, Date = now });
+                    var result = await SupabaseStates.Instance.Supabase.From<Phrase>().Insert(new Phrase { UserId = Uid, Name = name, Content = phrasesText, Date = now });
 
                     string sql = $"INSERT INTO phrase (id, name, phrase, date) VALUES (@id, @name, @phrase, @date)";
 
@@ -292,7 +308,7 @@ namespace TmCGPTD.Models
                     command.Parameters.AddWithValue("@id", result.Models[0].Id);
                     command.Parameters.AddWithValue("@name", name);
                     command.Parameters.AddWithValue("@phrase", phrasesText);
-                    command.Parameters.AddWithValue("@date", now);
+                    command.Parameters.AddWithValue("@date", now.ToString("s"));
                     await command.ExecuteNonQueryAsync();
                 }
                 else
@@ -302,7 +318,7 @@ namespace TmCGPTD.Models
                     using var command = new SQLiteCommand(sql, connection);
                     command.Parameters.AddWithValue("@name", name);
                     command.Parameters.AddWithValue("@phrase", phrasesText);
-                    command.Parameters.AddWithValue("@date", now);
+                    command.Parameters.AddWithValue("@date", now.ToString("s"));
                     await command.ExecuteNonQueryAsync();
                 }
                 await transaction.CommitAsync();
@@ -367,9 +383,9 @@ namespace TmCGPTD.Models
             using var transaction = connection.BeginTransaction();
             try
             {
-                if (AppSettings.SyncIsOn && Supabase != null && Uid != null)
+                if (AppSettings.Instance.SyncIsOn && SupabaseStates.Instance.Supabase != null && Uid != null)
                 {
-                    var update = await Supabase.From<Phrase>()
+                    var update = await SupabaseStates.Instance.Supabase.From<Phrase>()
                                                 .Where(x => x.Name == oldName)
                                                 .Set(x => x.Name!, newName)
                                                 .Update();
@@ -410,9 +426,9 @@ namespace TmCGPTD.Models
             using var transaction = connection.BeginTransaction();
             try
             {
-                if (AppSettings.SyncIsOn && Supabase != null && Uid != null)
+                if (AppSettings.Instance.SyncIsOn && SupabaseStates.Instance.Supabase != null && Uid != null)
                 {
-                    var update = await Supabase.From<Phrase>()
+                    var update = await SupabaseStates.Instance.Supabase.From<Phrase>()
                                                 .Where(x => x.Name == name)
                                                 .Set(x => x.Content!, phrasesText)
                                                 .Update();
@@ -455,18 +471,40 @@ namespace TmCGPTD.Models
                 using var transaction = connection.BeginTransaction(System.Data.IsolationLevel.Serializable);
                 try
                 {
-                    if (AppSettings.SyncIsOn && Supabase != null && Uid != null)
+                    DateTime date = DateTime.Now;
+                    date = date.AddTicks(-(date.Ticks % TimeSpan.TicksPerSecond));
+                    long targetId = 0;
+                    if (AppSettings.Instance.SyncIsOn && SupabaseStates.Instance.Supabase != null && Uid != null)
                     {
-                        await Supabase.From<Phrase>()
+                        var result = await SupabaseStates.Instance.Supabase.From<Phrase>()
+                                       .Where(x => x.Name == selectedPhraseItem)
+                                       .Get();
+                        targetId = result.Models[0].Id;
+
+                        await SupabaseStates.Instance.Supabase.From<Phrase>()
                                        .Where(x => x.Name == selectedPhraseItem)
                                        .Delete();
+                        //削除履歴を追加
+                        await SupabaseStates.Instance.Supabase.From<Management>().Insert(new Management { UserId = Uid!, DeleteTable = "phrase", DeleteId = targetId, Date = date });
                     }
 
                     string sql = "DELETE FROM phrase WHERE name = @selectedPhraseItem";
                     using var command = new SQLiteCommand(sql, connection, transaction);
                     command.Parameters.AddWithValue("@selectedPhraseItem", selectedPhraseItem);
-
                     await command.ExecuteNonQueryAsync();
+
+                    if (targetId > 0)
+                    {
+                        //削除履歴を追加
+                        sql = "INSERT INTO management (user_id, delete_table, delete_id, date) VALUES (@Uid, @DeleteTable, @DeleteId, @Date)";
+                        using var command2 = new SQLiteCommand(sql, connection, transaction);
+                        command2.Parameters.AddWithValue("@Uid", Uid);
+                        command2.Parameters.AddWithValue("@DeleteTable", "phrase");
+                        command2.Parameters.AddWithValue("@DeleteId", targetId);
+                        command2.Parameters.AddWithValue("@Date", date.ToString("s"));
+                        await command2.ExecuteNonQueryAsync();
+                    }
+
                     await transaction.CommitAsync();
                 }
                 catch (Exception ex)
@@ -568,7 +606,7 @@ namespace TmCGPTD.Models
                             for (int i = 1, loopTo = columnEnd; i <= loopTo; i++)
                                 rowData.Add(csvReader.GetField(i)!);
 
-                            if (AppSettings.SyncIsOn && Supabase != null && Uid != null)
+                            if (AppSettings.Instance.SyncIsOn && SupabaseStates.Instance.Supabase != null && Uid != null)
                             {
                                 if (tableName == "editorlog")
                                 {
@@ -576,7 +614,7 @@ namespace TmCGPTD.Models
                                     if (success)
                                     {
                                         date = date.AddTicks(-(date.Ticks % TimeSpan.TicksPerSecond));  // ミリ秒以下を切り捨てる
-                                        var resultEditor = await Supabase.From<EditorLog>()
+                                        var resultEditor = await SupabaseStates.Instance.Supabase.From<EditorLog>()
                                              .Insert(new EditorLog { UserId = Uid, Date = date, Content = rowData[1] });
 
                                         long editorId = resultEditor.Models[0].Id;
@@ -597,7 +635,7 @@ namespace TmCGPTD.Models
                                     if (success)
                                     {
                                         date = date.AddTicks(-(date.Ticks % TimeSpan.TicksPerSecond));
-                                        var resultChatRoom = await Supabase.From<ChatRoom>()
+                                        var resultChatRoom = await SupabaseStates.Instance.Supabase.From<ChatRoom>()
                                                                         .Insert(new ChatRoom { UserId = Uid, UpdatedOn = date, Title = rowData[1], Json = rowData[2], Category = rowData[4], LastPrompt = rowData[5], JsonPrev = rowData[6] });
                                         long chatRoomId = resultChatRoom.Models[0].Id;
 
@@ -605,13 +643,12 @@ namespace TmCGPTD.Models
 
                                         models.AddRange(_syncProcess.DivideMessage(rowData[3], chatRoomId, Uid));
 
-                                        await Supabase.From<Message>().Upsert(models);
+                                        await SupabaseStates.Instance.Supabase.From<Message>().Upsert(models);
 
                                         // INSERT文を作成
                                         string values = string.Join(", ", Enumerable.Range(0, rowData.Count).Select(i => $"@value{i}"));
 
                                         insertQuery = $"INSERT INTO {tableName} (id, {columnNames}) VALUES ({chatRoomId}, {values});";
-
                                     }
                                     else
                                     {
@@ -664,7 +701,6 @@ namespace TmCGPTD.Models
         // CSVエクスポート--------------------------------------------------------------
         public async Task<string> ExportTableToCsvAsync(string fileName, string tableName = "chatlog")
         {
-            string msg;
             try
             {
                 int processedCount = 0;
@@ -715,8 +751,7 @@ namespace TmCGPTD.Models
                         int progressPercentage = (int)Math.Round(processedCount / (double)rowCount * 100d);
                     }
                 }
-                msg = $"Successfully exported log. ({processedCount} Records)";
-                return msg;
+                return $"Successfully exported log. ({processedCount} Records)";
             }
             catch (Exception)
             {
@@ -798,17 +833,29 @@ namespace TmCGPTD.Models
                 using var transaction = connection.BeginTransaction();
                 try
                 {
-                    if (AppSettings.SyncIsOn && Supabase != null && Uid != null)
+                    DateTime date = DateTime.Now;
+                    date = date.AddTicks(-(date.Ticks % TimeSpan.TicksPerSecond));
+                    if (AppSettings.Instance.SyncIsOn && SupabaseStates.Instance.Supabase != null && Uid != null)
                     {
-                        await Supabase.From<ChatRoom>()
+                        await SupabaseStates.Instance.Supabase.From<ChatRoom>()
                                        .Where(x => x.Id == chatId)
                                        .Delete();
+
+                        //削除履歴を追加
+                        await SupabaseStates.Instance.Supabase.From<Management>().Insert(new Management { UserId = Uid!, DeleteTable = "chatlog", DeleteId = chatId, Date = date });
                     }
 
                     using (var command = new SQLiteCommand($"DELETE FROM chatlog WHERE id = '{chatId}'", connection, transaction))
                     {
                         await command.ExecuteNonQueryAsync();
                     }
+
+                    //削除履歴を追加
+                    using (var command = new SQLiteCommand($"INSERT INTO management (user_id, delete_table, delete_id, date) VALUES ('{Uid}', 'chatlog', '{chatId}', '{date}')", connection, transaction))
+                    {
+                        await command.ExecuteNonQueryAsync();
+                    }
+
                     await transaction.CommitAsync();
                 }
                 catch (Exception)
@@ -830,9 +877,9 @@ namespace TmCGPTD.Models
         {
             try
             {
-                if (AppSettings.SyncIsOn && Supabase != null && Uid != null)
+                if (AppSettings.Instance.SyncIsOn && SupabaseStates.Instance.Supabase != null && Uid != null)
                 {
-                    var update = await Supabase.From<ChatRoom>()
+                    var update = await SupabaseStates.Instance.Supabase.From<ChatRoom>()
                                                 .Where(x => x.Id == chatId)
                                                 .Set(x => x.Title!, title)
                                                 .Update();
@@ -864,9 +911,9 @@ namespace TmCGPTD.Models
         {
             try
             {
-                if (AppSettings.SyncIsOn && Supabase != null && Uid != null)
+                if (AppSettings.Instance.SyncIsOn && SupabaseStates.Instance.Supabase != null && Uid != null)
                 {
-                    var update = await Supabase.From<ChatRoom>()
+                    var update = await SupabaseStates.Instance.Supabase.From<ChatRoom>()
                                                 .Where(x => x.Id == chatId)
                                                 .Set(x => x.Category!, category)
                                                 .Update();
@@ -929,9 +976,9 @@ namespace TmCGPTD.Models
                 var dialogResult = await VMLocator.MainViewModel.ContentDialogShowAsync(dialog);
                 if (dialogResult == ContentDialogResult.Primary)
                 {
-                    if (AppSettings.SyncIsOn && Supabase != null && Uid != null)
+                    if (AppSettings.Instance.SyncIsOn && SupabaseStates.Instance.Supabase != null && Uid != null)
                     {
-                        var resultUpdate = await Supabase.From<ChatRoom>()
+                        var resultUpdate = await SupabaseStates.Instance.Supabase.From<ChatRoom>()
                                                     .Where(x => x.Id == matchingId.Value)
                                                     .Set(x => x.UpdatedOn!, date)
                                                     .Set(x => x.Title!, webChatTitle)
@@ -942,7 +989,7 @@ namespace TmCGPTD.Models
 
                         models.AddRange(_syncProcess.DivideMessage(webLog, chatRoomId, Uid));
 
-                        await Supabase.From<Message>().Insert(models);
+                        await SupabaseStates.Instance.Supabase.From<Message>().Insert(models);
 
                     }
                     query = $"UPDATE chatlog SET date=@date, title=@title, json=@json, text=@text, category=category WHERE id={matchingId.Value}";
@@ -984,16 +1031,16 @@ namespace TmCGPTD.Models
             }
             else
             {
-                if (AppSettings.SyncIsOn && Supabase != null && Uid != null)
+                if (AppSettings.Instance.SyncIsOn && SupabaseStates.Instance.Supabase != null && Uid != null)
                 {
-                    var resultInsert = await Supabase.From<ChatRoom>().Insert(new ChatRoom { UserId = Uid, UpdatedOn = date, Title = webChatTitle, Category = chatService, LastPrompt = "", Json = jsonConversationHistory, JsonPrev = "" });
+                    var resultInsert = await SupabaseStates.Instance.Supabase.From<ChatRoom>().Insert(new ChatRoom { UserId = Uid, UpdatedOn = date, Title = webChatTitle, Category = chatService, LastPrompt = "", Json = jsonConversationHistory, JsonPrev = "" });
 
                     long chatRoomId = resultInsert.Models[0].Id;
                     var models = new List<Message>();
 
                     models.AddRange(_syncProcess.DivideMessage(webLog, chatRoomId, Uid));
 
-                    await Supabase.From<Message>().Insert(models);
+                    await SupabaseStates.Instance.Supabase.From<Message>().Insert(models);
 
                     query = $"INSERT INTO chatlog(id, date, title, json, text, category) VALUES ({chatRoomId}, @date, @title, @json, @text, @category)";
                 }
@@ -1012,7 +1059,7 @@ namespace TmCGPTD.Models
                 // logテーブルにデータをインサートする
                 using (var command = new SQLiteCommand(query, connection))
                 {
-                    command.Parameters.AddWithValue("@date", date);
+                    command.Parameters.AddWithValue("@date", date.ToString("s"));
                     command.Parameters.AddWithValue("@title", webChatTitle);
                     command.Parameters.AddWithValue("@json", jsonConversationHistory);
                     command.Parameters.AddWithValue("@text", webLog);
@@ -1062,9 +1109,9 @@ namespace TmCGPTD.Models
             using var transaction = connection.BeginTransaction();
             try
             {
-                if (AppSettings.SyncIsOn && Supabase != null && Uid != null)
+                if (AppSettings.Instance.SyncIsOn && SupabaseStates.Instance.Supabase != null && Uid != null)
                 {
-                    var result = await Supabase.From<Template>().Insert(new Template { UserId = Uid, Title = title, Content = finalText, Date = date });
+                    var result = await SupabaseStates.Instance.Supabase.From<Template>().Insert(new Template { UserId = Uid, Title = title, Content = finalText, Date = date });
 
                     long templateId = result.Models[0].Id;
 
@@ -1073,7 +1120,7 @@ namespace TmCGPTD.Models
                         command.Parameters.AddWithValue("@id", templateId);
                         command.Parameters.AddWithValue("@title", title);
                         command.Parameters.AddWithValue("@text", finalText);
-                        command.Parameters.AddWithValue("@date", date);
+                        command.Parameters.AddWithValue("@date", date.ToString("s"));
                         await command.ExecuteNonQueryAsync();
                     }
                 }
@@ -1083,7 +1130,7 @@ namespace TmCGPTD.Models
                     {
                         command.Parameters.AddWithValue("@title", title);
                         command.Parameters.AddWithValue("@text", finalText);
-                        command.Parameters.AddWithValue("@date", date);
+                        command.Parameters.AddWithValue("@date", date.ToString("s"));
                         await command.ExecuteNonQueryAsync();
                     }
                 }
@@ -1121,9 +1168,9 @@ namespace TmCGPTD.Models
                 };
                 string finalText = string.Join(Environment.NewLine + "<---TMCGPT--->" + Environment.NewLine, inputText);
 
-                if (AppSettings.SyncIsOn && Supabase != null && Uid != null)
+                if (AppSettings.Instance.SyncIsOn && SupabaseStates.Instance.Supabase != null && Uid != null)
                 {
-                    var update = await Supabase.From<Template>()
+                    var update = await SupabaseStates.Instance.Supabase.From<Template>()
                                                 .Where(x => x.Title == title)
                                                 .Set(x => x.Content!, finalText)
                                                 .Update();
@@ -1164,9 +1211,9 @@ namespace TmCGPTD.Models
             using var transaction = connection.BeginTransaction();
             try
             {
-                if (AppSettings.SyncIsOn && Supabase != null && Uid != null)
+                if (AppSettings.Instance.SyncIsOn && SupabaseStates.Instance.Supabase != null && Uid != null)
                 {
-                    var update = await Supabase.From<Template>()
+                    var update = await SupabaseStates.Instance.Supabase.From<Template>()
                                                 .Where(x => x.Title == oldName)
                                                 .Set(x => x.Title!, newName)
                                                 .Update();
@@ -1209,18 +1256,38 @@ namespace TmCGPTD.Models
                 using var transaction = connection.BeginTransaction(System.Data.IsolationLevel.Serializable);
                 try
                 {
-                    if (AppSettings.SyncIsOn && Supabase != null && Uid != null)
+                    DateTime date = DateTime.Now;
+                    date = date.AddTicks(-(date.Ticks % TimeSpan.TicksPerSecond));
+                    long targetId = 0;
+                    if (AppSettings.Instance.SyncIsOn && SupabaseStates.Instance.Supabase != null && Uid != null)
                     {
-                        await Supabase.From<Template>()
+                        var result = await SupabaseStates.Instance.Supabase.From<Template>()
+                                                    .Where(x => x.Title == selectedTemplateItem)
+                                                    .Get();
+                        await SupabaseStates.Instance.Supabase.From<Template>()
                                        .Where(x => x.Title == selectedTemplateItem)
                                        .Delete();
+                        //削除履歴を追加
+                        targetId = result.Models[0].Id;
+                        await SupabaseStates.Instance.Supabase.From<Management>().Insert(new Management { UserId = Uid!, DeleteTable = "template", DeleteId = targetId, Date = date });
                     }
 
                     string sql = "DELETE FROM template WHERE title = @selectedTemplateItem";
                     using var command = new SQLiteCommand(sql, connection, transaction);
                     command.Parameters.AddWithValue("@selectedTemplateItem", selectedTemplateItem);
-
                     await command.ExecuteNonQueryAsync();
+
+                    if (targetId > 0)
+                    {
+                        //削除履歴を追加
+                        sql = "INSERT INTO management (user_id, delete_table, delete_id, date) VALUES (@Uid, @DeleteTable, @DeleteId, @Date)";
+                        using var command2 = new SQLiteCommand(sql, connection, transaction);
+                        command2.Parameters.AddWithValue("@Uid", Uid);
+                        command2.Parameters.AddWithValue("@DeleteTable", "template");
+                        command2.Parameters.AddWithValue("@DeleteId", targetId);
+                        command2.Parameters.AddWithValue("@Date", date.ToString("s"));
+                        await command2.ExecuteNonQueryAsync();
+                    }
                     transaction.Commit();
                 }
                 catch (Exception ex)
@@ -1363,6 +1430,7 @@ namespace TmCGPTD.Models
         }
 
         // データベースにEditorlogをインサートする--------------------------------------------------------------
+        // 同期チェックは省略する
         public async Task InserEditorLogDatabasetAsync()
         {
             var _editorViewModel = VMLocator.EditorViewModel;
@@ -1386,28 +1454,24 @@ namespace TmCGPTD.Models
             using var transaction = connection.BeginTransaction();
             try
             {
-                if (AppSettings.SyncIsOn && Supabase != null && Uid != null)
+                if (AppSettings.Instance.SyncIsOn && SupabaseStates.Instance.Supabase != null && Uid != null)
                 {
-                    var result = await Supabase.From<EditorLog>().Insert(new EditorLog { UserId = Uid, Date = date, Content = finalText });
+                    var result = await SupabaseStates.Instance.Supabase.From<EditorLog>().Insert(new EditorLog { UserId = Uid, Date = date, Content = finalText });
 
                     long resultId = result.Models[0].Id;
 
-                    using (var command = new SQLiteCommand("INSERT INTO editorlog(id, date, text) VALUES (@id, @date, @text)", connection))
-                    {
-                        command.Parameters.AddWithValue("@id", resultId);
-                        command.Parameters.AddWithValue("@date", date);
-                        command.Parameters.AddWithValue("@text", finalText);
-                        await command.ExecuteNonQueryAsync();
-                    }
+                    using var command = new SQLiteCommand("INSERT INTO editorlog(id, date, text) VALUES (@id, @date, @text)", connection);
+                    command.Parameters.AddWithValue("@id", resultId);
+                    command.Parameters.AddWithValue("@date", date.ToString("s"));
+                    command.Parameters.AddWithValue("@text", finalText);
+                    await command.ExecuteNonQueryAsync();
                 }
                 else
                 {
-                    using (var command = new SQLiteCommand("INSERT INTO editorlog(date, text) VALUES (@date, @text)", connection))
-                    {
-                        command.Parameters.AddWithValue("@date", date);
-                        command.Parameters.AddWithValue("@text", finalText);
-                        await command.ExecuteNonQueryAsync();
-                    }
+                    using var command = new SQLiteCommand("INSERT INTO editorlog(date, text) VALUES (@date, @text)", connection);
+                    command.Parameters.AddWithValue("@date", date.ToString("s"));
+                    command.Parameters.AddWithValue("@text", finalText);
+                    await command.ExecuteNonQueryAsync();
                 }
 
                 await transaction.CommitAsync();
@@ -1492,19 +1556,27 @@ namespace TmCGPTD.Models
         // データベースのEditorログをクリンナップ--------------------------------------------------------------
         public async Task CleanUpEditorLogDatabaseAsync()
         {
-            if (AppSettings.SyncIsOn && Supabase != null && Uid != null)
+            if (AppSettings.Instance.SyncIsOn && SupabaseStates.Instance.Supabase != null && Uid != null)
             {
-                int count = await Supabase
-                              .From<EditorLog>()
-                              .Count(Postgrest.Constants.CountType.Exact);
+                var result = await SupabaseStates.Instance.Supabase
+                        .From<EditorLog>()
+                        .Select(x => new object[] { x.Id })
+                        .Order(x => x.Date, Ordering.Ascending)
+                        .Get();
 
-                if (count > 200)
+                var DeleteList = new List<long>();
+
+                for (int i = 0; i < result.Models.Count - 200; i++)
                 {
-                    // 最新の日付順に結果をソートし、200件以上を削除
-                    await Supabase.From<EditorLog>()
-                                   .Order(x => x.Date, Ordering.Descending)
-                                   .Range(200, count - 1)
-                                   .Delete();
+                    DeleteList.Add(result.Models[i].Id);
+                }
+
+                foreach (var id in DeleteList)
+                {
+                    await SupabaseStates.Instance.Supabase
+                        .From<EditorLog>()
+                        .Where(x => x.Id == id)
+                        .Delete();
                 }
             }
 
@@ -1636,7 +1708,7 @@ namespace TmCGPTD.Models
                                 }
                                 else
                                 {
-                                    // [*] by Youが存在しない場合の処理をここに書く
+                                    // [*] by Youが存在しない場合の処理 なにかがおかしい
                                     throw new Exception("Error : Incorrect log data. [*] by You ");
                                 }
                             }
@@ -1650,10 +1722,13 @@ namespace TmCGPTD.Models
                             }
                         }
 
-                        if (AppSettings.SyncIsOn && Supabase != null && Uid != null)
+                        // 既存のテキストに新しいメッセージを追加する
+                        string newText = (currentText + Environment.NewLine + string.Join(Environment.NewLine, insertText)).Trim() + Environment.NewLine + Environment.NewLine;
+
+                        if (AppSettings.Instance.SyncIsOn && SupabaseStates.Instance.Supabase != null && Uid != null)
                         {
-                            var update = await Supabase.From<ChatRoom>()
-                                                        .Where(x => x.Id == (int)lastRowId)
+                            var update = await SupabaseStates.Instance.Supabase.From<ChatRoom>()
+                                                        .Where(x => x.Id == lastRowId)
                                                         .Set(x => x.UpdatedOn!, resDate)
                                                         .Set(x => x.Title!, titleText)
                                                         .Set(x => x.Category!, categoryText)
@@ -1662,20 +1737,21 @@ namespace TmCGPTD.Models
                                                         .Set(x => x.JsonPrev!, jsonLastConversationHistory)
                                                         .Update();
 
+                            await SupabaseStates.Instance.Supabase.From<Message>() // 既存のデータを一旦削除する
+                                               .Where(x => x.RoomId == lastRowId)
+                                               .Delete();
+
                             var models = new List<Message>();
 
-                            models.AddRange(_syncProcess.DivideMessage(string.Join(Environment.NewLine, insertText), (int)lastRowId, Uid));
+                            models.AddRange(_syncProcess.DivideMessage(string.Join(Environment.NewLine, insertText), lastRowId, Uid));
 
-                            await Supabase.From<Message>().Upsert(models);
+                            await SupabaseStates.Instance.Supabase.From<Message>().Insert(models); // 新しいデータを挿入する
                         }
-
-                        // 既存のテキストに新しいメッセージを追加する
-                        string newText = (currentText + Environment.NewLine + string.Join(Environment.NewLine, insertText)).Trim() + Environment.NewLine + Environment.NewLine;
 
                         // 指定されたIDに対してデータを更新する
                         using (var command = new SQLiteCommand("UPDATE chatlog SET date=@date, title=@title, json=@json, text=@text, category=@category, lastprompt=@lastprompt, jsonprev=@jsonprev WHERE id=@id", connection))
                         {
-                            command.Parameters.AddWithValue("@date", resDate);
+                            command.Parameters.AddWithValue("@date", resDate.ToString("s"));
                             command.Parameters.AddWithValue("@title", titleText);
                             command.Parameters.AddWithValue("@json", jsonConversationHistory);
                             command.Parameters.AddWithValue("@text", newText);
@@ -1688,9 +1764,9 @@ namespace TmCGPTD.Models
                     }
                     else
                     {
-                        if (AppSettings.SyncIsOn && Supabase != null && Uid != null)
+                        if (AppSettings.Instance.SyncIsOn && SupabaseStates.Instance.Supabase != null && Uid != null)
                         {
-                            var result = await Supabase.From<ChatRoom>().Insert(new ChatRoom { UserId = Uid, UpdatedOn = resDate, Title = titleText, Category = categoryText, LastPrompt = promptTextForSave, Json = jsonConversationHistory, JsonPrev = jsonLastConversationHistory });
+                            var result = await SupabaseStates.Instance.Supabase.From<ChatRoom>().Insert(new ChatRoom { UserId = Uid, UpdatedOn = resDate, Title = titleText, Category = categoryText, LastPrompt = promptTextForSave, Json = jsonConversationHistory, JsonPrev = jsonLastConversationHistory });
 
                             long chatRoomId = result.Models[0].Id;
 
@@ -1698,13 +1774,13 @@ namespace TmCGPTD.Models
 
                             models.AddRange(_syncProcess.DivideMessage(string.Join(Environment.NewLine, insertText), chatRoomId, Uid));
 
-                            await Supabase.From<Message>().Insert(models);
+                            await SupabaseStates.Instance.Supabase.From<Message>().Insert(models);
 
                             // logテーブルにデータをインサートする
                             using (var command = new SQLiteCommand("INSERT INTO chatlog(id, date, title, json, text, category, lastprompt, jsonprev) VALUES (@id, @date, @title, @json, @text, @category, @lastprompt, @jsonprev)", connection))
                             {
                                 command.Parameters.AddWithValue("@id", chatRoomId);
-                                command.Parameters.AddWithValue("@date", resDate);
+                                command.Parameters.AddWithValue("@date", resDate.ToString("s"));
                                 command.Parameters.AddWithValue("@title", titleText);
                                 command.Parameters.AddWithValue("@json", jsonConversationHistory);
                                 command.Parameters.AddWithValue("@text", string.Join(Environment.NewLine, insertText));
@@ -1719,7 +1795,7 @@ namespace TmCGPTD.Models
                             // logテーブルにデータをインサートする
                             using (var command = new SQLiteCommand("INSERT INTO chatlog(date, title, json, text, category, lastprompt, jsonprev) VALUES (@date, @title, @json, @text, @category, @lastprompt, @jsonprev)", connection))
                             {
-                                command.Parameters.AddWithValue("@date", resDate);
+                                command.Parameters.AddWithValue("@date", resDate.ToString("s"));
                                 command.Parameters.AddWithValue("@title", titleText);
                                 command.Parameters.AddWithValue("@json", jsonConversationHistory);
                                 command.Parameters.AddWithValue("@text", string.Join(Environment.NewLine, insertText));

@@ -9,9 +9,9 @@
 	<Border BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}" BorderThickness="1">
         <StackPanel Orientation="Vertical" Spacing="10" VerticalAlignment="Center">
             <TextBlock Text="Email address" HorizontalAlignment="Center"/>
-            <TextBox Text="{Binding Email}" Width="300" AcceptsReturn="False"/>
-            <TextBlock Text="Password" HorizontalAlignment="Center"/>
-            <TextBox Text="{Binding Password}" Width="300" AcceptsReturn="False" PasswordChar="*" RevealPassword="False" Classes="revealPasswordButton" />
+            <TextBox Text="{Binding Email,Mode=TwoWay}" Width="300" AcceptsReturn="False" Classes.clearButton="True"/>
+            <TextBlock Text="Password" HorizontalAlignment="Center" Classes.clearButton="True"/>
+            <TextBox Text="{Binding Password,Mode=TwoWay}" Width="300" AcceptsReturn="False" PasswordChar="*" RevealPassword="False" Classes="revealPasswordButton" />
             <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Center" Margin="10">
                 <Button Content="Log in - Continue" Command="{Binding EmailLoginCommand}"/>
                 <Button Content="Sign up - New user" Command="{Binding EmailSignupCommand}"/>

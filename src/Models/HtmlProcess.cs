@@ -708,7 +708,7 @@ namespace TmCGPTD.Models
         {
             plainTextChatLog = Regex.Replace(plainTextChatLog, @"\r\n|\r|\n", Environment.NewLine);
             var codeSnippetRegex = new Regex(@"^```(?:([\w-+#.]+)\s+)?([\s\S]*?)(^```)", RegexOptions.Multiline);
-            var usageRegex = new Regex(@"^usage=", RegexOptions.Multiline);
+            var usageRegex = new Regex(@"(^usage=)|(^(\[tokens\]))", RegexOptions.Multiline);
 
 
             string WrapCodeSnippet(Match match)

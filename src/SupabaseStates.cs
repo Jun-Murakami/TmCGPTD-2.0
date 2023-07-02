@@ -16,7 +16,8 @@ namespace TmCGPTD
       }
     }
 
-    public Supabase.Client? Supabase { get; set; }
+        public AesSettings? AesSettings { get; set; }
+        public Supabase.Client? Supabase { get; set; }
     public ProviderAuthState? AuthState { get; set; }
   }
 }

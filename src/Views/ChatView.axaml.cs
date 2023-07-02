@@ -79,7 +79,7 @@ namespace TmCGPTD.Views
                     await ChatViewModel.TextSearch(VMLocator.MainViewModel.SearchKeyword, true, true);
                 }
             }
-            await Dispatcher.UIThread.InvokeAsync(() => { _browser.Opacity = 1; });
+            await Dispatcher.UIThread.InvokeAsync(() => _browser.Opacity = 1);
         }
 
         private async void ViewModel_PropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -99,19 +99,17 @@ namespace TmCGPTD.Views
 
                 int byteCount = Encoding.UTF8.GetByteCount(htmlContent);
 
-                // �o�C�g���ɉ����ēǂݍ��ݕ��@��I��
+                // 1MBを超えたら一時ファイルに書き出してから読み込む
                 if (byteCount > 1000000) //
                 {
-                    // �ꎞ�t�@�C����HTML�R���e���c����������
                     string tempFilePath = System.IO.Path.Combine(AppSettings.Instance.AppDataPath, "tempHtmlFile.html");
                     await File.WriteAllTextAsync(tempFilePath, htmlContent);
 
-                    // �ꎞ�t�@�C���̃p�X��_browser.Address�ɐݒ肷��
                     _browser.Address = tempFilePath;
                 }
                 else
                 {
-                    var encodedHtml = Uri.EscapeDataString(htmlContent);
+                    var encodedHtml = Uri.EscapeDataString(htmlContent!);
                     var dataUrl = $"data:text/html;charset=utf-8,{encodedHtml}";
                     _browser.Address = dataUrl;
                 }

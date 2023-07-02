@@ -1,5 +1,6 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Platform;
 using System.Text.Json;
 using System.IO;
 using System;
@@ -18,6 +19,7 @@ using Avalonia.Input;
 using Supabase.Gotrue.Interfaces;
 using Supabase.Gotrue;
 using static Supabase.Gotrue.Constants;
+using System.Reflection;
 
 namespace TmCGPTD.Views
 {
@@ -127,6 +129,15 @@ namespace TmCGPTD.Views
                 VMLocator.MainViewModel.SelectedPhraseItem = settings.PhrasePreset;
                 VMLocator.EditorViewModel.EditorModeIsChecked = true;
 
+                AppSettings.Instance.Email = settings.Email;
+                AppSettings.Instance.Password = settings.Password;
+                AppSettings.Instance.Provider = settings.Provider;
+                AppSettings.Instance.Session = settings.Session;
+                AppSettings.Instance.SyncIsOn = settings.SyncIsOn;
+                VMLocator.CloudLoginViewModel.Email = settings.Email;
+                VMLocator.CloudLoginViewModel.Password = settings.Password;
+                VMLocator.CloudLoggedinViewModel.Provider = settings.Provider;
+
                 VMLocator.MainWindowViewModel.ApiMaxTokens = settings.ApiMaxTokens;
                 VMLocator.MainWindowViewModel.ApiTemperature = settings.ApiTemperature;
                 VMLocator.MainWindowViewModel.ApiTopP = settings.ApiTopP;
@@ -160,11 +171,11 @@ namespace TmCGPTD.Views
                 VMLocator.EditorViewModel.EditorHeight4 = settings.EditorHeight4;
                 VMLocator.EditorViewModel.EditorHeight5 = settings.EditorHeight5;
 
-                await Dispatcher.UIThread.InvokeAsync(() => { VMLocator.MainViewModel.LogPainIsOpened = false; });
+                await Dispatcher.UIThread.InvokeAsync(() => VMLocator.MainViewModel.LogPainIsOpened = false);
                 if (this.Width > 1295)
                 {
                     //await Task.Delay(1000);
-                    await Dispatcher.UIThread.InvokeAsync(() => { VMLocator.MainViewModel.LogPainIsOpened = true; });
+                    await Dispatcher.UIThread.InvokeAsync(() => VMLocator.MainViewModel.LogPainIsOpened = true);
                 }
 
                 this.GetObservable(ClientSizeProperty).Subscribe(size => OnSizeChanged(size));
@@ -187,16 +198,21 @@ namespace TmCGPTD.Views
                     VMLocator.ChatViewModel.OpenApiSettings();
                 }
 
-                AppSettings.Instance.Session = settings.Session;
-
                 await _supabaseProcess.InitializeSupabaseAsync();
 
-                if (SupabaseStates.Instance.Supabase != null && AppSettings.Instance.Session != null)
+                if (SupabaseStates.Instance.Supabase != null && settings.Session != null)
                 {
                     SupabaseStates.Instance.Supabase.Auth.LoadSession();
-                    var session = await SupabaseStates.Instance.Supabase.Auth.RetrieveSessionAsync();
-                    if (session == null && AppSettings.Instance.Session != null)
+                    for (int timeOut = 0; SupabaseStates.Instance.Supabase!.Auth.CurrentSession == null && timeOut < 10; timeOut++)
                     {
+                        await Task.Delay(1000);
+                    }
+
+                    var session = await SupabaseStates.Instance.Supabase.Auth.RetrieveSessionAsync();
+                    if (session == null && settings.Session != null)
+                    {
+                        //ログイン復帰再試行
+
                         var dialog = new ContentDialog() { Title = "Cloud sync session expired. Please sign in again.", PrimaryButtonText = "OK" };
                         await VMLocator.MainViewModel.ContentDialogShowAsync(dialog);
 
@@ -235,7 +251,7 @@ namespace TmCGPTD.Views
                 }
                 else
                 {
-                    if (VMLocator.MainViewModel.LogPainButtonIsVisible == false)
+                    if (!VMLocator.MainViewModel.LogPainButtonIsVisible)
                     {
                         VMLocator.MainViewModel.LogPainButtonIsVisible = true;
                     }
@@ -251,8 +267,6 @@ namespace TmCGPTD.Views
         private async Task<AppSettings> LoadAppSettingsAsync()
         {
             var settings = AppSettings.Instance;
-
-            settings = new AppSettings();
 
             if (File.Exists(Path.Combine(settings.AppDataPath, "settings.json")))
             {
@@ -271,6 +285,23 @@ namespace TmCGPTD.Views
                     File.Delete(Path.Combine(settings!.AppDataPath, "settings.json"));
                 }
             }
+
+            //Aes暗号化・複合化キーを下記の形式でappsettings.json設定ファイルに保存し,プロジェクトのルートに置いてAvaloniaResourceとしてビルドしてください。
+            //aes.GenerateKey();、 aes.GenerateIV();メソッドを呼び出すことでC#上で生成することもできます。
+            //{
+            //  "Key": "Aes 256-bit Key",
+            //  "Iv": "IV"
+            //}
+
+            using var streamReader = new StreamReader(AssetLoader.Open(new Uri("avares://TmCGPTD/appsettings.json")));
+            string aesJson = await streamReader.ReadToEndAsync();
+
+            SupabaseStates.Instance.AesSettings = System.Text.Json.JsonSerializer.Deserialize<AesSettings>(aesJson)!;
+            var aesKey = SupabaseStates.Instance.AesSettings!.Key;
+            var aesIv = SupabaseStates.Instance.AesSettings.Iv;
+
+            if (!string.IsNullOrWhiteSpace(settings!.Email)) settings.Email = AesEncryption.Decrypt(new AesSettings { Text = settings.Email, Key = aesKey, Iv = aesIv });
+            if (!string.IsNullOrWhiteSpace(settings.Password)) settings.Password = AesEncryption.Decrypt(new AesSettings { Text = settings.Password, Key = aesKey, Iv = aesIv });
 
             return settings!;
         }
@@ -299,19 +330,24 @@ namespace TmCGPTD.Views
 
             settings.SeparatorMode = VMLocator.EditorViewModel.EditorSeparateMode;
 
-            if (SupabaseStates.Instance.Supabase != null && SupabaseStates.Instance.Supabase.Auth.CurrentSession != null)
+            if (SupabaseStates.Instance.Supabase?.Auth.CurrentSession != null)
             {
-                SupabaseStates.Instance.Supabase.Auth.RefreshSession();
                 settings.Session = System.Text.Json.JsonSerializer.Serialize(SupabaseStates.Instance.Supabase.Auth.CurrentSession);
                 settings.Provider = VMLocator.CloudLoggedinViewModel.Provider;
-                settings.SyncIsOn = true;
             }
             else
             {
                 settings.Session = null;
                 settings.Provider = null;
-                settings.SyncIsOn = false;
             }
+
+            settings.Email = VMLocator.CloudLoginViewModel.Email;
+            settings.Password = VMLocator.CloudLoginViewModel.Password;
+            var aesKey = SupabaseStates.Instance.AesSettings!.Key;
+            var aesIv = SupabaseStates.Instance.AesSettings.Iv;
+
+            if (!string.IsNullOrWhiteSpace(settings.Email)) settings.Email = AesEncryption.Encrypt(new AesSettings { Text = settings.Email, Key = aesKey, Iv = aesIv });
+            if (!string.IsNullOrWhiteSpace(settings.Password)) settings.Password = AesEncryption.Encrypt(new AesSettings { Text = settings.Password, Key = aesKey, Iv = aesIv });
 
             SaveAppSettings(settings);
         }

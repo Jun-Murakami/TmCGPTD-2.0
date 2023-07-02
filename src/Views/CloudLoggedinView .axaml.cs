@@ -33,7 +33,7 @@ namespace TmCGPTD.Views
             {
                 Debug.WriteLine($"You are logged in with {value2}.");
             }
-            
+
         }
         private void InitializeComponent()
         {

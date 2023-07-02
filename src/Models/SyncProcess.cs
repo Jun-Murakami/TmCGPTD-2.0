@@ -1,4 +1,5 @@
-﻿using System;
+﻿using System.Diagnostics;
+using System;
 using System.IO;
 using System.Collections.Generic;
 using System.Data.SQLite;
@@ -12,6 +13,8 @@ using static Postgrest.QueryOptions;
 using static Postgrest.Constants;
 using TmCGPTD.Views;
 using Avalonia.Threading;
+using Avalonia;
+using Avalonia.Controls;
 
 namespace TmCGPTD.Models
 {
@@ -21,16 +24,47 @@ namespace TmCGPTD.Models
 
         public async Task SyncDbAsync()
         {
+            string accountCheck;
             try
             {
                 if (SupabaseStates.Instance.Supabase == null)
                 {
-                    throw new Exception($"Supabase initialization failed.");
+                    throw new Exception("Supabase initialization failed.");
                 }
 
                 if (SupabaseStates.Instance.Supabase.Auth.CurrentUser == null)
                 {
-                    throw new Exception($"Failed to obtain Supabase user ID.");
+                    throw new Exception("Failed to obtain Supabase user ID.");
+                }
+
+                accountCheck = await InitializeAndCheckManagementTableAsync();
+                if (accountCheck == "switch")
+                {
+                    Application.Current!.TryFindResource("My.Strings.NewAccountDetected", out object? resource1);
+                    var cdialog = new ContentDialog
+                    {
+                        Title = "Confirmation",
+                        Content = resource1,
+                        PrimaryButtonText = "Use Current Data",
+                        SecondaryButtonText = "Use Cloud Data",
+                        CloseButtonText = "Log Out"
+                    };
+                    var result = await VMLocator.MainViewModel.ContentDialogShowAsync(cdialog);
+                    if (result == ContentDialogResult.Primary)
+                    {
+                        //Do nothing
+                    }
+                    else if (result == ContentDialogResult.Secondary)
+                    {
+                        BackupDb();
+                        await DeleteLocalDbAsync();
+                        await InitializeAndCheckManagementTableAsync();
+                    }
+                    else
+                    {
+                        await VMLocator.CloudLoggedinViewModel.LogOutAsync();
+                        return;
+                    }
                 }
             }
             catch (Exception ex)
@@ -56,187 +90,252 @@ namespace TmCGPTD.Models
 
             try
             {
-                var resultPhrase = await supabase
-                                  .From<Phrase>()
-                                  .Select(x => new object[] { x.Id, x.Date })
-                                  .Order(x => x.Id, Ordering.Descending)
-                                  .Get();
+                await SyncManagementTableAsync(); //削除フラグマネージメントテーブルの同期
 
-                cloudRecords = cloudRecords + resultPhrase.Models.Count;
+                //クラウドの削除フラグマネージメントテーブルを取得
+                var resultManagement = await supabase
+                    .From<Management>()
+                    .Select(x => new object[] { x.Id, x.DeleteTable!, x.DeleteId!, x.Date })
+                    .Order(x => x.Id, Ordering.Descending)
+                    .Get();
 
-                using SQLiteConnection connection = new SQLiteConnection($"Data Source={AppSettings.Instance.DbPath}");
+                using SQLiteConnection connection = new($"Data Source={AppSettings.Instance.DbPath}");
                 await connection.OpenAsync();
-
-                string sql = "SELECT id, date FROM phrase ORDER BY id DESC";
-                using var command = new SQLiteCommand(sql, connection);
-                using var reader = await command.ExecuteReaderAsync();
-
-                while (await reader.ReadAsync())
+                using var transaction = connection.BeginTransaction();
                 {
-                    //resultに同一のIDがあるか検索する
-                    var target = resultPhrase.Models.FirstOrDefault(x => x.Id == (long)reader["id"]);
-                    if (target != null)
+                    try
                     {
-                        if (reader["date"] != DBNull.Value)
+                        var resultPhrase = await supabase
+                                          .From<Phrase>()
+                                          .Select(x => new object[] { x.Id, x.Date })
+                                          .Order(x => x.Id, Ordering.Descending)
+                                          .Get();
+
+                        cloudRecords = cloudRecords + resultPhrase.Models.Count;
+
+                        string sql = "SELECT id, date FROM phrase ORDER BY id DESC";
+                        using var command = new SQLiteCommand(sql, connection);
+                        using var reader = await command.ExecuteReaderAsync();
+
+                        while (await reader.ReadAsync())
                         {
-                            if (target.Date > (DateTime)reader["date"]) //クラウドが新しい
+                            //resultに同一のIDがあるか検索する
+                            var target = resultPhrase.Models.Find(x => x.Id == (long)reader["id"]);
+                            if (target != null)
                             {
-                                cloudIsNewer++;
+                                if (reader["date"] != DBNull.Value)
+                                {
+                                    if (target.Date > (DateTime)reader["date"]) //クラウドが新しい
+                                    {
+                                        cloudIsNewer++;
+                                    }
+                                    else if (target.Date < (DateTime)reader["date"]) //ローカルが新しい
+                                    {
+                                        localIsNewer++;
+                                    }
+                                }
+                                else //ローカルに日付がない
+                                {
+                                    cloudIsNewer++;
+                                }
                             }
-                            else if (target.Date < (DateTime)reader["date"]) //ローカルが新しい
+                            else //クラウドに該当IDがない
                             {
-                                localIsNewer++;
+                                //削除フラグに含まれている場合はローカルのSQLデータベースを削除する
+                                if (resultManagement.Models.Exists(x => x.DeleteTable == "phrase" && x.DeleteId == (long)reader["id"]))
+                                {
+                                    sql = $"DELETE FROM phrase WHERE id = {(long)reader["id"]}";
+                                    using var commandDel = new SQLiteCommand(sql, connection);
+                                    await commandDel.ExecuteNonQueryAsync();
+                                }
+                                else
+                                {
+                                    localOnly++;
+                                }
                             }
+                            localRecords++;
                         }
-                        else //ローカルに日付がない
+
+                        var resultTemplate = await supabase
+                                                .From<Template>()
+                                                .Select(x => new object[] { x.Id, x.Date })
+                                                .Order(x => x.Id, Ordering.Descending)
+                                                .Get();
+
+                        cloudRecords = cloudRecords + resultTemplate.Models.Count;
+
+                        sql = "SELECT id, date FROM template ORDER BY id DESC";
+                        using var command2 = new SQLiteCommand(sql, connection);
+                        using var reader2 = await command2.ExecuteReaderAsync();
+
+                        while (await reader2.ReadAsync())
                         {
-                            cloudIsNewer++;
+                            var target = resultTemplate.Models.Find(x => x.Id == (long)reader2["id"]);
+                            if (target != null)
+                            {
+                                if (reader2["date"] != DBNull.Value)
+                                {
+                                    if (target.Date > (DateTime)reader2["date"])
+                                    {
+                                        cloudIsNewer++;
+                                    }
+                                    else if (target.Date < (DateTime)reader2["date"])
+                                    {
+                                        localIsNewer++;
+                                    }
+                                }
+                                else
+                                {
+                                    cloudIsNewer++;
+                                }
+                            }
+                            else
+                            {
+                                localOnly++;
+                            }
+                            localRecords++;
                         }
+
+                        var resultEditorLog = await supabase
+                                                .From<EditorLog>()
+                                                .Select(x => new object[] { x.Id, x.Date })
+                                                .Order(x => x.Id, Ordering.Descending)
+                                                .Get();
+
+                        cloudRecords = cloudRecords + resultEditorLog.Models.Count;
+
+                        sql = "SELECT id, date FROM editorlog ORDER BY id DESC";
+                        using var command3 = new SQLiteCommand(sql, connection);
+                        using var reader3 = await command3.ExecuteReaderAsync();
+
+                        while (await reader3.ReadAsync())
+                        {
+                            var target = resultEditorLog.Models.FirstOrDefault(x => x.Id == (long)reader3["id"]);
+                            if (target != null)
+                            {
+                                if (reader3["date"] != DBNull.Value)
+                                {
+                                    if (target.Date > (DateTime)reader3["date"])
+                                    {
+                                        cloudIsNewer++;
+                                    }
+                                    else if (target.Date < (DateTime)reader3["date"])
+                                    {
+                                        localIsNewer++;
+                                    }
+                                }
+                                else
+                                {
+                                    cloudIsNewer++;
+                                }
+                            }
+                            else
+                            {
+                                //削除フラグに含まれている場合はローカルのSQLデータベースを削除する
+                                if (resultManagement.Models.Exists(x => x.DeleteTable == "editorlog" && x.DeleteId == (long)reader3["id"]))
+                                {
+                                    sql = $"DELETE FROM editorlog WHERE id = {(long)reader3["id"]}";
+                                    using var commandDel = new SQLiteCommand(sql, connection);
+                                    await commandDel.ExecuteNonQueryAsync();
+                                }
+                                else
+                                {
+                                    localOnly++;
+                                }
+                            }
+                            localRecords++;
+                        }
+
+                        var resultChatRoom = await supabase
+                                                .From<ChatRoom>()
+                                                .Select(x => new object[] { x.Id, x.UpdatedOn })
+                                                .Order(x => x.Id, Ordering.Descending)
+                                                .Get();
+
+                        cloudRecords = cloudRecords + resultChatRoom.Models.Count;
+
+                        sql = "SELECT id, date FROM chatlog ORDER BY id DESC";
+                        using var command4 = new SQLiteCommand(sql, connection);
+                        using var reader4 = await command4.ExecuteReaderAsync();
+
+                        while (await reader4.ReadAsync())
+                        {
+                            var target = resultChatRoom.Models.Find(x => x.Id == (long)reader4["id"]);
+                            if (target != null)
+                            {
+                                if (reader4["date"] != DBNull.Value)
+                                {
+                                    if (target.UpdatedOn > (DateTime)reader4["date"])
+                                    {
+                                        cloudIsNewer++;
+                                    }
+                                    else if (target.UpdatedOn < (DateTime)reader4["date"])
+                                    {
+                                        localIsNewer++;
+                                    }
+                                }
+                                else
+                                {
+                                    cloudIsNewer++;
+                                }
+                            }
+                            else
+                            {
+                                //削除フラグに含まれている場合はローカルのSQLデータベースを削除する
+                                if (resultManagement.Models.Exists(x => x.DeleteTable == "chatlog" && x.DeleteId == (long)reader4["id"]))
+                                {
+                                    sql = $"DELETE FROM chatlog WHERE id = {(long)reader4["id"]}";
+                                    using var commandDel = new SQLiteCommand(sql, connection);
+                                    await commandDel.ExecuteNonQueryAsync();
+                                }
+                                else
+                                {
+                                    localOnly++;
+                                }
+                            }
+                            localRecords++;
+                        }
+                        await transaction.CommitAsync();
                     }
-                    else //クラウドに該当IDがない
+                    catch (Exception ex)
                     {
-                        localOnly++;
+                        await transaction.RollbackAsync();
+                        var cdialog = new ContentDialog
+                        {
+                            Title = "Error",
+                            Content = ex.Message,
+                            CloseButtonText = "OK"
+                        };
+                        await VMLocator.MainViewModel.ContentDialogShowAsync(cdialog);
                     }
-                    localRecords++;
                 }
 
-                var resultTemplate = await supabase
-                                        .From<Template>()
-                                        .Select(x => new object[] { x.Id, x.Date })
-                                        .Order(x => x.Id, Ordering.Descending)
-                                        .Get();
-
-                cloudRecords = cloudRecords + resultTemplate.Models.Count;
-
-                sql = "SELECT id, date FROM template ORDER BY id DESC";
-                using var command2 = new SQLiteCommand(sql, connection);
-                using var reader2 = await command2.ExecuteReaderAsync();
-
-                while (await reader2.ReadAsync())
-                {
-                    var target = resultTemplate.Models.FirstOrDefault(x => x.Id == (long)reader2["id"]);
-                    if (target != null)
-                    {
-                        if (reader2["date"] != DBNull.Value)
-                        {
-                            if (target.Date > (DateTime)reader2["date"])
-                            {
-                                cloudIsNewer++;
-                            }
-                            else if (target.Date < (DateTime)reader2["date"])
-                            {
-                                localIsNewer++;
-                            }
-                        }
-                        else
-                        {
-                            cloudIsNewer++;
-                        }
-                    }
-                    else
-                    {
-                        localOnly++;
-                    }
-                    localRecords++;
-                }
-
-                var resultEditorLog = await supabase
-                                        .From<EditorLog>()
-                                        .Select(x => new object[] { x.Id, x.Date })
-                                        .Order(x => x.Id, Ordering.Descending)
-                                        .Get();
-
-                cloudRecords = cloudRecords + resultEditorLog.Models.Count;
-
-                sql = "SELECT id, date FROM editorlog ORDER BY id DESC";
-                using var command3 = new SQLiteCommand(sql, connection);
-                using var reader3 = await command3.ExecuteReaderAsync();
-
-                while (await reader3.ReadAsync())
-                {
-                    var target = resultEditorLog.Models.FirstOrDefault(x => x.Id == (long)reader3["id"]);
-                    if (target != null)
-                    {
-                        if (reader3["date"] != DBNull.Value)
-                        {
-                            if (target.Date > (DateTime)reader3["date"])
-                            {
-                                cloudIsNewer++;
-                            }
-                            else if (target.Date < (DateTime)reader3["date"])
-                            {
-                                localIsNewer++;
-                            }
-                        }
-                        else
-                        {
-                            cloudIsNewer++;
-                        }
-                    }
-                    else
-                    {
-                        localOnly++;
-                    }
-                    localRecords++;
-                }
-
-                var resultChatRoom = await supabase
-                                        .From<ChatRoom>()
-                                        .Select(x => new object[] { x.Id, x.UpdatedOn })
-                                        .Order(x => x.Id, Ordering.Descending)
-                                        .Get();
-
-                cloudRecords = cloudRecords + resultChatRoom.Models.Count;
-
-                sql = "SELECT id, date FROM chatlog ORDER BY id DESC";
-                using var command4 = new SQLiteCommand(sql, connection);
-                using var reader4 = await command4.ExecuteReaderAsync();
-
-                while (await reader4.ReadAsync())
-                {
-                    var target = resultChatRoom.Models.FirstOrDefault(x => x.Id == (long)reader4["id"]);
-                    if (target != null)
-                    {
-                        if (reader4["date"] != DBNull.Value)
-                        {
-                            if (target.UpdatedOn > (DateTime)reader4["date"])
-                            {
-                                cloudIsNewer++;
-                            }
-                            else if (target.UpdatedOn < (DateTime)reader4["date"])
-                            {
-                                localIsNewer++;
-                            }
-                        }
-                        else
-                        {
-                            cloudIsNewer++;
-                        }
-                    }
-                    else
-                    {
-                        localOnly++;
-                    }
-                    localRecords++;
-                }
-
+                //検証結果判定処理
                 if (localOnly > 0 && cloudIsNewer == 0 && localIsNewer == 0 && cloudRecords == 0)
                 {
-                    //クラウドにデータが無ければ、ローカルの全データをコピーして初回同期する
-                    //コピー後にローカルを全削除してクラウドからフェッチ
+                    //クラウドにデータが一つも無ければ、ローカルの全データをコピーして初回同期する
+                    //コピー後にローカルを全削除してクラウドからフェッチし、IDを振りなおす
                     BackupDb();
                     await CopyAllLocalToCloudDbAsync();
                     VMLocator.MainViewModel.SyncLogText = "Synced to cloud from local: " + localOnly;
                 }
-                else if (cloudIsNewer > 0 && localIsNewer == 0 && localOnly == 0 || (localRecords == 0 && cloudRecords > 0))
+                else if ((cloudIsNewer > 0 && localIsNewer == 0 && localOnly == 0) || (localRecords == 0 && cloudRecords > 0))
                 {
-                    //クラウドのデータをローカルにコピー
+                    //クラウドのデータが新しいか、ローカルのデータが一つもなければ、クラウドのデータをローカルにコピー
                     await UpsertToLocalDbAsync();
-                    VMLocator.MainViewModel.SyncLogText = "Synced from cloud: " + cloudIsNewer;
+                    if (localRecords == 0 && cloudRecords > 0)
+                    {
+                        VMLocator.MainViewModel.SyncLogText = "Synced from cloud: " + cloudRecords;
+                    }
+                    else
+                    {
+                        VMLocator.MainViewModel.SyncLogText = "Synced from cloud: " + cloudIsNewer;
+                    }
+
                 }
                 else if (localIsNewer > 0 && cloudIsNewer == 0 && localOnly == 0)
                 {
-                    //ローカルのデータをコピー
+                    //ローカルのデータが新しければクラウドにコピー
                     await UpsertToCloudDbAsync();
                     VMLocator.MainViewModel.SyncLogText = "Synced to cloud from local: " + localIsNewer;
                 }
@@ -250,37 +349,53 @@ namespace TmCGPTD.Models
                     ContentDialog? cdialog = null;
                     await Dispatcher.UIThread.InvokeAsync(() =>
                     {
-                        //競合が発生
-                        cdialog = new ContentDialog
+                        if (accountCheck == "new")
                         {
-                            Title = "Data conflicts.",
-                            Content = $"Please merge or select preferred data.\n*Note that data may be lost if you choose Cloud or Local.\n\nThis warning appears when data is deleted either on the cloud side or on another computer.\nBefore execution, the database is backed up to the folder.\n\nCloud records: {cloudRecords}, Local records: {localRecords}\nCloud is newer: {cloudIsNewer},  Local is newer: {localIsNewer},  Local unique ID: {localOnly}",
-                            PrimaryButtonText = "Merge",
-                            SecondaryButtonText = "Cloud",
-                            CloseButtonText = "Local"
-                        };
+                            Application.Current!.TryFindResource("My.Strings.NewAccountConflicts", out object? resource1);
+                            //初回同期
+                            cdialog = new ContentDialog
+                            {
+                                Title = "Data conflicts.",
+                                Content = $"{resource1}\nCloud records: {cloudRecords}, Local records: {localRecords}\nCloud is newer: {cloudIsNewer},  Local is newer: {localIsNewer},  Local only: {localOnly}",
+                                PrimaryButtonText = "Merge",
+                                SecondaryButtonText = "Cloud",
+                                CloseButtonText = "Local"
+                            };
+                        }
+                        else
+                        {
+                            Application.Current!.TryFindResource("My.Strings.DataConflicts", out object? resource2);
+                            //競合が発生
+                            cdialog = new ContentDialog
+                            {
+                                Title = "Data conflicts.",
+                                Content = $"{resource2}\nCloud records: {cloudRecords}, Local records: {localRecords}\nCloud is newer: {cloudIsNewer},  Local is newer: {localIsNewer},  Local only: {localOnly}",
+                                PrimaryButtonText = "Merge",
+                                SecondaryButtonText = "Cloud",
+                                CloseButtonText = "Local"
+                            };
+                        }
                     });
 
                     var result = await VMLocator.MainViewModel.ContentDialogShowAsync(cdialog!);
                     if (result == ContentDialogResult.Primary) //マージ
                     {
                         BackupDb();
-                        await UpsertToCloudDbAsync();
+                        await UpsertToCloudDbAsync(true); //マージモードではRLS違反のIDが重複する可能性があるため、クラウド側のIDを再発行する
                         await UpsertToLocalDbAsync();
                         VMLocator.MainViewModel.SyncLogText = "Database merge completed.";
                     }
                     else if (result == ContentDialogResult.Secondary) //クラウドを優先
                     {
                         BackupDb();
-                        await DeleteLocalDbAsync();
-                        await UpsertToLocalDbAsync();
+                        await UpsertToLocalDbAsync(); //ローカルにしかデータが無い場合は削除される
                         VMLocator.MainViewModel.SyncLogText = "Database sync completed.";
                     }
                     else if (result == ContentDialogResult.None) //ローカルを優先
                     {
                         BackupDb();
                         await DeleteCloudDbAsync();
-                        await CopyAllLocalToCloudDbAsync();
+                        await CopyAllLocalToCloudDbAsync(); //IDの競合を避けるためにクラウドを一旦削除して全同期しなおす
                         VMLocator.MainViewModel.SyncLogText = "Database sync completed.";
                     }
                 }
@@ -297,12 +412,12 @@ namespace TmCGPTD.Models
             }
         }
         // -------------------------------------------------------------------------------------------------------
-        public async Task UpsertToCloudDbAsync()
+        public async Task UpsertToCloudDbAsync(bool isMerge = false)
         {
             var supabase = SupabaseStates.Instance.Supabase;
             var uid = SupabaseStates.Instance.Supabase!.Auth.CurrentUser!.Id;
 
-            using SQLiteConnection connection = new SQLiteConnection($"Data Source={AppSettings.Instance.DbPath}");
+            using SQLiteConnection connection = new($"Data Source={AppSettings.Instance.DbPath}");
             await connection.OpenAsync();
 
             try
@@ -313,29 +428,63 @@ namespace TmCGPTD.Models
                       .Get();
 
                 var models = new List<Phrase>();
+                List<long> mergedIdList = new();
 
-                string sql = "SELECT * FROM phrase ORDER BY name COLLATE NOCASE";
+                const string sql = "SELECT * FROM phrase ORDER BY name COLLATE NOCASE";
                 using var command2 = new SQLiteCommand(sql, connection);
                 using var reader = await command2.ExecuteReaderAsync();
 
                 while (await reader.ReadAsync())
                 {
-                    var target = resultPhrase.Models.FirstOrDefault(x => x.Id == (long)reader["id"]);
+                    var target = resultPhrase.Models.Find(x => x.Id == (long)reader["id"]);
 
-                    if (target == null || (reader["date"] != DBNull.Value && target.Date < (DateTime)reader["date"])) // クラウドにデータが無いか、ローカルの日付が新しい場合
+                    if (target == null || reader["date"] is DBNull || target.Date != (DateTime)reader["date"]) // クラウドにデータが無いか、ローカルと日付が異なる場合
                     {
-                        DateTime date = (DateTime)reader["date"];
+                        DateTime date;
+                        if (reader["date"] != DBNull.Value)
+                        {
+                            date = (DateTime)reader["date"];
+                        }
+                        else //Nullの場合は現在時刻を入れる
+                        {
+                            date = DateTime.Now;
+                        }
                         date = date.AddTicks(-(date.Ticks % TimeSpan.TicksPerSecond));
-                        models.Add(new Phrase { Id = (long)reader["id"], UserId = uid, Name = (string)reader["name"], Content = (string)reader["phrase"], Date = date });
-                    }
-                    else if (reader["date"] == DBNull.Value || (DateTime)reader["date"] == DateTime.MinValue) // ローカルの日付がNullの場合
-                    {
-                        DateTime date = DateTime.Now;
-                        date = date.AddTicks(-(date.Ticks % TimeSpan.TicksPerSecond));
-                        models.Add(new Phrase { Id = (long)reader["id"], UserId = uid, Name = (string)reader["name"], Content = (string)reader["phrase"], Date = date });
+
+                        if (isMerge) //マージの場合はIDを振り直す
+                        {
+                            await supabase!.From<Phrase>().Upsert(new Phrase { UserId = uid, Name = (string)reader["name"], Content = (string)reader["phrase"], Date = date });
+                            mergedIdList.Add((long)reader["id"]);
+                        }
+                        else
+                        {
+                            models.Add(new Phrase { Id = (long)reader["id"], UserId = uid, Name = (string)reader["name"], Content = (string)reader["phrase"], Date = date });
+                        }
                     }
                 }
-                if (models.Count > 0) await supabase!.From<Phrase>().Upsert(models);
+
+                if (models.Count > 0 && !isMerge) await supabase!.From<Phrase>().Upsert(models);
+                if (models.Count > 0 && isMerge) await supabase!.From<Phrase>().Insert(models);
+
+                if (isMerge && mergedIdList.Count > 0)
+                {
+                    //保存したローカルIDのレコードをトランザクションで削除
+                    using var transaction = connection.BeginTransaction();
+                    try
+                    {
+                        foreach (var id in mergedIdList)
+                        {
+                            using var command = new SQLiteCommand($"DELETE FROM phrase WHERE id = {id}", connection, transaction);
+                            await command.ExecuteNonQueryAsync();
+                        }
+                        await transaction.CommitAsync();
+                    }
+                    catch (Exception ex)
+                    {
+                        await transaction.RollbackAsync();
+                        throw new Exception($"Failed to delete merged records: {ex.Message}\n{ex.StackTrace}");
+                    }
+                }
             }
             catch (Exception ex)
             {
@@ -351,30 +500,63 @@ namespace TmCGPTD.Models
                         .Get();
 
                 var models = new List<EditorLog>();
+                List<long> mergedIdList = new();
 
-                string sql = "SELECT * FROM editorlog ORDER BY date ASC LIMIT 200";
+                const string sql = "SELECT * FROM editorlog ORDER BY date ASC LIMIT 200";
                 using var command2 = new SQLiteCommand(sql, connection);
                 using var reader = await command2.ExecuteReaderAsync();
 
                 while (await reader.ReadAsync())
                 {
-                    var target = resultEditorLog.Models.FirstOrDefault(x => x.Id == (long)reader["id"]);
+                    var target = resultEditorLog.Models.Find(x => x.Id == (long)reader["id"]);
 
-                    if (target == null || (reader["date"] != DBNull.Value && target.Date < (DateTime)reader["date"])) // クラウドにデータが無いか、ローカルの日付が新しい場合
+                    if (target == null || reader["date"] is DBNull || target.Date != (DateTime)reader["date"]) // クラウドにデータが無いか、ローカルと日付が異なる場合
                     {
-                        DateTime date = (DateTime)reader["date"];
+                        DateTime date;
+                        if (reader["date"] != DBNull.Value)
+                        {
+                            date = (DateTime)reader["date"];
+                        }
+                        else //Nullの場合は現在時刻を入れる
+                        {
+                            date = DateTime.Now;
+                        }
                         date = date.AddTicks(-(date.Ticks % TimeSpan.TicksPerSecond));
-                        models.Add(new EditorLog { Id = (long)reader["id"], UserId = uid, Content = (string)reader["text"], Date = date });
-                    }
-                    else if (reader["date"] == DBNull.Value || (DateTime)reader["date"] == DateTime.MinValue) // ローカルの日付がNullの場合
-                    {
-                        DateTime date = DateTime.Now;
-                        date = date.AddTicks(-(date.Ticks % TimeSpan.TicksPerSecond));
-                        models.Add(new EditorLog { Id = (long)reader["id"], UserId = uid, Content = (string)reader["text"], Date = date });
+
+                        if (isMerge) //マージの場合はIDを振り直す
+                        {
+                            models.Add(new EditorLog { UserId = uid, Content = (string)reader["text"], Date = date });
+                            mergedIdList.Add((long)reader["id"]);
+                        }
+                        else
+                        {
+                            models.Add(new EditorLog { Id = (long)reader["id"], UserId = uid, Content = (string)reader["text"], Date = date });
+                        }
                     }
                 }
 
-                if (models.Count > 0) await supabase.From<EditorLog>().Upsert(models);
+                if (models.Count > 0 && !isMerge) await supabase.From<EditorLog>().Upsert(models);
+                if (models.Count > 0 && isMerge) await supabase.From<EditorLog>().Insert(models);
+
+                if (isMerge && mergedIdList.Count > 0)
+                {
+                    //保存したローカルIDのレコードをトランザクションで削除
+                    using var transaction = connection.BeginTransaction();
+                    try
+                    {
+                        foreach (var id in mergedIdList)
+                        {
+                            using var command = new SQLiteCommand($"DELETE FROM editorlog WHERE id = {id}", connection, transaction);
+                            await command.ExecuteNonQueryAsync();
+                        }
+                        await transaction.CommitAsync();
+                    }
+                    catch (Exception ex)
+                    {
+                        await transaction.RollbackAsync();
+                        throw new Exception($"Failed to delete merged records: {ex.Message}\n{ex.StackTrace}");
+                    }
+                }
             }
             catch (Exception ex)
             {
@@ -390,30 +572,63 @@ namespace TmCGPTD.Models
                         .Get();
 
                 var models = new List<Template>();
+                List<long> mergedIdList = new();
 
-                string sql = "SELECT * FROM template ORDER BY title ASC";
+                const string sql = "SELECT * FROM template ORDER BY title ASC";
                 using var command2 = new SQLiteCommand(sql, connection);
                 using var reader = await command2.ExecuteReaderAsync();
 
                 while (await reader.ReadAsync())
                 {
-                    var target = resultTemplate.Models.FirstOrDefault(x => x.Id == (long)reader["id"]);
+                    var target = resultTemplate.Models.Find(x => x.Id == (long)reader["id"]);
 
-                    if (target == null || (reader["date"] != DBNull.Value && target.Date < (DateTime)reader["date"])) // クラウドにデータが無いか、ローカルの日付が新しい場合
+                    if (target == null || reader["date"] is DBNull || target.Date != (DateTime)reader["date"]) // クラウドにデータが無いか、ローカルと日付が異なる場合
                     {
-                        DateTime date = (DateTime)reader["date"];
+                        DateTime date;
+                        if (reader["date"] != DBNull.Value)
+                        {
+                            date = (DateTime)reader["date"];
+                        }
+                        else //Nullの場合は現在時刻を入れる
+                        {
+                            date = DateTime.Now;
+                        }
                         date = date.AddTicks(-(date.Ticks % TimeSpan.TicksPerSecond));
-                        models.Add(new Template { Id = (long)reader["id"], UserId = uid, Title = (string)reader["title"], Content = (string)reader["text"], Date = date });
-                    }
-                    else if (reader["date"] == DBNull.Value || (DateTime)reader["date"] == DateTime.MinValue) // ローカルの日付がNullの場合
-                    {
-                        DateTime date = DateTime.Now;
-                        date = date.AddTicks(-(date.Ticks % TimeSpan.TicksPerSecond));
-                        models.Add(new Template { Id = (long)reader["id"], UserId = uid, Title = (string)reader["title"], Content = (string)reader["text"], Date = date });
+
+                        if (isMerge) //マージの場合はIDを振り直す
+                        {
+                            models.Add(new Template { UserId = uid, Title = (string)reader["title"], Content = (string)reader["text"], Date = date });
+                            mergedIdList.Add((long)reader["id"]);
+                        }
+                        else
+                        {
+                            models.Add(new Template { Id = (long)reader["id"], UserId = uid, Title = (string)reader["title"], Content = (string)reader["text"], Date = date });
+                        }
                     }
                 }
 
-                if (models.Count > 0) await supabase.From<Template>().Upsert(models);
+                if (models.Count > 0 && !isMerge) await supabase.From<Template>().Upsert(models);
+                if (models.Count > 0 && isMerge) await supabase.From<Template>().Insert(models);
+
+                if (isMerge && mergedIdList.Count > 0)
+                {
+                    //保存したローカルIDのレコードをトランザクションで削除
+                    using var transaction = connection.BeginTransaction();
+                    try
+                    {
+                        foreach (var id in mergedIdList)
+                        {
+                            using var command = new SQLiteCommand($"DELETE FROM template WHERE id = {id}", connection, transaction);
+                            await command.ExecuteNonQueryAsync();
+                        }
+                        await transaction.CommitAsync();
+                    }
+                    catch (Exception ex)
+                    {
+                        await transaction.RollbackAsync();
+                        throw new Exception($"Failed to delete merged records: {ex.Message}\n{ex.StackTrace}");
+                    }
+                }
             }
             catch (Exception ex)
             {
@@ -429,27 +644,46 @@ namespace TmCGPTD.Models
                         .Get();
 
                 var models2 = new List<Message>();
+                List<long> mergedIdList = new();
 
-                string sql = "SELECT * FROM chatlog ORDER BY date ASC";
+                const string sql = "SELECT * FROM chatlog ORDER BY date ASC";
                 using var command2 = new SQLiteCommand(sql, connection);
                 using var reader = await command2.ExecuteReaderAsync();
 
                 while (await reader.ReadAsync())
                 {
-                    var target = resultChatRoom.Models.FirstOrDefault(x => x.Id == (long)reader["id"]);
+                    var target = resultChatRoom.Models.Find(x => x.Id == (long)reader["id"]);
 
                     var models1 = new List<ChatRoom>();
-                    if (target == null || (reader["date"] != DBNull.Value && target.UpdatedOn < (DateTime)reader["date"])) // クラウドにデータが無いか、ローカルの日付が新しい場合
+                    if (target == null || reader["date"] is DBNull || target.UpdatedOn != (DateTime)reader["date"]) // クラウドにデータが無いか、ローカルと日付が異なる場合
                     {
-                        DateTime date = (DateTime)reader["date"];
+                        DateTime date;
+                        if (reader["date"] != DBNull.Value)
+                        {
+                            date = (DateTime)reader["date"];
+                        }
+                        else //Nullの場合は現在時刻を入れる
+                        {
+                            date = DateTime.Now;
+                        }
                         date = date.AddTicks(-(date.Ticks % TimeSpan.TicksPerSecond));
+
                         if (target != null) // クラウドにデータがある場合は一旦削除（カスケードでメッセージを一旦消す）
                         {
                             await supabase.From<ChatRoom>()
                                            .Where(x => x.Id == target.Id)
                                            .Delete();
                         }
-                        models1.Add(new ChatRoom { Id = (long)reader["id"], UserId = uid, Title = (string)reader["title"], Category = (string)reader["category"], LastPrompt = (string)reader["lastprompt"], Json = (string)reader["json"], JsonPrev = (string)reader["jsonprev"], UpdatedOn = date });
+
+                        if (isMerge) //マージの場合はIDを振り直す
+                        {
+                            models1.Add(new ChatRoom { UserId = uid, Title = (string)reader["title"], Category = (string)reader["category"], LastPrompt = (string)reader["lastprompt"], Json = (string)reader["json"], JsonPrev = (string)reader["jsonprev"], UpdatedOn = date });
+                            mergedIdList.Add((long)reader["id"]);
+                        }
+                        else
+                        {
+                            models1.Add(new ChatRoom { Id = (long)reader["id"], UserId = uid, Title = (string)reader["title"], Category = (string)reader["category"], LastPrompt = (string)reader["lastprompt"], Json = (string)reader["json"], JsonPrev = (string)reader["jsonprev"], UpdatedOn = date });
+                        }
 
                         var returnValue = await supabase.From<ChatRoom>().Insert(models1, new QueryOptions { Returning = ReturnType.Representation });
 
@@ -457,27 +691,29 @@ namespace TmCGPTD.Models
 
                         models2.AddRange(DivideMessage((string)reader["text"], roomId, uid!)); // メッセージを分割して追加
                     }
-                    else if (reader["date"] == DBNull.Value || (DateTime)reader["date"] == DateTime.MinValue) // ローカルの日付がNullの場合
-                    {
-                        DateTime date = DateTime.Now;
-                        date = date.AddTicks(-(date.Ticks % TimeSpan.TicksPerSecond));
-                        if (target != null) // クラウドにデータがある場合は一旦削除（カスケードでメッセージを一旦消す）
-                        {
-                            await supabase.From<ChatRoom>()
-                                           .Where(x => x.Id == target.Id)
-                                           .Delete();
-                        }
-                        models1.Add(new ChatRoom { Id = (long)reader["id"], UserId = uid, Title = (string)reader["title"], Category = (string)reader["category"], LastPrompt = (string)reader["lastprompt"], Json = (string)reader["json"], JsonPrev = (string)reader["jsonprev"], UpdatedOn = date });
-
-                        var returnValue = await supabase.From<ChatRoom>().Insert(models1, new QueryOptions { Returning = ReturnType.Representation });
-
-                        var roomId = returnValue.Models[0].Id;
-
-                        models2.AddRange(DivideMessage((string)reader["text"], roomId, uid!));
-                    }
                 }
 
                 if (models2.Count > 0) await supabase.From<Message>().Insert(models2);
+
+                if (isMerge && mergedIdList.Count > 0)
+                {
+                    //保存したローカルIDのレコードをトランザクションで削除
+                    using var transaction = connection.BeginTransaction();
+                    try
+                    {
+                        foreach (var id in mergedIdList)
+                        {
+                            using var command = new SQLiteCommand($"DELETE FROM chatlog WHERE id = {id}", connection, transaction);
+                            await command.ExecuteNonQueryAsync();
+                        }
+                        await transaction.CommitAsync();
+                    }
+                    catch (Exception ex)
+                    {
+                        await transaction.RollbackAsync();
+                        throw new Exception($"Failed to delete merged records: {ex.Message}\n{ex.StackTrace}");
+                    }
+                }
             }
             catch (Exception ex)
             {
@@ -489,10 +725,9 @@ namespace TmCGPTD.Models
 
         public async Task UpsertToLocalDbAsync()
         {
-            var _dbProcess = DatabaseProcess.Instance;
             var supabase = SupabaseStates.Instance.Supabase;
 
-            using SQLiteConnection connection = new SQLiteConnection($"Data Source={AppSettings.Instance.DbPath}");
+            using SQLiteConnection connection = new($"Data Source={AppSettings.Instance.DbPath}");
             await connection.OpenAsync();
 
             using var transaction = connection.BeginTransaction();
@@ -504,7 +739,7 @@ namespace TmCGPTD.Models
                           .Order(x => x.Id, Ordering.Descending)
                           .Get();
 
-                    Dictionary<long, DateTime?> localData = new Dictionary<long, DateTime?>();
+                    Dictionary<long, DateTime?> localData = new();
 
                     using var command = new SQLiteCommand("SELECT id, date FROM phrase ORDER BY id DESC", connection);
                     using var reader = await command.ExecuteReaderAsync();
@@ -517,18 +752,30 @@ namespace TmCGPTD.Models
 
                     foreach (var cloudData in resultPhrase.Models)
                     {
-                        // クラウドの日付が新しいか、ローカルの日付がNull、またはローカルにデータが存在しない場合
-                        if (!localData.TryGetValue(cloudData.Id, out DateTime? localDate) || localDate == null || cloudData.Date > localDate)
+                        // クラウドと日付が異なるか、ローカルの日付がNull、またはローカルにデータが存在しない場合
+                        if (!localData.TryGetValue(cloudData.Id, out DateTime? localDate) || localDate == null || cloudData.Date != localDate)
                         {
-                            var updateSql = @"INSERT INTO phrase (id, name, phrase, date) VALUES (@Id, @Name, @Content, @Date) 
+                            const string updateSql = @"INSERT INTO phrase (id, name, phrase, date) VALUES (@Id, @Name, @Content, @Date) 
                                               ON CONFLICT(id) DO UPDATE SET name = excluded.name, phrase = excluded.phrase, date = excluded.date;";
                             var updateCommand = new SQLiteCommand(updateSql, connection);
                             updateCommand.Parameters.AddWithValue("@Id", cloudData.Id);
                             updateCommand.Parameters.AddWithValue("@Name", cloudData.Name);
                             updateCommand.Parameters.AddWithValue("@Content", cloudData.Content);
-                            updateCommand.Parameters.AddWithValue("@Date", cloudData.Date);
+                            updateCommand.Parameters.AddWithValue("@Date", cloudData.Date.ToString("s"));
 
                             await updateCommand.ExecuteNonQueryAsync();
+                        }
+                    }
+                    //ローカルデータを反復して、クラウドデータに存在しない場合は削除
+                    var cloudIds = resultPhrase.Models.ConvertAll(x => x.Id);
+                    foreach (var localId in localData.Keys)
+                    {
+                        if (!cloudIds.Contains(localId))
+                        {
+                            const string deleteSql = "DELETE FROM phrase WHERE id = @Id;";
+                            var deleteCommand = new SQLiteCommand(deleteSql, connection);
+                            deleteCommand.Parameters.AddWithValue("@Id", localId);
+                            await deleteCommand.ExecuteNonQueryAsync();
                         }
                     }
 
@@ -550,9 +797,9 @@ namespace TmCGPTD.Models
                                     .Order(x => x.Id, Ordering.Descending)
                                     .Get();
 
-                    Dictionary<long, DateTime?> localData = new Dictionary<long, DateTime?>();
+                    Dictionary<long, DateTime?> localData = new();
 
-                    string sql = "SELECT id, date FROM template ORDER BY id DESC";
+                    const string sql = "SELECT id, date FROM template ORDER BY id DESC";
                     using var command2 = new SQLiteCommand(sql, connection);
                     using var reader = await command2.ExecuteReaderAsync();
                     while (await reader.ReadAsync())
@@ -564,18 +811,30 @@ namespace TmCGPTD.Models
 
                     foreach (var cloudData in resultTemplate.Models)
                     {
-                        // クラウドの日付が新しいか、ローカルの日付がNull、またはローカルにデータが存在しない場合
-                        if (!localData.TryGetValue(cloudData.Id, out DateTime? localDate) || localDate == null || cloudData.Date > localDate)
+                        // クラウドと日付が異なるか、ローカルの日付がNull、またはローカルにデータが存在しない場合
+                        if (!localData.TryGetValue(cloudData.Id, out DateTime? localDate) || localDate == null || cloudData.Date != localDate)
                         {
-                            var updateSql = @"INSERT INTO template (id, title, text, date) VALUES (@Id, @Name, @Content, @Date) 
+                            const string updateSql = @"INSERT INTO template (id, title, text, date) VALUES (@Id, @Name, @Content, @Date) 
                                               ON CONFLICT(id) DO UPDATE SET title = excluded.title, text = excluded.text, date = excluded.date;";
                             var command = new SQLiteCommand(updateSql, connection);
                             command.Parameters.AddWithValue("@Id", cloudData.Id);
                             command.Parameters.AddWithValue("@Name", cloudData.Title);
                             command.Parameters.AddWithValue("@Content", cloudData.Content);
-                            command.Parameters.AddWithValue("@Date", cloudData.Date);
+                            command.Parameters.AddWithValue("@Date", cloudData.Date.ToString("s"));
 
                             await command.ExecuteNonQueryAsync();
+                        }
+                    }
+                    //ローカルデータを反復して、クラウドデータに存在しない場合は削除
+                    var cloudIds = resultTemplate.Models.ConvertAll(x => x.Id);
+                    foreach (var localId in localData.Keys)
+                    {
+                        if (!cloudIds.Contains(localId))
+                        {
+                            const string deleteSql = "DELETE FROM template WHERE id = @Id;";
+                            var deleteCommand = new SQLiteCommand(deleteSql, connection);
+                            deleteCommand.Parameters.AddWithValue("@Id", localId);
+                            await deleteCommand.ExecuteNonQueryAsync();
                         }
                     }
 
@@ -597,9 +856,9 @@ namespace TmCGPTD.Models
                                     .Order(x => x.Id, Ordering.Descending)
                                     .Get();
 
-                    Dictionary<long, DateTime?> localData = new Dictionary<long, DateTime?>();
+                    Dictionary<long, DateTime?> localData = new();
 
-                    string sql = "SELECT id, date FROM editorlog ORDER BY id DESC";
+                    const string sql = "SELECT id, date FROM editorlog ORDER BY id DESC";
                     using var command3 = new SQLiteCommand(sql, connection);
                     using var reader = await command3.ExecuteReaderAsync();
                     while (await reader.ReadAsync())
@@ -611,17 +870,29 @@ namespace TmCGPTD.Models
 
                     foreach (var cloudData in resultEditorLog.Models)
                     {
-                        // クラウドの日付が新しいか、ローカルの日付がNull、またはローカルにデータが存在しない場合
-                        if (!localData.TryGetValue(cloudData.Id, out DateTime? localDate) || localDate == null || cloudData.Date > localDate)
+                        // クラウドと日付が異なるか、ローカルの日付がNull、またはローカルにデータが存在しない場合
+                        if (!localData.TryGetValue(cloudData.Id, out DateTime? localDate) || localDate == null || cloudData.Date != localDate)
                         {
-                            var updateSql = @"INSERT INTO editorlog (id, date, text) VALUES (@Id, @Date, @Content) 
+                            const string updateSql = @"INSERT INTO editorlog (id, date, text) VALUES (@Id, @Date, @Content) 
                                               ON CONFLICT(id) DO UPDATE SET date = excluded.date, text = excluded.text;";
                             var command = new SQLiteCommand(updateSql, connection);
                             command.Parameters.AddWithValue("@Id", cloudData.Id);
-                            command.Parameters.AddWithValue("@Date", cloudData.Date);
+                            command.Parameters.AddWithValue("@Date", cloudData.Date.ToString("s"));
                             command.Parameters.AddWithValue("@Content", cloudData.Content);
 
                             await command.ExecuteNonQueryAsync();
+                        }
+                    }
+                    //ローカルデータを反復して、クラウドデータに存在しない場合は削除
+                    var cloudIds = resultEditorLog.Models.ConvertAll(x => x.Id);
+                    foreach (var localId in localData.Keys)
+                    {
+                        if (!cloudIds.Contains(localId))
+                        {
+                            const string deleteSql = "DELETE FROM editorlog WHERE id = @Id;";
+                            var deleteCommand = new SQLiteCommand(deleteSql, connection);
+                            deleteCommand.Parameters.AddWithValue("@Id", localId);
+                            await deleteCommand.ExecuteNonQueryAsync();
                         }
                     }
 
@@ -643,9 +914,9 @@ namespace TmCGPTD.Models
                                     .Order(x => x.Id, Ordering.Descending)
                                     .Get();
 
-                    Dictionary<long, DateTime?> localData = new Dictionary<long, DateTime?>();
+                    Dictionary<long, DateTime?> localData = new();
 
-                    string sql = "SELECT * FROM chatlog ORDER BY id DESC";
+                    const string sql = "SELECT * FROM chatlog ORDER BY id DESC";
                     using var command4 = new SQLiteCommand(sql, connection);
                     using var reader = await command4.ExecuteReaderAsync();
                     while (await reader.ReadAsync())
@@ -657,18 +928,18 @@ namespace TmCGPTD.Models
 
                     foreach (var cloudData in resultChatRoom.Models)
                     {
-                        // クラウドの日付が新しいか、ローカルの日付がNull、またはローカルにデータが存在しない場合
-                        if (!localData.TryGetValue(cloudData.Id, out DateTime? localDate) || localDate == null || cloudData.UpdatedOn > localDate)
+                        // クラウドと日付が異なるか、ローカルの日付がNull、またはローカルにデータが存在しない場合
+                        if (!localData.TryGetValue(cloudData.Id, out DateTime? localDate) || localDate == null || cloudData.UpdatedOn != localDate)
                         {
                             var resultMessage = await supabase.From<Message>().Where(x => x.RoomId == cloudData.Id).Order(x => x.Id, Ordering.Ascending).Get();
 
                             string combinedMessage = CombineMessage(resultMessage.Models);
 
-                            var updateSql = @"INSERT INTO chatlog (id, date, title, json, text, category, lastprompt, jsonprev) VALUES (@Id, @UpdatedOn, @Title, @Json, @Message, @Category, @LastPrompt, @JsonPrev) 
+                            const string updateSql = @"INSERT INTO chatlog (id, date, title, json, text, category, lastprompt, jsonprev) VALUES (@Id, @UpdatedOn, @Title, @Json, @Message, @Category, @LastPrompt, @JsonPrev) 
                                 ON CONFLICT(id) DO UPDATE SET date = excluded.date, title = excluded.title, json = excluded.json, text = excluded.text, category = excluded.category, lastprompt = excluded.lastprompt, jsonprev = excluded.jsonprev;";
                             var command = new SQLiteCommand(updateSql, connection);
                             command.Parameters.AddWithValue("@Id", cloudData.Id);
-                            command.Parameters.AddWithValue("@UpdatedOn", cloudData.UpdatedOn);
+                            command.Parameters.AddWithValue("@UpdatedOn", cloudData.UpdatedOn.ToString("s"));
                             command.Parameters.AddWithValue("@Title", cloudData.Title);
                             command.Parameters.AddWithValue("@Json", cloudData.Json);
                             command.Parameters.AddWithValue("@Message", combinedMessage);
@@ -677,6 +948,18 @@ namespace TmCGPTD.Models
                             command.Parameters.AddWithValue("@JsonPrev", cloudData.JsonPrev);
 
                             await command.ExecuteNonQueryAsync();
+                        }
+                    }
+                    //ローカルデータを反復して、クラウドデータに存在しない場合は削除
+                    var cloudIds = resultChatRoom.Models.ConvertAll(x => x.Id);
+                    foreach (var localId in localData.Keys)
+                    {
+                        if (!cloudIds.Contains(localId))
+                        {
+                            const string deleteSql = "DELETE FROM chatlog WHERE id = @Id;";
+                            var deleteCommand = new SQLiteCommand(deleteSql, connection);
+                            deleteCommand.Parameters.AddWithValue("@Id", localId);
+                            await deleteCommand.ExecuteNonQueryAsync();
                         }
                     }
 
@@ -690,12 +973,12 @@ namespace TmCGPTD.Models
 
                 // インメモリをいったん閉じてまた開く
                 await DatabaseProcess.memoryConnection!.CloseAsync();
-                await _dbProcess.DbLoadToMemoryAsync();
+                await DatabaseProcess.Instance.DbLoadToMemoryAsync();
                 VMLocator.DataGridViewModel.DataGridIsFocused = false;
-                VMLocator.DataGridViewModel.ChatList = await _dbProcess.SearchChatDatabaseAsync();
+                VMLocator.DataGridViewModel.ChatList = await DatabaseProcess.Instance.SearchChatDatabaseAsync();
                 VMLocator.DataGridViewModel.SelectedItemIndex = -1;
-                await _dbProcess.GetEditorLogDatabaseAsync();
-                await _dbProcess.GetTemplateItemsAsync();
+                await DatabaseProcess.Instance.GetEditorLogDatabaseAsync();
+                await DatabaseProcess.Instance.GetTemplateItemsAsync();
                 string selectedPhraseItem = VMLocator.MainViewModel.SelectedPhraseItem!;
                 await VMLocator.MainViewModel.LoadPhraseItemsAsync();
                 VMLocator.MainViewModel.SelectedPhraseItem = selectedPhraseItem;
@@ -707,15 +990,13 @@ namespace TmCGPTD.Models
         // -------------------------------------------------------------------------------------------------------
         public async Task CopyAllLocalToCloudDbAsync()
         {
-            var _dbProcess = DatabaseProcess.Instance;
-
-            using SQLiteConnection connection = new SQLiteConnection($"Data Source={AppSettings.Instance.DbPath}");
+            using SQLiteConnection connection = new($"Data Source={AppSettings.Instance.DbPath}");
             await connection.OpenAsync();
 
             var supabase = SupabaseStates.Instance.Supabase;
             var uid = SupabaseStates.Instance.Supabase!.Auth.CurrentUser!.Id;
 
-            var cdialog = new ContentDialog() { Title = $"Synchronizing..." };
+            var cdialog = new ContentDialog() { Title = "Synchronizing..." };
             cdialog.Content = new ProgressView()
             {
                 DataContext = VMLocator.ProgressViewModel
@@ -730,7 +1011,7 @@ namespace TmCGPTD.Models
                 string sql = "SELECT COUNT(*) FROM phrase";
                 using var command = new SQLiteCommand(sql, connection);
                 long? countTable = (long?)await command.ExecuteScalarAsync();
-                VMLocator.ProgressViewModel.ProgressText = $"Uploading phrase presets...";
+                VMLocator.ProgressViewModel.ProgressText = "Uploading phrase presets...";
 
                 sql = "SELECT * FROM phrase ORDER BY name COLLATE NOCASE";
                 using var command2 = new SQLiteCommand(sql, connection);
@@ -784,7 +1065,7 @@ namespace TmCGPTD.Models
                 while (await reader.ReadAsync())
                 {
                     i++;
-                    VMLocator.ProgressViewModel.ProgressValue = ((double)i / countTable);
+                    VMLocator.ProgressViewModel.ProgressValue = (double)i / countTable;
                     if (reader["date"] == DBNull.Value)
                     {
                         DateTime date = DateTime.Now;
@@ -816,7 +1097,7 @@ namespace TmCGPTD.Models
                 string sql = "SELECT COUNT(*) FROM template";
                 using var command = new SQLiteCommand(sql, connection);
                 long? countTable = (long?)await command.ExecuteScalarAsync();
-                VMLocator.ProgressViewModel.ProgressText = $"Uploading templates...";
+                VMLocator.ProgressViewModel.ProgressText = "Uploading templates...";
 
                 sql = "SELECT * FROM template ORDER BY title ASC";
                 using var command2 = new SQLiteCommand(sql, connection);
@@ -859,7 +1140,7 @@ namespace TmCGPTD.Models
                 string sql = "SELECT COUNT(*) FROM chatlog";
                 using var command = new SQLiteCommand(sql, connection);
                 long? countTable = (long?)await command.ExecuteScalarAsync();
-                VMLocator.ProgressViewModel.ProgressText = $"Uploading chat-logs...";
+                VMLocator.ProgressViewModel.ProgressText = "Uploading chat-logs...";
 
                 sql = "SELECT * FROM chatlog ORDER BY date ASC";
                 using var command2 = new SQLiteCommand(sql, connection);
@@ -904,11 +1185,12 @@ namespace TmCGPTD.Models
             }
 
 
-            VMLocator.ProgressViewModel.ProgressText = $"Deleting local logs...";
+            VMLocator.ProgressViewModel.ProgressText = "Deleting local logs...";
             VMLocator.ProgressViewModel.ProgressValue = 0;
             try
             {
                 await DeleteLocalDbAsync();
+                await InitializeAndCheckManagementTableAsync();//全削除後にマネジメントテーブル作成
             }
             catch (Exception ex)
             {
@@ -916,10 +1198,10 @@ namespace TmCGPTD.Models
                 throw new Exception($"Failed to delete local logs: {ex.Message}\n{ex.StackTrace}");
             }
 
-            using SQLiteConnection connection2 = new SQLiteConnection($"Data Source={AppSettings.Instance.DbPath}");
+            using SQLiteConnection connection2 = new($"Data Source={AppSettings.Instance.DbPath}");
             await connection2.OpenAsync();
 
-            VMLocator.ProgressViewModel.ProgressText = $"Fetching data from the cloud...";
+            VMLocator.ProgressViewModel.ProgressText = "Fetching data from the cloud...";
 
             var resultPhrase = await supabase.From<Phrase>().Get();
 
@@ -933,7 +1215,7 @@ namespace TmCGPTD.Models
                         command.Parameters.AddWithValue("@Id", phrase.Id);
                         command.Parameters.AddWithValue("@Name", phrase.Name);
                         command.Parameters.AddWithValue("@Content", phrase.Content);
-                        command.Parameters.AddWithValue("@Date", phrase.Date);
+                        command.Parameters.AddWithValue("@Date", phrase.Date.ToString("s"));
 
                         await command.ExecuteNonQueryAsync();
                     }
@@ -958,7 +1240,7 @@ namespace TmCGPTD.Models
                     {
                         var command = new SQLiteCommand("INSERT INTO editorlog (id, date, text) VALUES (@Id, @Date, @Content )", connection2);
                         command.Parameters.AddWithValue("@Id", editorLog.Id);
-                        command.Parameters.AddWithValue("@Date", editorLog.Date);
+                        command.Parameters.AddWithValue("@Date", editorLog.Date.ToString("s"));
                         command.Parameters.AddWithValue("@Content", editorLog.Content);
 
                         await command.ExecuteNonQueryAsync();
@@ -986,7 +1268,7 @@ namespace TmCGPTD.Models
                         command.Parameters.AddWithValue("@Id", template.Id);
                         command.Parameters.AddWithValue("@Name", template.Title);
                         command.Parameters.AddWithValue("@Content", template.Content);
-                        command.Parameters.AddWithValue("@Date", template.Date);
+                        command.Parameters.AddWithValue("@Date", template.Date.ToString("s"));
 
                         await command.ExecuteNonQueryAsync();
                     }
@@ -1017,7 +1299,7 @@ namespace TmCGPTD.Models
 
                         var command = new SQLiteCommand("INSERT INTO chatlog (id, date, title, json, text, category, lastprompt, jsonprev) VALUES (@Id, @UpdatedOn, @Title, @Json, @Message, @Category, @LastPrompt, @JsonPrev)", connection2);
                         command.Parameters.AddWithValue("@Id", chatLog.Id);
-                        command.Parameters.AddWithValue("@UpdatedOn", chatLog.UpdatedOn);
+                        command.Parameters.AddWithValue("@UpdatedOn", chatLog.UpdatedOn.ToString("s"));
                         command.Parameters.AddWithValue("@Title", chatLog.Title);
                         command.Parameters.AddWithValue("@Json", chatLog.Json);
                         command.Parameters.AddWithValue("@Message", combinedMessage);
@@ -1047,12 +1329,12 @@ namespace TmCGPTD.Models
 
                 // インメモリをいったん閉じてまた開く
                 await DatabaseProcess.memoryConnection!.CloseAsync();
-                await _dbProcess.DbLoadToMemoryAsync();
+                await DatabaseProcess.Instance.DbLoadToMemoryAsync();
                 VMLocator.DataGridViewModel.DataGridIsFocused = false;
-                VMLocator.DataGridViewModel.ChatList = await _dbProcess.SearchChatDatabaseAsync();
+                VMLocator.DataGridViewModel.ChatList = await DatabaseProcess.Instance.SearchChatDatabaseAsync();
                 VMLocator.DataGridViewModel.SelectedItemIndex = -1;
-                await _dbProcess.GetEditorLogDatabaseAsync();
-                await _dbProcess.GetTemplateItemsAsync();
+                await DatabaseProcess.Instance.GetEditorLogDatabaseAsync();
+                await DatabaseProcess.Instance.GetTemplateItemsAsync();
                 string selectedPhraseItem = VMLocator.MainViewModel.SelectedPhraseItem!;
                 await VMLocator.MainViewModel.LoadPhraseItemsAsync();
                 VMLocator.MainViewModel.SelectedPhraseItem = selectedPhraseItem;
@@ -1131,7 +1413,7 @@ namespace TmCGPTD.Models
                 var systemMessageMatch = systemMessageRegex.Match(content);
                 if (systemMessageMatch.Success)
                 {
-                    if(content.Contains("(!--editable--)"))
+                    if (content.Contains("(!--editable--)"))
                     {
                         models.Add(new Message { UserId = uid, RoomId = roomId, CreatedOn = timestamp, Content = systemMessageMatch.Value + "(!--editable--)", Role = "system", Usage = "" });
                     }
@@ -1145,8 +1427,8 @@ namespace TmCGPTD.Models
                 var usageMatch = usageRegex.Match(content);
                 if (usageMatch.Success)
                 {
+                    var usageStr = Regex.Replace(content.Substring(usageMatch.Index).Trim('\r', '\n'), "usage={\"prompt_tokens\":([0-9]+),\"completion_tokens\":([0-9]+),\"total_tokens\":([0-9]+)}", "[tokens] prompt:$1, completion:$2, total:$3");
                     content = content.Substring(0, usageMatch.Index).Trim('\r', '\n');
-                    var usageStr = Regex.Replace(usageMatch.Value, "usage={\"prompt_tokens\":([0-9]+),\"completion_tokens\":([0-9]+),\"total_tokens\":([0-9]+)}", "[tokens] prompt:$1, completion:$2, total:$3");
                     if (content.Length > 0)
                     {
                         models.Add(new Message { UserId = uid, RoomId = roomId, CreatedOn = timestamp, Content = content, Role = role, Usage = usageStr });
@@ -1188,8 +1470,7 @@ namespace TmCGPTD.Models
             {
                 try
                 {
-                    var tables = new List<string> { "phrase", "chatlog", "editorlog", "template" };
-                    foreach (var table in tables)
+                    foreach (var table in new List<string> { "phrase", "chatlog", "editorlog", "template", "management" })
                     {
                         var command = new SQLiteCommand($"DELETE FROM {table}", connection);
                         await command.ExecuteNonQueryAsync();
@@ -1234,6 +1515,138 @@ namespace TmCGPTD.Models
             catch (Exception ex)
             {
                 throw new Exception($"Failed to delete cloud logs: {ex.Message}\n{ex.StackTrace}");
+            }
+        }
+        // -------------------------------------------------------------------------------------------------------
+        public async Task<string> InitializeAndCheckManagementTableAsync()
+        {
+            try
+            {
+                var supabase = SupabaseStates.Instance.Supabase;
+                var uid = SupabaseStates.Instance.Supabase!.Auth.CurrentUser!.Id;
+
+                using SQLiteConnection connection = new($"Data Source={AppSettings.Instance.DbPath}");
+                await connection.OpenAsync();
+                var command = new SQLiteCommand("SELECT * FROM management WHERE id = 0;", connection);
+                using var reader = await command.ExecuteReaderAsync();
+
+                if (await reader.ReadAsync())
+                {
+                    if ((string)reader["user_id"] != SupabaseStates.Instance.Supabase?.Auth.CurrentUser!.Id)
+                    {
+                        return "switch";
+                    }
+                    else
+                    {
+                        return "ok";
+                    }
+                }
+                else
+                {
+                    const string Sql = "INSERT INTO management (id, user_id, delete_table, delete_id, date) VALUES (@Id, @User_id, @Delete_table, @Delete_id, @Date) ";
+                    command = new SQLiteCommand(Sql, connection);
+                    command.Parameters.AddWithValue("@Id", "0");
+                    command.Parameters.AddWithValue("@User_id", SupabaseStates.Instance.Supabase!.Auth.CurrentUser!.Id);
+                    command.Parameters.AddWithValue("@Delete_table", "");
+                    command.Parameters.AddWithValue("@Delete_id", "");
+                    DateTime date = DateTime.Now;
+                    date = date.AddTicks(-(date.Ticks % TimeSpan.TicksPerSecond));
+                    command.Parameters.AddWithValue("@Date", date.ToString("s"));
+                    await command.ExecuteNonQueryAsync();
+
+                    return "new";
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Management table initialization failed: {ex.Message}\n{ex.StackTrace}");
+            }
+        }
+        // -------------------------------------------------------------------------------------------------------
+        public async Task SyncManagementTableAsync()
+        {
+            try
+            {
+                var supabase = SupabaseStates.Instance.Supabase;
+                var uid = SupabaseStates.Instance.Supabase!.Auth.CurrentUser!.Id;
+
+                // 外側の辞書を初期化。キーはdelete_tableの値、値は内側の辞書。
+                var deleteDict = new Dictionary<string, Dictionary<long, DateTime>>
+                            {
+                                { "phrase", new Dictionary<long, DateTime>() },
+                                { "chatlog", new Dictionary<long, DateTime>() },
+                                { "editorlog", new Dictionary<long, DateTime>() },
+                                { "template", new Dictionary<long, DateTime>() }
+                            };
+
+                using SQLiteConnection connection = new($"Data Source={AppSettings.Instance.DbPath}");
+                await connection.OpenAsync();
+                var command0 = new SQLiteCommand("SELECT * FROM management WHERE id != 0;", connection);
+                using var reader0 = command0.ExecuteReader();
+
+                for (int i = 0; reader0.Read(); i++)
+                {
+                    string deleteTable = (string)reader0["delete_table"];
+                    long deleteId = (long)reader0["delete_id"];
+                    DateTime date = (DateTime)reader0["date"];
+
+                    deleteDict[deleteTable][deleteId] = date;
+                }
+
+                var resultManagement = await supabase!
+                                    .From<Management>()
+                                    .Select(x => new object[] { x.Id, x.DeleteTable!, x.DeleteId!, x.Date })
+                                    .Order(x => x.Id, Ordering.Descending)
+                                    .Get();
+
+                if (resultManagement.Models.Count > 0)
+                {
+                    foreach (var management in resultManagement.Models)
+                    {
+                        string deleteTable = management.DeleteTable!;
+                        long deleteId = management.DeleteId!;
+                        DateTime date = management.Date!;
+
+                        //ローカルの削除リストにない場合は、SQLクエリでmanagementテーブルにid、uid、DeleteTable、DeleteId、Dateを追加する。
+                        if (deleteDict.All(kv => kv.Value.Count != 0) && !deleteDict[deleteTable].ContainsKey(deleteId))
+                        {
+                            var command1 = new SQLiteCommand("INSERT INTO management (id, user_id, delete_table, delete_id, date) VALUES (@Id, @User_id, @Delete_table, @Delete_id, @Date) ", connection);
+                            command1.Parameters.AddWithValue("@Id", management.Id);
+                            command1.Parameters.AddWithValue("@User_id", uid);
+                            command1.Parameters.AddWithValue("@Delete_table", deleteTable);
+                            command1.Parameters.AddWithValue("@Delete_id", deleteId);
+                            command1.Parameters.AddWithValue("@Date", date.ToString("s"));
+                            await command1.ExecuteNonQueryAsync();
+                        }
+                    }
+                }
+
+                if (deleteDict.All(kv => kv.Value.Count != 0))
+                {
+                    var models = new List<Management>();
+                    //deleteDictを反復して、クラウドの削除リストに無い場合は、Supabaseのmanagementテーブルにuid、deleteTable、deleteId、dateを追加する。
+                    foreach (var deleteTable in deleteDict.Keys)
+                    {
+                        foreach (var deleteId in deleteDict[deleteTable].Keys)
+                        {
+                            DateTime date = deleteDict[deleteTable][deleteId];
+                            //resultManagementに該当するdeleteTableとdeleteIdがない場合は、Supabaseのmanagementテーブルにuid、deleteTable、deleteId、dateを追加する。
+                            if (resultManagement.Models.Count > 0 && !resultManagement.Models.Any(x => x.DeleteTable == deleteTable && x.DeleteId == deleteId))
+                            {
+                                models.Add(new Management { UserId = uid!, DeleteTable = deleteTable, DeleteId = deleteId, Date = date });
+                            }
+                        }
+                    }
+
+                    if (models.Count > 0)
+                    {
+                        await supabase.From<Management>().Insert(models);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Failed to sync management table: {ex.Message}\n{ex.StackTrace}");
             }
         }
     }

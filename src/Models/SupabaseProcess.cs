@@ -92,6 +92,22 @@ namespace TmCGPTD.Models
             await SupabaseStates.Instance.Supabase!.Auth.ExchangeCodeForSession(SupabaseStates.Instance.AuthState!.PKCEVerifier!, VMLocator.MainViewModel.AuthCode!);
         }
 
+        public async Task RetriveLogInAsync()
+        {
+            switch (AppSettings.Instance.Provider)
+            {
+                case "You are logged in with Google.":
+                    await GoogleAuthAsync();
+                    break;
+                case "You are logged in with Microsoft.":
+                    await MicrosoftAuthAsync();
+                    break;
+                case "You are logged in with Email.":
+                    await EmailLoginAsync(AppSettings.Instance.Email!, AppSettings.Instance.Password!);
+                    break;
+            }
+        }
+
         public async Task LogOutAsync()
         {
             await SupabaseStates.Instance.Supabase!.Auth.SignOut();

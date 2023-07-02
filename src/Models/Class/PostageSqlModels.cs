@@ -176,5 +176,35 @@ namespace TmCGPTD.Models
                 return HashCode.Combine(Id);
             }
         }
+        // 削除フラグ管理用-----------------------------------------------------------------------------------------------------------------
+        [Table("management")]
+        public class Management : BaseModel
+        {
+            [PrimaryKey("id")]
+            public long Id { get; set; }
+
+            [Column("user_id")]
+            public string? UserId { get; set; }
+
+            [Column("delete_table")]
+            public string? DeleteTable { get; set; }
+
+            [Column("delete_id")]
+            public long DeleteId { get; set; }
+
+            [Column("date")]
+            public DateTime Date { get; set; }
+
+            public override bool Equals(object? obj)
+            {
+                return obj is Template management &&
+                        Id == management.Id;
+            }
+
+            public override int GetHashCode()
+            {
+                return HashCode.Combine(Id);
+            }
+        }
     }
 }
