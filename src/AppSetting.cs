@@ -1,10 +1,11 @@
 ﻿using Avalonia.Controls;
+using CommunityToolkit.Mvvm.ComponentModel;
 using System;
 using System.IO;
 
 namespace TmCGPTD
 {
-    public class AppSettings
+    public class AppSettings: ObservableObject
     {
         private static AppSettings? _instance;
 
@@ -38,7 +39,20 @@ namespace TmCGPTD
         public GridLength EditorHeight5 { get; set; }
         public int SeparatorMode { get; set; }
         public string? Session { get; set; }
-        public bool SyncIsOn { get; set; }
+
+        private bool _syncIsOn;
+
+        public bool SyncIsOn
+        {
+            get => _syncIsOn;
+            set
+            { 
+                if(SetProperty(ref _syncIsOn, value))
+                {
+                    VMLocator.MainViewModel.CloudIconSelector = value;
+                }
+            }
+        }
         public string? Provider { get; set; }
         public string? Email { get; set; }
         public string? Password { get; set; }

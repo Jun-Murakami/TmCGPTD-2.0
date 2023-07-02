@@ -25,7 +25,7 @@ namespace TmCGPTD.ViewModels
 
         public MainViewModel()
         {
-            PostButtonText = "Post";
+            _postButtonText = "Post";
 
             Editor1Clear = new RelayCommand(() => ExecuteClear(1));
             Editor2Clear = new RelayCommand(() => ExecuteClear(2));
@@ -274,6 +274,13 @@ namespace TmCGPTD.ViewModels
         {
             get => _syncLogText;
             set => SetProperty(ref _syncLogText, value);
+        }
+
+        private bool _cloudIconSelector;
+        public bool CloudIconSelector
+        {
+            get => _cloudIconSelector;
+            set => SetProperty(ref _cloudIconSelector, value);
         }
 
         // ----------------------------------------------------------------------------------------------------------------------------

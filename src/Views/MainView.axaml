@@ -5,8 +5,12 @@
 			 xmlns:ui="using:FluentAvalonia.UI.Controls"
 			 xmlns:uip="using:FluentAvalonia.UI.Controls.Primitives"
 			 xmlns:local="using:TmCGPTD.Views"
+			 xmlns:c="using:TmCGPTD"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="TmCGPTD.Views.MainView">
+	<UserControl.Resources>
+		<c:InverseBooleanConverter x:Key="InverseBooleanConverter" />
+	</UserControl.Resources>
 	<Grid>
 		<Grid.RowDefinitions>
 			<RowDefinition Height="Auto"/>
@@ -210,8 +214,15 @@
 							Height="28"
 							Margin="0,0,60,0"
 							Command="{Binding CloudSyncCommand}">
-						<Image Source="/Assets/iconCloud.png"
-								VerticalAlignment="Center" />
+						<Panel>
+							<Image Source="/Assets/iconCloudOn.png"
+								   VerticalAlignment="Center"
+								   IsVisible="{Binding CloudIconSelector, Mode=OneWay}" />
+							<Image Source="/Assets/iconCloud.png"
+								   VerticalAlignment="Center"
+								   IsVisible="{Binding CloudIconSelector, Converter={StaticResource InverseBooleanConverter}, Mode=OneWay}" />
+						</Panel>
+
 					</Button>
 					<Button ToolTip.Tip="Database settings"
 							HorizontalAlignment="Right"
