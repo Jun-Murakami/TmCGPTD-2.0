@@ -16,7 +16,7 @@ namespace TmCGPTD.Views
         /// <param name="startOffset">Start offset.</param>
         public override int GetFirstInterestedOffset(int startOffset)
         {
-            int pos = controls.BinarySearch(new Pair(startOffset, null), this);
+            int pos = controls.BinarySearch(new Pair(startOffset, null!), this);
             if (pos < 0)
                 pos = ~pos;
             if (pos < controls.Count)
@@ -27,11 +27,11 @@ namespace TmCGPTD.Views
 
         public override VisualLineElement ConstructElement(int offset)
         {
-            int pos = controls.BinarySearch(new Pair(offset, null), this);
+            int pos = controls.BinarySearch(new Pair(offset, null!), this);
             if (pos >= 0)
                 return new InlineObjectElement(0, controls[pos].Value);
             else
-                return null;
+                return null!;
         }
 
         int IComparer<Pair>.Compare(Pair x, Pair y)

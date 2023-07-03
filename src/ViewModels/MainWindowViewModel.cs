@@ -6,7 +6,7 @@ using System.Diagnostics;
 
 namespace TmCGPTD.ViewModels
 {
-    public partial class MainWindowViewModel: ViewModelBase
+    public partial class MainWindowViewModel : ViewModelBase
     {
         public MainWindowViewModel()
         {
@@ -73,10 +73,10 @@ namespace TmCGPTD.ViewModels
             VMLocator.WebChatBardViewModel.WebChatBardViewIsVisible = true;
         }
 
-        private void ValidateTextInput(string text)
+        private void ValidateTextInput(string? text)
         {
             Regex regex = new Regex("[^0-9.-]+");
-            if (regex.IsMatch(text))
+            if (regex.IsMatch(text!))
             {
                 return;
             }

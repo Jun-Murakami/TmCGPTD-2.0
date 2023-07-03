@@ -331,7 +331,6 @@ namespace TmCGPTD.Models
                     {
                         VMLocator.MainViewModel.SyncLogText = "Synced from cloud: " + cloudIsNewer;
                     }
-
                 }
                 else if (localIsNewer > 0 && cloudIsNewer == 0 && localOnly == 0)
                 {
@@ -1380,7 +1379,7 @@ namespace TmCGPTD.Models
             var chatLogRegex = new Regex(@"^\[(.+)\] by (You|AI)", RegexOptions.Multiline);
             var usageRegex = new Regex(@"(^usage=)|(^(\[tokens\]))", RegexOptions.Multiline);
             var systemOffRegex = new Regex(@$"#(\s*)(?i)system({Environment.NewLine})*?---({Environment.NewLine})*", RegexOptions.Singleline);
-            var systemMessageRegex = new Regex(@$"#(\s*)(?i)system({Environment.NewLine})*(.+?)---({Environment.NewLine})*", RegexOptions.Singleline);
+            var systemMessageRegex = new Regex(@$"#(\s*)(?i)system({Environment.NewLine})*(.+?)---({Environment.NewLine})*(\(!--editable--\))*", RegexOptions.Singleline);
 
             MatchCollection matches = chatLogRegex.Matches(normarizedContent);
 
@@ -1413,14 +1412,7 @@ namespace TmCGPTD.Models
                 var systemMessageMatch = systemMessageRegex.Match(content);
                 if (systemMessageMatch.Success)
                 {
-                    if (content.Contains("(!--editable--)"))
-                    {
-                        models.Add(new Message { UserId = uid, RoomId = roomId, CreatedOn = timestamp, Content = systemMessageMatch.Value + "(!--editable--)", Role = "system", Usage = "" });
-                    }
-                    else
-                    {
-                        models.Add(new Message { UserId = uid, RoomId = roomId, CreatedOn = timestamp, Content = systemMessageMatch.Value, Role = "system", Usage = "" });
-                    }
+                    models.Add(new Message { UserId = uid, RoomId = roomId, CreatedOn = timestamp, Content = systemMessageMatch.Value, Role = "system", Usage = "" });
                     content = content.Replace(systemMessageMatch.Value, "").Trim('\r', '\n');
                 }
 
@@ -1648,6 +1640,28 @@ namespace TmCGPTD.Models
             {
                 throw new Exception($"Failed to sync management table: {ex.Message}\n{ex.StackTrace}");
             }
+        }
+        // -------------------------------------------------------------------------------------------------------
+        public async Task DeleteManagementTableDbAsync()
+        {
+            using SQLiteConnection connection = new SQLiteConnection($"Data Source={AppSettings.Instance.DbPath}");
+            await connection.OpenAsync();
+            using (var transaction = connection.BeginTransaction())
+            {
+                try
+                {
+                    var command = new SQLiteCommand("DELETE FROM management", connection);
+                    await command.ExecuteNonQueryAsync();
+
+                    transaction.Commit();
+                }
+                catch (Exception ex)
+                {
+                    transaction.Rollback();
+                    throw new Exception($"Failed to delete local management table: {ex.Message}\n{ex.StackTrace}");
+                }
+            }
+            await connection.CloseAsync();
         }
     }
 }

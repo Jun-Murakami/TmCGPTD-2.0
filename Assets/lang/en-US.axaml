@@ -1,8 +1,6 @@
-﻿
-<ResourceDictionary
-    xmlns="https://github.com/avaloniaui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:system="clr-namespace:System;assembly=System.Runtime">
+﻿<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:system="clr-namespace:System;assembly=System.Runtime">
     <system:String x:Key="My.Strings.PhrasePresets">Phrase Presets :</system:String>
     <system:String x:Key="My.Strings.ConversationHitoryInfo">"conversation history limit" is a client option, not an API parameter.
 When the set value (tokens) is exceeded,
@@ -34,4 +32,16 @@ The local database will be backed up before execution.
 
 Before execution, the local database is backed up to the folder.
 </system:String>
+    <system:String x:Key="My.Strings.DeleteAccount">All your data and credentials will be deleted from the cloud database.
+    This operation cannot be undone. Are you sure ?
+</system:String>
+    <system:String x:Key="My.Strings.DeletedAccount">Your account has been deleted.</system:String>
+    <system:String x:Key="My.Strings.EmailAddressChange">A confirmation email has been sent to your new email address.
+Please open the email and click the confirmation link to activate it.
+</system:String>
+    <system:String x:Key="My.Strings.NewEmailInfo">Please enter new email address.</system:String>
+    <system:String x:Key="My.Strings.NewAccountInfo">If you are a new user, A confirmation email has been sent to you.
+Please check your mailbox. Once your address is verified, you can log in.</system:String>
+    <system:String x:Key="My.Strings.PasswordChange">A password reset email has been sent to you. Please check your mailbox.
+After logging in with your browser, please set a new password from the menu.</system:String>
 </ResourceDictionary>

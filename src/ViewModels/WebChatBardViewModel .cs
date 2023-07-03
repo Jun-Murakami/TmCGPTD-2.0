@@ -9,76 +9,76 @@ using System.Windows.Input;
 
 namespace TmCGPTD.ViewModels
 {
-  public class WebChatBardViewModel : ViewModelBase
-  {
-    private AvaloniaCefBrowser _browser;
-    HtmlProcess _htmlProcess = new HtmlProcess();
-
-    public WebChatBardViewModel()
+    public class WebChatBardViewModel : ViewModelBase
     {
-      SearchPrev = new AsyncRelayCommand(async () => await TextSearch(VMLocator.MainViewModel.SearchKeyword, false));
-      SearchNext = new AsyncRelayCommand(async () => await TextSearch(VMLocator.MainViewModel.SearchKeyword, true));
+        private AvaloniaCefBrowser? _browser;
+        HtmlProcess _htmlProcess = new HtmlProcess();
 
-      ImportWebChatLogCommand = new AsyncRelayCommand(async () => await ImportWebChatLog());
-      UpdateBrowserCommand = new RelayCommand(UpdateBrowser);
+        public WebChatBardViewModel()
+        {
+            SearchPrev = new AsyncRelayCommand(async () => await TextSearch(VMLocator.MainViewModel.SearchKeyword!, false));
+            SearchNext = new AsyncRelayCommand(async () => await TextSearch(VMLocator.MainViewModel.SearchKeyword!, true));
 
-      WebChatBardViewIsVisible = true;
-    }
+            ImportWebChatLogCommand = new AsyncRelayCommand(async () => await ImportWebChatLog());
+            UpdateBrowserCommand = new RelayCommand(UpdateBrowser);
 
-    public async Task PostWebChat()
-    {
-      try
-      {
-        string escapedString = JsonSerializer.Serialize(VMLocator.EditorViewModel.GetRecentText());
+            WebChatBardViewIsVisible = true;
+        }
 
-        string script = @"const mainTag = document.querySelector('main');
+        public async Task PostWebChat()
+        {
+            try
+            {
+                string escapedString = JsonSerializer.Serialize(VMLocator.EditorViewModel.GetRecentText());
+
+                string script = @"const mainTag = document.querySelector('main');
                         const textarea = mainTag.querySelector('textarea');" +
-                $"textarea.value = {escapedString};";
-        await _browser.EvaluateJavaScript<string>(script);
+                        $"textarea.value = {escapedString};";
+                await _browser!.EvaluateJavaScript<string>(script);
 
-        await Task.Delay(300);
+                await Task.Delay(300);
 
-        script = @"const mainTag = document.querySelector('main');
+                script = @"const mainTag = document.querySelector('main');
                         const textarea = mainTag.querySelector('textarea');
                         var event = new Event('input', { bubbles: true });  // イベントを作成
                         textarea.dispatchEvent(event);  // イベントをディスパッチ";
-        await _browser.EvaluateJavaScript<string>(script);
+                await _browser.EvaluateJavaScript<string>(script);
 
-        await Task.Delay(300);
+                await Task.Delay(300);
 
-        script = @"const mainTag = document.querySelector('main');
+                script = @"const mainTag = document.querySelector('main');
                         const sendDiv = mainTag.querySelector('div.send-button-container');
                         const button = sendDiv.querySelector('button');
                         button.click();";
-        await _browser.EvaluateJavaScript<string>(script);
-      }
-      catch (Exception ex)
-      {
-        var dialog = new ContentDialog() { Title = "Error : " + ex.Message, PrimaryButtonText = "OK" };
-        await VMLocator.MainViewModel.ContentDialogShowAsync(dialog);
-        throw;
-      }
-    }
-    public async Task ImportWebChatLog()
-    {
-      var htmlSource = await _browser.EvaluateJavaScript<string>("return document.documentElement.outerHTML;");
-      var msg = await _htmlProcess.GetWebChatLogBardAsync(htmlSource);
-      if (msg == "Cancel")
-      {
-        return;
-      }
-      //var dialog = new ContentDialog() { Title = msg, PrimaryButtonText = "OK" };
-      //await VMLocator.MainViewModel.ContentDialogShowAsync(dialog);
-    }
+                await _browser.EvaluateJavaScript<string>(script);
+            }
+            catch (Exception ex)
+            {
+                var dialog = new ContentDialog() { Title = "Error : " + ex.Message, PrimaryButtonText = "OK" };
+                await VMLocator.MainViewModel.ContentDialogShowAsync(dialog);
+                throw;
+            }
+        }
+        public async Task ImportWebChatLog()
+        {
+            var htmlSource = await _browser!.EvaluateJavaScript<string>("return document.documentElement.outerHTML;");
+            var msg = await _htmlProcess.GetWebChatLogBardAsync(htmlSource);
+            if (msg == "Cancel")
+            {
+                return;
+            }
+            //var dialog = new ContentDialog() { Title = msg, PrimaryButtonText = "OK" };
+            //await VMLocator.MainViewModel.ContentDialogShowAsync(dialog);
+        }
 
-    public async Task TextSearch(string searchKeyword, bool searchDirection, bool searchReset = false)
-    {
-      if (_browser == null || string.IsNullOrEmpty(searchKeyword))
-      {
-        return;
-      }
+        public async Task TextSearch(string searchKeyword, bool searchDirection, bool searchReset = false)
+        {
+            if (_browser == null || string.IsNullOrEmpty(searchKeyword))
+            {
+                return;
+            }
 
-      string searchTextFunction = @"if (!window.myCustomSearchFunction) {
+            string searchTextFunction = @"if (!window.myCustomSearchFunction) {
                 let lastKeyword = """";
                 let currentSearchIndex = 0;
                 let firstSearch = true;
@@ -273,40 +273,40 @@ namespace TmCGPTD.ViewModels
               };
             }";
 
-      try
-      {
-        string script = $"{searchTextFunction} window.myCustomSearchFunction('{searchKeyword}', {searchDirection.ToString().ToLower()});";
-        await _browser.EvaluateJavaScript<ValueTuple<int, int>>(script);
-      }
-      catch (Exception ex)
-      {
-        var dialog = new ContentDialog() { Title = "Error : " + ex.Message, PrimaryButtonText = "OK" };
-        await VMLocator.MainViewModel.ContentDialogShowAsync(dialog);
-      }
-      return;
-    }
+            try
+            {
+                string script = $"{searchTextFunction} window.myCustomSearchFunction('{searchKeyword}', {searchDirection.ToString().ToLower()});";
+                await _browser.EvaluateJavaScript<ValueTuple<int, int>>(script);
+            }
+            catch (Exception ex)
+            {
+                var dialog = new ContentDialog() { Title = "Error : " + ex.Message, PrimaryButtonText = "OK" };
+                await VMLocator.MainViewModel.ContentDialogShowAsync(dialog);
+            }
+            return;
+        }
 
-    private void UpdateBrowser()
-    {
-      _browser?.Reload();
-    }
+        private void UpdateBrowser()
+        {
+            _browser?.Reload();
+        }
 
-    // Browserインスタンスを受け取る
-    public void SetBrowser(AvaloniaCefBrowser browser)
-    {
-      _browser = browser;
-    }
+        // Browserインスタンスを受け取る
+        public void SetBrowser(AvaloniaCefBrowser browser)
+        {
+            _browser = browser;
+        }
 
-    public IAsyncRelayCommand SearchPrev { get; }
-    public IAsyncRelayCommand SearchNext { get; }
-    public IAsyncRelayCommand ImportWebChatLogCommand { get; }
-    public ICommand UpdateBrowserCommand { get; }
+        public IAsyncRelayCommand SearchPrev { get; }
+        public IAsyncRelayCommand SearchNext { get; }
+        public IAsyncRelayCommand ImportWebChatLogCommand { get; }
+        public ICommand UpdateBrowserCommand { get; }
 
-    private bool _webChatBardViewIsVisible;
-    public bool WebChatBardViewIsVisible//ダイアログ表示用
-    {
-      get => _webChatBardViewIsVisible;
-      set => SetProperty(ref _webChatBardViewIsVisible, value);
+        private bool _webChatBardViewIsVisible;
+        public bool WebChatBardViewIsVisible//ダイアログ表示用
+        {
+            get => _webChatBardViewIsVisible;
+            set => SetProperty(ref _webChatBardViewIsVisible, value);
+        }
     }
-  }
 }

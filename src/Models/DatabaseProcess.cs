@@ -538,20 +538,20 @@ namespace TmCGPTD.Models
                 }
 
                 // Read the file asynchronously
-                using (StreamReader reader = new StreamReader(selectedFilePath))
+                using StreamReader reader = new(selectedFilePath);
+                for (int lineCount = 0; lineCount < 20; lineCount++)
                 {
-                    int lineCount = 0;
-                    while (lineCount < 20)
+                    if (reader.EndOfStream)
                     {
-                        if (reader.EndOfStream)
+                        phrases.Add(""); // Add an empty string if there are less than 20 lines
+                    }
+                    else
+                    {
+                        var line = await reader.ReadLineAsync();
+                        if (line != null)
                         {
-                            phrases.Add(""); // Add an empty string if there are less than 20 lines
+                            phrases.Add(line);
                         }
-                        else
-                        {
-                            phrases.Add(await reader.ReadLineAsync());
-                        }
-                        lineCount++;
                     }
                 }
             }
@@ -845,14 +845,19 @@ namespace TmCGPTD.Models
                         await SupabaseStates.Instance.Supabase.From<Management>().Insert(new Management { UserId = Uid!, DeleteTable = "chatlog", DeleteId = chatId, Date = date });
                     }
 
-                    using (var command = new SQLiteCommand($"DELETE FROM chatlog WHERE id = '{chatId}'", connection, transaction))
+                    using (var command = new SQLiteCommand("DELETE FROM chatlog WHERE id = @id", connection, transaction))
                     {
+                        command.Parameters.AddWithValue("@id", chatId);
                         await command.ExecuteNonQueryAsync();
                     }
 
                     //削除履歴を追加
-                    using (var command = new SQLiteCommand($"INSERT INTO management (user_id, delete_table, delete_id, date) VALUES ('{Uid}', 'chatlog', '{chatId}', '{date}')", connection, transaction))
+                    using (var command = new SQLiteCommand("INSERT INTO management (user_id, delete_table, delete_id, date) VALUES (@user_id, @delete_table, @delete_id, @date)", connection, transaction))
                     {
+                        command.Parameters.AddWithValue("@user_id", Uid);
+                        command.Parameters.AddWithValue("@delete_table", "chatlog");
+                        command.Parameters.AddWithValue("@delete_id", chatId);
+                        command.Parameters.AddWithValue("@date", date.ToString("s"));
                         await command.ExecuteNonQueryAsync();
                     }
 
@@ -1321,35 +1326,33 @@ namespace TmCGPTD.Models
                 }
 
                 // Read the file asynchronously
-                using (StreamReader reader = new StreamReader(selectedFilePath))
+                using StreamReader reader = new(selectedFilePath);
+                int lineCount = 0;
+                while (lineCount > -1)
                 {
-                    int lineCount = 0;
-                    while (lineCount > -1)
+                    if (reader.EndOfStream)
                     {
-                        if (reader.EndOfStream)
-                        {
-                            break;
-                        }
-                        else
-                        {
-                            text = text + await reader.ReadLineAsync();
-                        }
-                        lineCount++;
+                        break;
                     }
-                    // textカラムの値を取得して、区切り文字で分割する
-                    string[] texts;
-                    texts = text.Split(new[] { "<---TMCGPT--->" }, StringSplitOptions.None);
-                    for (int i = 0, loopTo = Math.Min(texts.Length - 1, 4); i <= loopTo; i++) // 5要素目までを取得
+                    else
                     {
-                        string propertyName = $"Editor{i + 1}Text";
-                        PropertyInfo property = VMLocator.EditorViewModel.GetType().GetProperty(propertyName)!;
-                        if (property != null)
+                        text = text + await reader.ReadLineAsync();
+                    }
+                    lineCount++;
+                }
+                // textカラムの値を取得して、区切り文字で分割する
+                string[] texts;
+                texts = text.Split(new[] { "<---TMCGPT--->" }, StringSplitOptions.None);
+                for (int i = 0, loopTo = Math.Min(texts.Length - 1, 4); i <= loopTo; i++) // 5要素目までを取得
+                {
+                    string propertyName = $"Editor{i + 1}Text";
+                    PropertyInfo property = VMLocator.EditorViewModel.GetType().GetProperty(propertyName)!;
+                    if (property != null)
+                    {
+                        property.SetValue(VMLocator.EditorViewModel, string.Empty);
+                        if (!string.IsNullOrWhiteSpace(texts[i]))
                         {
-                            property.SetValue(VMLocator.EditorViewModel, string.Empty);
-                            if (!string.IsNullOrWhiteSpace(texts[i]))
-                            {
-                                property.SetValue(VMLocator.EditorViewModel, texts[i].Trim()); // 空白を削除して反映
-                            }
+                            property.SetValue(VMLocator.EditorViewModel, texts[i].Trim()); // 空白を削除して反映
                         }
                     }
                 }

@@ -20,12 +20,12 @@ namespace TmCGPTD.Views
             dataGrid.LostFocus += DataGrid_LostFocus;
         }
 
-        private void DataGrid_GotFocus(object sender, GotFocusEventArgs e)
+        private void DataGrid_GotFocus(object? sender, GotFocusEventArgs e)
         {
             VMLocator.DataGridViewModel.DataGridIsFocused = true;
         }
 
-        private void DataGrid_LostFocus(object sender, RoutedEventArgs e)
+        private void DataGrid_LostFocus(object? sender, RoutedEventArgs e)
         {
             VMLocator.DataGridViewModel.DataGridIsFocused = false;
         }

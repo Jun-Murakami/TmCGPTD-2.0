@@ -218,6 +218,7 @@ namespace TmCGPTD.Views
 
                         VMLocator.MainViewModel.LoginStatus = 1;
                         VMLocator.CloudLoggedinViewModel.Provider = "";
+                        AppSettings.Instance.SyncIsOn = false;
                     }
                     else
                     {

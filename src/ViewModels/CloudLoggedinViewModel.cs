@@ -1,9 +1,8 @@
 ﻿using CommunityToolkit.Mvvm.Input;
 using System;
 using FluentAvalonia.UI.Controls;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using Avalonia.Controls;
+using Avalonia;
 using System.Threading.Tasks;
 using TmCGPTD.Models;
 using TmCGPTD.Views;
@@ -52,8 +51,13 @@ namespace TmCGPTD.ViewModels
         public async Task LogOutAsync()
         {
             await _supabaseProcess.LogOutAsync();
+            SupabaseStates.Instance.Supabase!.Auth.Shutdown();
             VMLocator.MainViewModel.SyncLogText = "Logged out.";
             AppSettings.Instance.SyncIsOn = false;
+            AppSettings.Instance.Provider = null;
+            AppSettings.Instance.Email = null;
+            AppSettings.Instance.Password = null;
+            AppSettings.Instance.Session = null;
             VMLocator.MainViewModel.LoginStatus = 1;
             if (SupabaseStates.Instance.Supabase?.Auth.CurrentSession != null)
             {
@@ -65,9 +69,10 @@ namespace TmCGPTD.ViewModels
         {
             try
             {
+                Application.Current!.TryFindResource("My.Strings.NewEmailInfo", out object? resource1);
                 var dialog = new ContentDialog()
                 {
-                    Title = "Please enter new email address.",
+                    Title = resource1,
                     PrimaryButtonText = "OK",
                     CloseButtonText = "Cancel"
                 };
@@ -86,12 +91,13 @@ namespace TmCGPTD.ViewModels
 
                 await _supabaseProcess.ChangeEmailAsync(viewModel.UserInput);
 
-                var cdialog = new ContentDialog() { Title = $"Information", Content = $"A confirmation email has been sent to your new address.{Environment.NewLine}Click on the link to activate the changes.", CloseButtonText = "OK" };
+                Application.Current!.TryFindResource("My.Strings.EmailAddressChange", out object? resource2);
+                var cdialog = new ContentDialog() { Title = "Information", Content = resource2, CloseButtonText = "OK" };
                 await VMLocator.MainViewModel.ContentDialogShowAsync(cdialog);
             }
             catch (Exception ex)
             {
-                var cdialog = new ContentDialog() { Title = $"Error", Content = $"{ex.Message}", CloseButtonText = "OK" };
+                var cdialog = new ContentDialog() { Title = "Error", Content = $"{ex.Message}", CloseButtonText = "OK" };
                 await VMLocator.MainViewModel.ContentDialogShowAsync(cdialog);
             }
         }
@@ -100,21 +106,33 @@ namespace TmCGPTD.ViewModels
         {
             try
             {
+                Application.Current!.TryFindResource("My.Strings.DeleteAccount", out object? resource1);
                 var cdialog = new ContentDialog()
                 {
-                    Title = $"Warning",
-                    Content = $"All your data and credentials will be deleted from the cloud database.{Environment.NewLine}This operation cannot be undone. Are you sure ?",
+                    Title = "Warning",
+                    Content = resource1,
                     CloseButtonText = "Cancel",
                     PrimaryButtonText = "Delete"
                 };
                 var result = await VMLocator.MainViewModel.ContentDialogShowAsync(cdialog);
                 if (result == ContentDialogResult.Primary)
                 {
+                    SyncProcess _syncProcess = new();
+                    await SupabaseStates.Instance.Supabase!.Auth!.RefreshSession();
                     await _supabaseProcess.DeleteAccountAsync();
+                    SupabaseStates.Instance.Supabase!.Auth.Shutdown();
+                    await _syncProcess.DeleteManagementTableDbAsync();
                     AppSettings.Instance.SyncIsOn = false;
-                    VMLocator.MainViewModel.LoginStatus = 4;
-
-                    var cdialog2 = new ContentDialog() { Title = $"Your account has been deleted.", CloseButtonText = "OK" };
+                    AppSettings.Instance.Provider = null;
+                    AppSettings.Instance.Email = null;
+                    AppSettings.Instance.Password = null;
+                    VMLocator.CloudLoginViewModel.Email = null;
+                    VMLocator.CloudLoginViewModel.Password = null;
+                    AppSettings.Instance.Session = null;
+                    VMLocator.MainViewModel.LoginStatus = 1;
+                    Application.Current!.TryFindResource("My.Strings.DeletedAccount", out object? resource2);
+                    var cdialog2 = new ContentDialog() { Title = resource2, CloseButtonText = "OK" };
+                    await VMLocator.MainViewModel.ContentDialogShowAsync(cdialog2);
                 }
             }
             catch (Exception ex)

@@ -3,6 +3,8 @@ using System;
 using TmCGPTD.Models;
 using System.Threading.Tasks;
 using FluentAvalonia.UI.Controls;
+using Avalonia.Controls;
+using Avalonia;
 
 namespace TmCGPTD.ViewModels
 {
@@ -113,10 +115,11 @@ namespace TmCGPTD.ViewModels
                 {
                     var session = await _supabaseProcess.EmailSignUpAsync(Email!, Password!);
 
+                    Application.Current!.TryFindResource("My.Strings.NewEmailInfo", out object? resource1);
                     var cdialog = new ContentDialog
                     {
                         Title = "Information",
-                        Content = $"If you are a new user, A confirmation email has been sent to you.{Environment.NewLine}Please check your mailbox. Once your address is verified, you can log in.",
+                        Content = resource1,
                         CloseButtonText = "OK"
                     };
                     await VMLocator.MainViewModel.ContentDialogShowAsync(cdialog);
@@ -155,10 +158,11 @@ namespace TmCGPTD.ViewModels
 
                     if (result)
                     {
+                        Application.Current!.TryFindResource("My.Strings.PasswordChange", out object? resource1);
                         var cdialog = new ContentDialog
                         {
                             Title = "Information",
-                            Content = $"A password reset email has been sent to you. Please check your mailbox.{Environment.NewLine}After logging in with your browser, please set a new password from the menu.",
+                            Content = resource1,
                             CloseButtonText = "OK"
                         };
                         await VMLocator.MainViewModel.ContentDialogShowAsync(cdialog);
@@ -190,7 +194,7 @@ namespace TmCGPTD.ViewModels
         {
             try
             {
-                if(SupabaseStates.Instance.Supabase == null)
+                if (SupabaseStates.Instance.Supabase == null)
                 {
                     await _supabaseProcess.InitializeSupabaseAsync();
                 }

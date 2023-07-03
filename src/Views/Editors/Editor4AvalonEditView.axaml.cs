@@ -18,27 +18,26 @@ namespace TmCGPTD.Views
 {
     public partial class Editor4AvalonEditView : UserControl
     {
-        private TextEditor _editor4;
-        private EditorViewModel _editorViewModel;
-        private FoldingManager _foldingManager;
+        private TextEditor? _editor4;
+        private EditorViewModel? _editorViewModel;
+        private FoldingManager? _foldingManager;
         private readonly SemaphoreSlim _updateSemaphore = new SemaphoreSlim(1, 1);
         public Editor4AvalonEditView()
         {
             InitializeComponent();
-            // DataContextが変更されたときに、ViewModelのプロパティ変更を購読
+
             DataContextChanged += OnDataContextChanged;
 
-            _editor4 = this.FindControl<TextEditor>("Editor4Avalon");
+            _editor4 = this.FindControl<TextEditor>("Editor4Avalon")!;
 
             _editor4.Document.Text = string.Empty;
             ConfigureTextEditor(_editor4);
-            // アタッチされたときのイベントを購読
             _editor4.AttachedToVisualTree += OnEditor4AttachedToVisualTree;
         }
 
-        private void OnEditor4AttachedToVisualTree(object sender, VisualTreeAttachmentEventArgs e)
+        private void OnEditor4AttachedToVisualTree(object? sender, VisualTreeAttachmentEventArgs e)
         {
-            Language language = _editorViewModel.SelectedLang;
+            Language language = _editorViewModel!.SelectedLang;
 
             if (_foldingManager != null)
             {
@@ -47,17 +46,17 @@ namespace TmCGPTD.Views
             }
             if (language != null && language.Extensions != null)
             {
-                string scopeName = _registryOptions.GetScopeByLanguageId(language.Id);
-                _textMateInstallation.SetGrammar(scopeName);
+                string scopeName = _registryOptions!.GetScopeByLanguageId(language.Id);
+                _textMateInstallation!.SetGrammar(scopeName);
                 if (language.Id == "xml")
                 {
-                    _foldingManager = FoldingManager.Install(_editor4.TextArea);
+                    _foldingManager = FoldingManager.Install(_editor4!.TextArea);
                     return;
                 }
             }
         }
 
-        private void OnDataContextChanged(object sender, EventArgs e)
+        private void OnDataContextChanged(object? sender, EventArgs e)
         {
             if (_editorViewModel != null)
             {
@@ -73,11 +72,11 @@ namespace TmCGPTD.Views
             }
         }
 
-        private async void OnEditorViewModelPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        private void OnEditorViewModelPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
             if (e.PropertyName == nameof(EditorViewModel.SelectedLang))
             {
-                Language language = _editorViewModel.SelectedLang;
+                Language language = _editorViewModel!.SelectedLang;
 
                 if (_foldingManager != null)
                 {
@@ -86,20 +85,20 @@ namespace TmCGPTD.Views
                 }
                 if (language != null && language.Extensions != null)
                 {
-                    string scopeName = _registryOptions.GetScopeByLanguageId(language.Id);
-                    _textMateInstallation.SetGrammar(scopeName);
+                    string scopeName = _registryOptions!.GetScopeByLanguageId(language.Id);
+                    _textMateInstallation!.SetGrammar(scopeName);
                     if (language.Id == "xml")
                     {
-                        _foldingManager = FoldingManager.Install(_editor4.TextArea);
+                        _foldingManager = FoldingManager.Install(_editor4!.TextArea);
                         return;
                     }
                 }
             }
         }
 
-        private TextMate.Installation _textMateInstallation;
+        private TextMate.Installation? _textMateInstallation;
         private ElementGenerator _generator = new ElementGenerator();
-        private RegistryOptions _registryOptions;
+        private RegistryOptions? _registryOptions;
         private int _currentTheme = 14;
 
         private void ConfigureTextEditor(TextEditor editor)

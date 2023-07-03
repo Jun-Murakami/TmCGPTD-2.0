@@ -32,7 +32,7 @@ namespace TmCGPTD.Views
             DataContext = ChatViewModel;
             VMLocator.ChatViewModel = ChatViewModel;
 
-            var browserWrapper = this.FindControl<Decorator>("ChatBrowserWrapper");
+            var browserWrapper = this.FindControl<Decorator>("ChatBrowserWrapper")!;
 
             _browser = new AvaloniaCefBrowser
             {
@@ -82,7 +82,7 @@ namespace TmCGPTD.Views
             await Dispatcher.UIThread.InvokeAsync(() => _browser.Opacity = 1);
         }
 
-        private async void ViewModel_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        private async void ViewModel_PropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
             if (e.PropertyName == nameof(ChatViewModel.HtmlContent))
             {
@@ -97,7 +97,7 @@ namespace TmCGPTD.Views
                 _browser.Opacity = 0;
                 string? htmlContent = ChatViewModel.HtmlContent;
 
-                int byteCount = Encoding.UTF8.GetByteCount(htmlContent);
+                int byteCount = Encoding.UTF8.GetByteCount(htmlContent!);
 
                 // 1MBを超えたら一時ファイルに書き出してから読み込む
                 if (byteCount > 1000000) //

@@ -21,27 +21,25 @@ namespace TmCGPTD.Views
     public partial class Editor3_2AvalonEditView : UserControl
     {
         private TextEditor _editor2;
-        private EditorViewModel _editorViewModel;
-        private FoldingManager _foldingManager;
+        private EditorViewModel? _editorViewModel;
+        private FoldingManager? _foldingManager;
         private readonly SemaphoreSlim _updateSemaphore = new SemaphoreSlim(1, 1);
 
         public Editor3_2AvalonEditView()
         {
             InitializeComponent();
-            // DataContextが変更されたときに、ViewModelのプロパティ変更を購読
             DataContextChanged += OnDataContextChanged;
 
-            _editor2 = this.FindControl<TextEditor>("Editor3_2Avalon");
+            _editor2 = this.FindControl<TextEditor>("Editor3_2Avalon")!;
             _editor2.Document.Text = string.Empty;
 
-            // アタッチされたときのイベントを購読
             _editor2.AttachedToVisualTree += OnEditor2AttachedToVisualTree;
 
         }
 
-        private void OnEditor2AttachedToVisualTree(object sender, VisualTreeAttachmentEventArgs e)
+        private void OnEditor2AttachedToVisualTree(object? sender, VisualTreeAttachmentEventArgs e)
         {
-            Language language = _editorViewModel.SelectedLang;
+            Language language = _editorViewModel!.SelectedLang;
 
             if (_foldingManager != null)
             {
@@ -50,8 +48,8 @@ namespace TmCGPTD.Views
             }
             if (language != null && language.Extensions != null)
             {
-                string scopeName = _registryOptions.GetScopeByLanguageId(language.Id);
-                _textMateInstallation.SetGrammar(scopeName);
+                string scopeName = _registryOptions!.GetScopeByLanguageId(language.Id);
+                _textMateInstallation!.SetGrammar(scopeName);
                 if (language.Id == "xml")
                 {
                     _foldingManager = FoldingManager.Install(_editor2.TextArea);
@@ -60,7 +58,7 @@ namespace TmCGPTD.Views
             }
         }
 
-        private void OnDataContextChanged(object sender, EventArgs e)
+        private void OnDataContextChanged(object? sender, EventArgs e)
         {
             if (_editorViewModel != null)
             {
@@ -71,21 +69,21 @@ namespace TmCGPTD.Views
             _editorViewModel = DataContext as EditorViewModel;
             if (_editorViewModel != null)
             {
-                if(VMLocator.EditorViewModel.Languages == null)
+                if (VMLocator.EditorViewModel.Languages == null)
                 {
                     ConfigureTextEditor(_editor2);
                 }
-                
+
                 // Subscribe to the new ViewModel's PropertyChanged event
                 _editorViewModel.PropertyChanged += OnEditorViewModelPropertyChanged;
             }
         }
 
-        private async void OnEditorViewModelPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        private void OnEditorViewModelPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
             if (e.PropertyName == nameof(EditorViewModel.SelectedLang))
             {
-                Language language = _editorViewModel.SelectedLang;
+                Language language = _editorViewModel!.SelectedLang;
 
                 if (_foldingManager != null)
                 {
@@ -94,8 +92,8 @@ namespace TmCGPTD.Views
                 }
                 if (language != null && language.Extensions != null)
                 {
-                    string scopeName = _registryOptions.GetScopeByLanguageId(language.Id);
-                    _textMateInstallation.SetGrammar(scopeName);
+                    string scopeName = _registryOptions!.GetScopeByLanguageId(language.Id);
+                    _textMateInstallation!.SetGrammar(scopeName);
                     if (language.Id == "xml")
                     {
                         _foldingManager = FoldingManager.Install(_editor2.TextArea);
@@ -105,9 +103,9 @@ namespace TmCGPTD.Views
             }
         }
 
-        private TextMate.Installation _textMateInstallation;
+        private TextMate.Installation? _textMateInstallation;
         private ElementGenerator _generator = new ElementGenerator();
-        private RegistryOptions _registryOptions;
+        private RegistryOptions? _registryOptions;
         private int _currentTheme = 14;
 
         private void ConfigureTextEditor(TextEditor editor)

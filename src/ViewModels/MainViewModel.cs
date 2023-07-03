@@ -17,7 +17,7 @@ using System.Threading;
 
 namespace TmCGPTD.ViewModels
 {
-    public partial class MainViewModel : ViewModelBase
+    public class MainViewModel : ViewModelBase
     {
         readonly SupabaseProcess _supabaseProcess = new();
         readonly DatabaseProcess _dbProcess = new();
@@ -492,7 +492,7 @@ namespace TmCGPTD.ViewModels
 
         private async Task SavePhrasesAsync()
         {
-            string phrasesText;
+            string? phrasesText;
             ContentDialog dialog;
             ContentDialogResult dialogResult;
             try
@@ -503,7 +503,7 @@ namespace TmCGPTD.ViewModels
                     dialogResult = await ContentDialogShowAsync(dialog);
                     if (dialogResult == ContentDialogResult.Primary)
                     {
-                        phrasesText = string.Join(Environment.NewLine, VMLocator.PhrasePresetsViewModel.Phrases);
+                        phrasesText = string.Join(Environment.NewLine, VMLocator.PhrasePresetsViewModel.Phrases!);
                         await _dbProcess.UpdatePhrasePresetAsync(SelectedPhraseItem, phrasesText);
                         return;
                     }
@@ -532,7 +532,7 @@ namespace TmCGPTD.ViewModels
                     return;
                 }
 
-                phrasesText = string.Join(Environment.NewLine, VMLocator.PhrasePresetsViewModel.Phrases);
+                phrasesText = string.Join(Environment.NewLine, VMLocator.PhrasePresetsViewModel.Phrases!);
                 await _dbProcess.SavePhrasesAsync(viewModel.UserInput, phrasesText);
 
                 SelectedPhraseItem = "";
@@ -686,7 +686,7 @@ namespace TmCGPTD.ViewModels
                     selectedFilePath += ".txt";
                 }
 
-                var phrasesText = string.Join(Environment.NewLine, VMLocator.PhrasePresetsViewModel.Phrases);
+                string? phrasesText = string.Join(Environment.NewLine, VMLocator.PhrasePresetsViewModel.Phrases!);
                 try
                 {
                     await File.WriteAllTextAsync(selectedFilePath, phrasesText);

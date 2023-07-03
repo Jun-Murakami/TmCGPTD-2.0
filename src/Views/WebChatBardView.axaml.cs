@@ -20,7 +20,7 @@ namespace TmCGPTD.Views
             DataContext = WebChatBardViewModel;
             VMLocator.WebChatBardViewModel = WebChatBardViewModel;
 
-            var browserWrapper = this.FindControl<Decorator>("WebChatBardBrowserWrapper");
+            var browserWrapper = this.FindControl<Decorator>("WebChatBardBrowserWrapper")!;
 
             browser = new AvaloniaCefBrowser
             {
