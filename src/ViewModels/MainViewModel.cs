@@ -156,7 +156,6 @@ namespace TmCGPTD.ViewModels
             "Bard"
         };
 
-
         private UserControl? _selectedRightView;
         public UserControl? SelectedRightView
         {
@@ -335,7 +334,6 @@ namespace TmCGPTD.ViewModels
                 await _dbProcess.GetEditorLogDatabaseAsync();
                 VMLocator.EditorViewModel.SelectedEditorLogIndex = -1;
                 VMLocator.EditorViewModel.SelectedTemplateItemIndex = -1;
-
             }
             catch (Exception ex)
             {
@@ -474,7 +472,7 @@ namespace TmCGPTD.ViewModels
             try
             {
                 var loadedPhrases = await _dbProcess.GetPhrasePresetsAsync(SelectedPhraseItem!);
-                VMLocator.PhrasePresetsViewModel.Phrases.Clear();
+                VMLocator.PhrasePresetsViewModel.Phrases!.Clear();
                 foreach (var phrase in loadedPhrases)
                 {
                     VMLocator.PhrasePresetsViewModel.Phrases.Add(phrase);
