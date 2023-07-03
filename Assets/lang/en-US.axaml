@@ -44,4 +44,5 @@ Please open the email and click the confirmation link to activate it.
 Please check your mailbox. Once your address is verified, you can log in.</system:String>
     <system:String x:Key="My.Strings.PasswordChange">A password reset email has been sent to you. Please check your mailbox.
 After logging in with your browser, please set a new password from the menu.</system:String>
+    <system:String x:Key="My.Strings.EmailLoginFailed">Login failed. Please check your email address and password.</system:String>
 </ResourceDictionary>

@@ -78,13 +78,24 @@ namespace TmCGPTD.ViewModels
                     await _databaseProcess.CleanUpEditorLogDatabaseAsync();
                     await _syncProcess.SyncDbAsync();
                 }
+                else
+                {
+                    Application.Current!.TryFindResource("My.Strings.EmailLoginFailed", out object? resource2);
+                    var cdialog = new ContentDialog
+                    {
+                        Title = resource2,
+                        CloseButtonText = "OK"
+                    };
+                    await VMLocator.MainViewModel.ContentDialogShowAsync(cdialog);
+                }
             }
             catch (Exception ex)
             {
+                Application.Current!.TryFindResource("My.Strings.EmailLoginFailed", out object? resource2);
                 var cdialog = new ContentDialog
                 {
                     Title = "Error",
-                    Content = $"{ex.Message}",
+                    Content = resource2 + $"\n{ex.Message}",
                     CloseButtonText = "OK"
                 };
                 await VMLocator.MainViewModel.ContentDialogShowAsync(cdialog);

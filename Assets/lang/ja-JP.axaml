@@ -1,5 +1,4 @@
-﻿
-<ResourceDictionary
+﻿<ResourceDictionary
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:system="clr-namespace:System;assembly=System.Runtime">
@@ -40,4 +39,5 @@
 メールに記載されているリンクをクリックすると、アカウントが有効化されログイン可能になります。</system:String>
     <system:String x:Key="My.Strings.PasswordChange">パスワードリセットのメールが送信されました。
 メール記載のリンクをクリックしてブラウザでログインし、メニューから新しいパスワードに変更してください。</system:String>
+    <system:String x:Key="My.Strings.EmailLoginFailed">ログインに失敗しました。メールアドレスとパスワードを確認してもう一度お試しください。</system:String>
 </ResourceDictionary>

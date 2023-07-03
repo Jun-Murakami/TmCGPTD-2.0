@@ -893,9 +893,10 @@ namespace TmCGPTD.Models
                 using var connection = new SQLiteConnection($"Data Source={AppSettings.Instance.DbPath}");
                 await connection.OpenAsync();
 
-                string query = $"UPDATE chatlog SET title=@title WHERE id = {chatId}";
+                string query = "UPDATE chatlog SET title=@title WHERE id = @id";
                 using var command = new SQLiteCommand(query, connection);
                 command.Parameters.AddWithValue("@title", title);
+                command.Parameters.AddWithValue("@id", chatId);
 
                 await command.ExecuteNonQueryAsync();
             }
@@ -927,11 +928,11 @@ namespace TmCGPTD.Models
                 using var connection = new SQLiteConnection($"Data Source={AppSettings.Instance.DbPath}");
                 await connection.OpenAsync();
 
-                string query = $"UPDATE chatlog SET category=@category WHERE id = {chatId}";
-
+                string query = "UPDATE chatlog SET category=@category WHERE id = @id";
                 using var command = new SQLiteCommand(query, connection);
-
                 command.Parameters.AddWithValue("@category", category);
+                command.Parameters.AddWithValue("@id", chatId);
+
                 await command.ExecuteNonQueryAsync();
             }
             catch (Exception)
