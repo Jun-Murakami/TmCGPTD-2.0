@@ -1,7 +1,6 @@
 using System.Diagnostics;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
-using Avalonia.Threading;
 using FluentAvalonia.UI.Controls;
 using FluentAvalonia.UI.Media.Animation;
 using System;
