@@ -35,9 +35,11 @@
     <system:String x:Key="My.Strings.EmailAddressChange">新しいメールアドレスに確認メールを送信しました。
 メールを開き、確認リンクをクリックして有効化してください。</system:String>
     <system:String x:Key="My.Strings.NewEmailInfo">新しいメールアドレスを入力してください。</system:String>
+    <system:String x:Key="My.Strings.NewPasswordInfo">新しいパスワードを入力してください。</system:String>
     <system:String x:Key="My.Strings.NewAccountInfo">新規登録ユーザーの場合、確認メールがが送信されています。
 メールに記載されているリンクをクリックすると、アカウントが有効化されログイン可能になります。</system:String>
     <system:String x:Key="My.Strings.PasswordChange">パスワードリセットのメールが送信されました。
 メール記載のリンクをクリックしてブラウザでログインし、メニューから新しいパスワードに変更してください。</system:String>
+    <system:String x:Key="My.Strings.PasswordChanged">パスワードが変更されました。</system:String>
     <system:String x:Key="My.Strings.EmailLoginFailed">ログインに失敗しました。メールアドレスとパスワードを確認してもう一度お試しください。</system:String>
 </ResourceDictionary>

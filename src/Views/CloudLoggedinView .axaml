@@ -19,7 +19,10 @@
                    Height="50" />
             <TextBlock Text="{Binding Provider}"
                        HorizontalAlignment="Center"
-                       Margin="0,0,0,9" />
+                       Margin="0,0,0,0" />
+            <TextBlock Text="{Binding Email}"
+                       HorizontalAlignment="Center"
+                       Margin="0,7,0,9" />
             <StackPanel Orientation="Horizontal"
                         Spacing="10"
                         HorizontalAlignment="Center"
@@ -28,15 +31,14 @@
                         Width="200"
                         Command="{Binding LogOutCommand}" />
             </StackPanel>
-            <TextBlock Text="{Binding Email}"
-                       HorizontalAlignment="Center"
-                       Margin="0,7,0,0" />
             <StackPanel Orientation="Horizontal"
                         Spacing="2"
                         HorizontalAlignment="Center"
                         Margin="5">
                 <ui:HyperlinkButton Content="Change email address"
                                     Command="{Binding ChangeEmailCommand}" />
+                <ui:HyperlinkButton Content="Change password"
+                                    Command="{Binding ChangePasswordCommand}" />
                 <ui:HyperlinkButton Content="Delete account"
                                     Command="{Binding DeleteAccountCommand}" />
             </StackPanel>

@@ -26,12 +26,13 @@ namespace TmCGPTD.ViewModels
 
             LogOutCommand = new AsyncRelayCommand(LogOutAsync);
             ChangeEmailCommand = new AsyncRelayCommand(ChangeEmailAsync);
+            ChangePasswordCommand = new AsyncRelayCommand(ChangePasswordAsync);
             DeleteAccountCommand = new AsyncRelayCommand(DeleteAccountAsync);
-
         }
 
         public IAsyncRelayCommand LogOutCommand { get; }
         public IAsyncRelayCommand ChangeEmailCommand { get; }
+        public IAsyncRelayCommand ChangePasswordCommand { get; }
         public IAsyncRelayCommand DeleteAccountCommand { get; }
 
         private string? _provider;
@@ -92,6 +93,43 @@ namespace TmCGPTD.ViewModels
                 await _supabaseProcess.ChangeEmailAsync(viewModel.UserInput);
 
                 Application.Current!.TryFindResource("My.Strings.EmailAddressChange", out object? resource2);
+                var cdialog = new ContentDialog() { Title = "Information", Content = resource2, CloseButtonText = "OK" };
+                await VMLocator.MainViewModel.ContentDialogShowAsync(cdialog);
+            }
+            catch (Exception ex)
+            {
+                var cdialog = new ContentDialog() { Title = "Error", Content = $"{ex.Message}", CloseButtonText = "OK" };
+                await VMLocator.MainViewModel.ContentDialogShowAsync(cdialog);
+            }
+        }
+
+        private async Task ChangePasswordAsync()
+        {
+            try
+            {
+                Application.Current!.TryFindResource("My.Strings.NewPasswordInfo", out object? resource1);
+                var dialog = new ContentDialog()
+                {
+                    Title = resource1,
+                    PrimaryButtonText = "OK",
+                    CloseButtonText = "Cancel"
+                };
+
+                var viewModel = new PhrasePresetsNameInputViewModel(dialog);
+                dialog.Content = new PhrasePresetsNameInput()
+                {
+                    DataContext = viewModel
+                };
+
+                var dialogResult = await VMLocator.MainViewModel.ContentDialogShowAsync(dialog);
+                if (dialogResult != ContentDialogResult.Primary || string.IsNullOrWhiteSpace(viewModel.UserInput))
+                {
+                    return;
+                }
+
+                await _supabaseProcess.ChangePasswordAsync(viewModel.UserInput);
+
+                Application.Current!.TryFindResource("My.Strings.PasswordChanged", out object? resource2);
                 var cdialog = new ContentDialog() { Title = "Information", Content = resource2, CloseButtonText = "OK" };
                 await VMLocator.MainViewModel.ContentDialogShowAsync(cdialog);
             }

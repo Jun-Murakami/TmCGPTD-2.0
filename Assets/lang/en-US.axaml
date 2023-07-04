@@ -40,9 +40,11 @@ Before execution, the local database is backed up to the folder.
 Please open the email and click the confirmation link to activate it.
 </system:String>
     <system:String x:Key="My.Strings.NewEmailInfo">Please enter new email address.</system:String>
+    <system:String x:Key="My.Strings.NewPasswordInfo">Please enter new password.</system:String>
     <system:String x:Key="My.Strings.NewAccountInfo">If you are a new user, A confirmation email has been sent to you.
 Please check your mailbox. Once your address is verified, you can log in.</system:String>
     <system:String x:Key="My.Strings.PasswordChange">A password reset email has been sent to you. Please check your mailbox.
 After logging in with your browser, please set a new password from the menu.</system:String>
+    <system:String x:Key="My.Strings.PasswordChanged">Your password has been changed.</system:String>
     <system:String x:Key="My.Strings.EmailLoginFailed">Login failed. Please check your email address and password.</system:String>
 </ResourceDictionary>

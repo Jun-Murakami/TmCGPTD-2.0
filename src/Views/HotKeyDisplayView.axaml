@@ -3,14 +3,16 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="clr-namespace:TmCGPTD.ViewModels"
-             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             mc:Ignorable="d"
+             d:DesignWidth="800"
+             d:DesignHeight="450"
              Padding="0, 10"
              x:Class="TmCGPTD.Views.HotKeyDisplayView">
     <StackPanel MinWidth="800">
-		<Image Source="/Assets/TmcGPTD_SC.png"
-			   VerticalAlignment="Stretch"
-			   HorizontalAlignment="Stretch"
-			   Width="500"
-			   Height="338"/>
+        <Image Source="/Assets/TmcGPTD_SC.png"
+               VerticalAlignment="Stretch"
+               HorizontalAlignment="Stretch"
+               Width="500"
+               Height="338" />
     </StackPanel>
 </UserControl>

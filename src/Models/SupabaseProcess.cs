@@ -52,6 +52,12 @@ namespace TmCGPTD.Models
             await SupabaseStates.Instance.Supabase!.Auth.Update(attrs);
         }
 
+        public async Task ChangePasswordAsync(string password)
+        {
+            var attrs = new UserAttributes { Password = password };
+            await SupabaseStates.Instance.Supabase!.Auth.Update(attrs);
+        }
+
         public async Task<bool> PasswordResetAsync(string email)
         {
             return await SupabaseStates.Instance.Supabase!.Auth.ResetPasswordForEmail(email);

@@ -372,5 +372,10 @@ namespace TmCGPTD.Views
                     )
                 );
         }
+
+        private void InitializeComponent()
+        {
+            AvaloniaXamlLoader.Load(this);
+        }
     }
 }

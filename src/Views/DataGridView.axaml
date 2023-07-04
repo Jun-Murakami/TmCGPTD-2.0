@@ -2,28 +2,32 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-			 xmlns:local="using:TmCGPTD"
-             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             xmlns:local="using:TmCGPTD"
+             mc:Ignorable="d"
+             d:DesignWidth="800"
+             d:DesignHeight="450"
              x:Class="TmCGPTD.Views.DataGridView">
-	<UserControl.Resources>
-		<local:CustomDateConverter x:Key="CustomDateConverter" />
-	</UserControl.Resources>
-  <Grid>
-	  <DataGrid Name="ChatListDataGrid"
-				ItemsSource="{Binding DataGridCollection}"
-				AutoGenerateColumns="False"
-				HeadersVisibility="None"
-				SelectionMode="Single"
-				SelectedItem="{Binding SelectedItem}"
-				SelectedIndex="{Binding SelectedItemIndex}">
-		  <DataGrid.Columns>
-			  <DataGridTextColumn Binding="{Binding Id}" IsVisible="False"/>
-			  <DataGridTextColumn Foreground="rgb(155,155,155)"
-								  FontSize="12"
-								  Binding="{Binding Date, Converter={StaticResource CustomDateConverter}, Mode=OneWay}"
-								  IsReadOnly="True" />
-			  <DataGridTextColumn Binding="{Binding Title}" IsReadOnly="True" />
-		  </DataGrid.Columns>
-	  </DataGrid>
-  </Grid>
+    <UserControl.Resources>
+        <local:CustomDateConverter x:Key="CustomDateConverter" />
+    </UserControl.Resources>
+    <Grid>
+        <DataGrid Name="ChatListDataGrid"
+                  ItemsSource="{Binding DataGridCollection}"
+                  AutoGenerateColumns="False"
+                  HeadersVisibility="None"
+                  SelectionMode="Single"
+                  SelectedItem="{Binding SelectedItem}"
+                  SelectedIndex="{Binding SelectedItemIndex}">
+            <DataGrid.Columns>
+                <DataGridTextColumn Binding="{Binding Id}"
+                                    IsVisible="False" />
+                <DataGridTextColumn Foreground="rgb(155,155,155)"
+                                    FontSize="12"
+                                    Binding="{Binding Date, Converter={StaticResource CustomDateConverter}, Mode=OneWay}"
+                                    IsReadOnly="True" />
+                <DataGridTextColumn Binding="{Binding Title}"
+                                    IsReadOnly="True" />
+            </DataGrid.Columns>
+        </DataGrid>
+    </Grid>
 </UserControl>
