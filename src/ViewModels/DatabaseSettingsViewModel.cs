@@ -1,6 +1,7 @@
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Platform.Storage;
 using Avalonia;
+using Avalonia.Controls;
 using FluentAvalonia.UI.Controls;
 using System;
 using System.IO;
@@ -18,10 +19,11 @@ namespace TmCGPTD.ViewModels
     public class DatabaseSettingsViewModel : ViewModelBase
     {
         DatabaseProcess _dbProcess = new DatabaseProcess();
-        SupabaseProcess _supabaseProcess = new SupabaseProcess();
 
         public DatabaseSettingsViewModel()
         {
+            Application.Current!.TryFindResource("My.Strings.DatabaseSettingsInfo", out object? resource1);
+            InfoText = resource1?.ToString();
             ProcessLog = "";
 
             MoveDatabaseCommand = new AsyncRelayCommand(MoveDatabaseAsync);
@@ -44,6 +46,13 @@ namespace TmCGPTD.ViewModels
                     OnPropertyChanged();
                 }
             }
+        }
+
+        private string? _infoText;
+        public string? InfoText
+        {
+            get => _infoText;
+            set => SetProperty(ref _infoText, value);
         }
 
         private string? _processLog;
@@ -125,7 +134,7 @@ namespace TmCGPTD.ViewModels
                         return;
                     }
 
-                    if(!await _dbProcess.CheckTableExists(selectedFilePath))
+                    if (!await _dbProcess.CheckTableExists(selectedFilePath))
                     {
                         ProcessLog = "Error: Invalid database file.";
                         return;

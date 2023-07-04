@@ -819,10 +819,9 @@ namespace TmCGPTD.ViewModels
 
         private async Task ShowDatabaseSettingsAsync()
         {
-            Application.Current!.TryFindResource("My.Strings.DatabaseInfo", out object? resource1);
             var dialog = new ContentDialog
             {
-                Title = resource1,
+                Title = "Database Settings",
                 PrimaryButtonText = "OK",
                 DataContext = VMLocator.DatabaseSettingsViewModel,
                 Content = new DatabaseSettingsView()
