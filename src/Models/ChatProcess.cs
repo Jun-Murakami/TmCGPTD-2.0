@@ -74,7 +74,7 @@ namespace TmCGPTD.Models
       if (!AppSettings.Instance.ApiMaxTokensIsEnable) { maxTokens = 0; }
 
       int maxContentLength = AppSettings.Instance.MaxContentLength;
-      if (!AppSettings.Instance.MaxContentLengthIsEnable) { maxContentLength = 2048; }
+      if (!AppSettings.Instance.MaxContentLengthIsEnable) { maxContentLength = 3072; }
 
       // 制限文字数の計算
       int limitLength = AppSettings.Instance.ApiMaxTokensIsEnable ? inputTokenCount + maxTokens + 400 : maxContentLength;

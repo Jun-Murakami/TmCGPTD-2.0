@@ -319,18 +319,11 @@ namespace TmCGPTD.Models
                     await CopyAllLocalToCloudDbAsync();
                     VMLocator.MainViewModel.SyncLogText = "Synced to cloud from local: " + localOnly;
                 }
-                else if ((cloudIsNewer > 0 && localIsNewer == 0 && localOnly == 0) || (localRecords == 0 && cloudRecords > 0))
+                else if ((cloudIsNewer > 0 && localIsNewer == 0 && localOnly == 0) ||(cloudRecords > localRecords && localIsNewer == 0 && localOnly == 0))
                 {
-                    //クラウドのデータが新しいか、ローカルのデータが一つもなければ、クラウドのデータをローカルにコピー
+                    //クラウドのデータが新しいか、データが多ければクラウドのデータをローカルにコピー
                     await UpsertToLocalDbAsync();
-                    if (localRecords == 0 && cloudRecords > 0)
-                    {
-                        VMLocator.MainViewModel.SyncLogText = "Synced from cloud: " + cloudRecords;
-                    }
-                    else
-                    {
-                        VMLocator.MainViewModel.SyncLogText = "Synced from cloud: " + cloudIsNewer;
-                    }
+                    VMLocator.MainViewModel.SyncLogText = "Synced from cloud: " + (cloudRecords - localRecords) + cloudIsNewer;
                 }
                 else if (localIsNewer > 0 && cloudIsNewer == 0 && localOnly == 0)
                 {

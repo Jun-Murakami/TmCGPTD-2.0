@@ -1747,7 +1747,7 @@ namespace TmCGPTD.Models
 
                             var models = new List<Message>();
 
-                            models.AddRange(_syncProcess.DivideMessage(string.Join(Environment.NewLine, insertText), lastRowId, Uid));
+                            models.AddRange(_syncProcess.DivideMessage(newText.Trim(), lastRowId, Uid));
 
                             await SupabaseStates.Instance.Supabase.From<Message>().Insert(models); // 新しいデータを挿入する
                         }
