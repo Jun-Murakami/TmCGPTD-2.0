@@ -125,7 +125,7 @@ namespace TmCGPTD.Models
         {
             var channel = SupabaseStates.Instance.Supabase!.Realtime.Channel("realtime", "public", "*");
 
-            channel.AddPostgresChangeHandler(Supabase.Realtime.PostgresChanges.PostgresChangesOptions.ListenType.All, (sender, change) =>
+            channel.AddPostgresChangeHandler(Supabase.Realtime.PostgresChanges.PostgresChangesOptions.ListenType.All, async (sender, change) =>
             {
                 // The event type
                 Debug.WriteLine("change.Event:" + change.Event);
@@ -133,7 +133,7 @@ namespace TmCGPTD.Models
                 Debug.WriteLine("change.Payload:" + change.Payload);
                 // The table name?
                 Debug.WriteLine("sender: " + sender);
-                _syncProcess.SyncDbAsync();
+                await _syncProcess.SyncDbAsync();
             });
 
             await channel.Subscribe();
