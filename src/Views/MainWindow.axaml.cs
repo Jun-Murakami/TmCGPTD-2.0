@@ -28,7 +28,7 @@ namespace TmCGPTD.Views
         public MainWindowViewModel MainWindowViewModel { get; } = new MainWindowViewModel();
         readonly DatabaseProcess _dbProcess = new();
         readonly SupabaseProcess _supabaseProcess = new();
-        readonly SyncProcess _syncProcess = new SyncProcess();
+        readonly SyncProcess _syncProcess = new();
 
         public MainWindow()
         {
@@ -193,7 +193,7 @@ namespace TmCGPTD.Views
 
                 if (string.IsNullOrWhiteSpace(VMLocator.MainWindowViewModel.ApiKey))
                 {
-                    var dialog = new ContentDialog() { Title = $"Please enter your API key.", PrimaryButtonText = "OK" };
+                    var dialog = new ContentDialog() { Title = "Please enter your API key.", PrimaryButtonText = "OK" };
                     await VMLocator.MainViewModel.ContentDialogShowAsync(dialog);
                     VMLocator.ChatViewModel.OpenApiSettings();
                 }
@@ -225,20 +225,19 @@ namespace TmCGPTD.Views
                         VMLocator.CloudLoggedinViewModel.Provider = settings.Provider;
                         await _dbProcess.CleanUpEditorLogDatabaseAsync();
                         await _syncProcess.SyncDbAsync();
+                        await _supabaseProcess.SubscribeAsync();
                     }
                 }
                 else
                 {
                     await _dbProcess.CleanUpEditorLogDatabaseAsync();
                 }
-
             }
             catch (Exception ex)
             {
                 var dialog = new ContentDialog() { Title = $"Error", Content = ex.Message, PrimaryButtonText = "OK" };
                 await VMLocator.MainViewModel.ContentDialogShowAsync(dialog);
             }
-
         }
 
         private void OnSizeChanged(Size newSize)

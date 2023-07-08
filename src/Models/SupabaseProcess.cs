@@ -2,6 +2,7 @@
 using FluentAvalonia.UI.Controls;
 using Supabase.Gotrue;
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -117,6 +118,23 @@ namespace TmCGPTD.Models
         public async Task LogOutAsync()
         {
             await SupabaseStates.Instance.Supabase!.Auth.SignOut();
+        }
+
+        public async Task SubscribeAsync()
+        {
+            var channel = SupabaseStates.Instance.Supabase!.Realtime.Channel("realtime", "public", "*");
+
+            channel.AddPostgresChangeHandler(Supabase.Realtime.PostgresChanges.PostgresChangesOptions.ListenType.All, (sender, change) =>
+            {
+                // The event type
+                Debug.WriteLine("change.Event:" + change.Event);
+                // The changed record
+                Debug.WriteLine("change.Payload:" + change.Payload);
+                // The table name?
+                Debug.WriteLine("sender: " + sender);
+            });
+
+            await channel.Subscribe();
         }
     }
 }

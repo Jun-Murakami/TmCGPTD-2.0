@@ -77,6 +77,7 @@ namespace TmCGPTD.ViewModels
                     await SupabaseStates.Instance.Supabase.Auth.RefreshSession();
                     await _databaseProcess.CleanUpEditorLogDatabaseAsync();
                     await _syncProcess.SyncDbAsync();
+                    await _supabaseProcess.SubscribeAsync();
                 }
                 else
                 {
@@ -232,6 +233,7 @@ namespace TmCGPTD.ViewModels
                         await SupabaseStates.Instance.Supabase.Auth.RefreshSession();
                         await _databaseProcess.CleanUpEditorLogDatabaseAsync();
                         await _syncProcess.SyncDbAsync();
+                        await _supabaseProcess.SubscribeAsync();
                     }
                 }
             }
@@ -278,6 +280,7 @@ namespace TmCGPTD.ViewModels
                         await SupabaseStates.Instance.Supabase.Auth.RefreshSession();
                         await _databaseProcess.CleanUpEditorLogDatabaseAsync();
                         await _syncProcess.SyncDbAsync();
+                        await _supabaseProcess.SubscribeAsync();
                     }
                 }
             }
