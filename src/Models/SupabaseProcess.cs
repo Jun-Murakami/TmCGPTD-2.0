@@ -14,6 +14,7 @@ namespace TmCGPTD.Models
 {
     public class SupabaseProcess
     {
+        SyncProcess _syncProcess = new();
         public async Task InitializeSupabaseAsync()
         {
             try
@@ -132,6 +133,7 @@ namespace TmCGPTD.Models
                 Debug.WriteLine("change.Payload:" + change.Payload);
                 // The table name?
                 Debug.WriteLine("sender: " + sender);
+                _syncProcess.SyncDbAsync();
             });
 
             await channel.Subscribe();
