@@ -25,6 +25,7 @@ namespace TmCGPTD.Models
         public async Task SyncDbAsync()
         {
             string accountCheck;
+
             try
             {
                 if (SupabaseStates.Instance.Supabase == null)

@@ -19,5 +19,6 @@ namespace TmCGPTD
         public AesSettings? AesSettings { get; set; }
         public Supabase.Client? Supabase { get; set; }
         public ProviderAuthState? AuthState { get; set; }
+        public Supabase.Realtime.Client? RealtimeClient { get; set; }
     }
 }

@@ -9,12 +9,20 @@ using System.Threading.Tasks;
 using static TmCGPTD.Views.WebLogInView;
 using Supabase;
 using System.Collections.Generic;
+using static Supabase.Realtime.Constants;
+using Supabase.Realtime.Interfaces;
+using Supabase.Realtime.PostgresChanges;
+using Supabase.Realtime;
+using Supabase.Realtime.Socket;
 
 namespace TmCGPTD.Models
 {
     public class SupabaseProcess
     {
         SyncProcess _syncProcess = new();
+
+        //private const string SocketEndpoint = "ws://localhost:4000/socket";
+
         public async Task InitializeSupabaseAsync()
         {
             try
@@ -29,11 +37,15 @@ namespace TmCGPTD.Models
 
                 var options = new SupabaseOptions
                 {
-                    SessionHandler = new CustomSessionHandler()
+                    SessionHandler = new CustomSessionHandler(),
+                    //AutoConnectRealtime = true,
                 };
 
                 SupabaseStates.Instance.Supabase = new Supabase.Client(supabaseUrl!, supabaseKey, options);
                 await SupabaseStates.Instance.Supabase.InitializeAsync();
+
+                //SupabaseStates.Instance.Supabase.Realtime = new Supabase.Realtime.Client(SocketEndpoint);
+
             }
             catch (Exception ex)
             {
@@ -78,18 +90,18 @@ namespace TmCGPTD.Models
 
         public async Task GoogleAuthAsync()
         {
-            SupabaseStates.Instance.AuthState = await SupabaseStates.Instance.Supabase!.Auth.SignIn(Constants.Provider.Google, new SignInOptions
+            SupabaseStates.Instance.AuthState = await SupabaseStates.Instance.Supabase!.Auth.SignIn(Supabase.Gotrue.Constants.Provider.Google, new SignInOptions
             {
-                FlowType = Constants.OAuthFlowType.PKCE,
+                FlowType = Supabase.Gotrue.Constants.OAuthFlowType.PKCE,
                 RedirectTo = "http://localhost:3000/oauth/callback"
             });
         }
 
         public async Task MicrosoftAuthAsync()
         {
-            SupabaseStates.Instance.AuthState = await SupabaseStates.Instance.Supabase!.Auth.SignIn(Constants.Provider.Azure, new SignInOptions
+            SupabaseStates.Instance.AuthState = await SupabaseStates.Instance.Supabase!.Auth.SignIn(Supabase.Gotrue.Constants.Provider.Azure, new SignInOptions
             {
-                FlowType = Constants.OAuthFlowType.PKCE,
+                FlowType = Supabase.Gotrue.Constants.OAuthFlowType.PKCE,
                 Scopes = "openid profile email offline_access",
                 RedirectTo = "http://localhost:3000/oauth/callback"
             });
@@ -123,20 +135,52 @@ namespace TmCGPTD.Models
 
         public async Task SubscribeAsync()
         {
-            var channel = SupabaseStates.Instance.Supabase!.Realtime.Channel("realtime", "public", "*");
+            try
+            { 
+                //await SupabaseStates.Instance.Supabase!.Realtime.ConnectAsync();
+                //var channel = SupabaseStates.Instance.Supabase!.Realtime.Channel("realtime", "public", "*");
 
-            channel.AddPostgresChangeHandler(Supabase.Realtime.PostgresChanges.PostgresChangesOptions.ListenType.All, async (sender, change) =>
+                //channel.AddPostgresChangeHandler(Supabase.Realtime.PostgresChanges.PostgresChangesOptions.ListenType.Inserts, PostgresInsertedHandlerAsync);
+                //channel.AddPostgresChangeHandler(Supabase.Realtime.PostgresChanges.PostgresChangesOptions.ListenType.Updates, PostgresUpdatedHandlerAsync);
+                //channel.AddPostgresChangeHandler(Supabase.Realtime.PostgresChanges.PostgresChangesOptions.ListenType.Deletes, PostgresDeletedHandlerAsync);
+                //channel.AddPostgresChangeHandler(Supabase.Realtime.PostgresChanges.PostgresChangesOptions.ListenType.All, async (_, change) =>
+                //{
+                    // The event type
+                    //Debug.WriteLine("change.Event:" + change.Event);
+                    // The changed record
+                    //Debug.WriteLine("change.Payload:" + change.Payload);
+                    // The table name?
+                    //Debug.WriteLine("sender: " + sender);
+                    //await _syncProcess.SyncDbAsync();
+                //});
+
+                //await channel.Subscribe();
+            }
+            catch (Exception ex)
             {
-                // The event type
-                Debug.WriteLine("change.Event:" + change.Event);
-                // The changed record
-                Debug.WriteLine("change.Payload:" + change.Payload);
-                // The table name?
-                Debug.WriteLine("sender: " + sender);
-                await _syncProcess.SyncDbAsync();
-            });
+                var cdialog = new ContentDialog() { Title = $"Error", Content = $"{ex.Message}", CloseButtonText = "OK" };
+                await cdialog.ShowAsync();
+            }   
+        }
+        private async void PostgresDeletedHandlerAsync(IRealtimeChannel _, PostgresChangesResponse change)
+        {
+            await _syncProcess.SyncDbAsync();
+        }
 
-            await channel.Subscribe();
+        private async void PostgresUpdatedHandlerAsync(IRealtimeChannel _, PostgresChangesResponse change)
+        {
+            await _syncProcess.SyncDbAsync();
+        }
+
+        private async void PostgresInsertedHandlerAsync(IRealtimeChannel _, PostgresChangesResponse change)
+        {
+            await _syncProcess.SyncDbAsync();
+        }
+
+        private async void SocketEventHandlerAsync(IRealtimeClient<RealtimeSocket, RealtimeChannel> sender,
+            SocketState state)
+        {
+            await _syncProcess.SyncDbAsync();
         }
     }
 }
