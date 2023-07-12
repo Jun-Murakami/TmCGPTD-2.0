@@ -1,8 +1,8 @@
 # TmCGPT Debugger
-ChatGPT API Client Application.  
+Client application that integrates the web services version of ChatGPT and OpenAI API. 
 It supports Windows 10 and later, as well as MacOS.  
 
-ChatGPT APIのクライアントアプリです。Windows10以降、MacOSに対応。
+Webサービス版のChatGPTとOpenAI APIを統合するクライアントアプリです。Windows10以降、MacOSに対応。
   
 ## 機能:  
 
