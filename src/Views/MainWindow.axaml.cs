@@ -225,7 +225,7 @@ namespace TmCGPTD.Views
                         VMLocator.CloudLoggedinViewModel.Provider = settings.Provider;
                         await _dbProcess.CleanUpEditorLogDatabaseAsync();
                         await _syncProcess.SyncDbAsync();
-                        //await _supabaseProcess.SubscribeAsync();
+                        await _supabaseProcess.SubscribeAsync();
                     }
                 }
                 else

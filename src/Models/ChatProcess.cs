@@ -416,7 +416,7 @@ namespace TmCGPTD.Models
             string? postConversation = conversationHistory.Select(d => d["content"].ToString()).Aggregate((a, b) => a + b);
             if (chatParameters.PreSummarizedHistoryTokenCount > tokenizer.Encode(postConversation!).Count)
             {
-              chatTextRes += $"-Conversation history has been summarized. before: {chatParameters.PreSummarizedHistoryTokenCount}, after: {tokenizer.Encode(postConversation!).Count}.{Environment.NewLine}";
+              chatTextRes += $"-Conversation has been summarized. before: {chatParameters.PreSummarizedHistoryTokenCount}, after: {tokenizer.Encode(postConversation!).Count}.{Environment.NewLine}";
             }
             else if (chatParameters.IsDeleteHistory) // 会話履歴が全て削除された場合
             {
