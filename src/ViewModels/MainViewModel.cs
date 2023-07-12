@@ -55,7 +55,7 @@ namespace TmCGPTD.ViewModels
             EditorFiveCommand = new RelayCommand(SetEditorFive);
             SystemMessageCommand = new RelayCommand(InsertSystemMessage);
             HotKeyDisplayCommand = new AsyncRelayCommand(HotKeyDisplayAsync);
-            OpenApiSettingsCommand = new RelayCommand(OpenApiSettings);
+            OpenOptionSettingsCommand = new RelayCommand(OpenOptionSettings);
             CloudSyncCommand = new AsyncRelayCommand(CloudSyncAsync);
             ShowDatabaseSettingsCommand = new AsyncRelayCommand(ShowDatabaseSettingsAsync);
             PhrasePresetsItems = new ObservableCollection<string>();
@@ -83,7 +83,7 @@ namespace TmCGPTD.ViewModels
         public ICommand EditorThreeCommand { get; }
         public ICommand EditorOneCommand { get; }
         public ICommand SystemMessageCommand { get; }
-        public ICommand OpenApiSettingsCommand { get; }
+        public ICommand OpenOptionSettingsCommand { get; }
         public IAsyncRelayCommand CloudSyncCommand { get; }
         public IAsyncRelayCommand ShowDatabaseSettingsCommand { get; }
         public IAsyncRelayCommand HotKeyDisplayCommand { get; }
@@ -135,13 +135,6 @@ namespace TmCGPTD.ViewModels
             set => SetProperty(ref _logPainButtonIsVisible, value);
         }
 
-        private UserControl? _selectedLeftView;
-        public UserControl? SelectedLeftView
-        {
-            get => _selectedLeftView;
-            set => SetProperty(ref _selectedLeftView, value);
-        }
-
         private string? _selectedLeftPane;
         public string? SelectedLeftPane
         {
@@ -155,13 +148,6 @@ namespace TmCGPTD.ViewModels
             "Web Chat",
             "Bard"
         };
-
-        private UserControl? _selectedRightView;
-        public UserControl? SelectedRightView
-        {
-            get => _selectedRightView;
-            set => SetProperty(ref _selectedRightView, value);
-        }
 
         private string? _selectedRightPane;
         public string? SelectedRightPane
@@ -808,12 +794,12 @@ namespace TmCGPTD.ViewModels
         }
         // ----------------------------------------------------------------------------------------------------------------------------
 
-        public static void OpenApiSettings()
+        public void OpenOptionSettings()
         {
             VMLocator.ChatViewModel.ChatViewIsVisible = false;
             VMLocator.WebChatViewModel.WebChatViewIsVisible = false;
             VMLocator.WebChatBardViewModel.WebChatBardViewIsVisible = false;
-            VMLocator.MainWindowViewModel.ApiSettingIsOpened = true;
+            VMLocator.MainWindowViewModel.OptionSettingsIsOpened = true;
         }
         // ----------------------------------------------------------------------------------------------------------------------------
 
@@ -823,8 +809,8 @@ namespace TmCGPTD.ViewModels
             {
                 Title = "Database Settings",
                 PrimaryButtonText = "OK",
-                DataContext = VMLocator.DatabaseSettingsViewModel,
-                Content = new DatabaseSettingsView()
+                DataContext = VMLocator.AppSettingsViewModel,
+                Content = new AppSettingsView()
             };
             await ContentDialogShowAsync(dialog);
         }

@@ -28,6 +28,7 @@
     <AvaloniaResource Include="Assets\Styles.axaml" />
     <None Remove=".gitignore" />
     <None Remove="appsettings.json" />
+    <None Remove="Assets\License.txt" />
     <None Remove="Assets\TmCGPTD.ico" />
     <AvaloniaResource Include="Assets\Lato-Regular.ttf" />
     <AvaloniaResource Include="Assets\TmCGPTD.ico" />
@@ -66,14 +67,12 @@
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.0-preview2" />
     <PackageReference Include="CsvHelper" Version="30.0.1" />
     <PackageReference Include="DialogHost.Avalonia" Version="0.7.3" />
-    <PackageReference Include="EmbedIO" Version="3.5.2" />
     <PackageReference Include="FluentAvaloniaUI" Version="2.0.0-preview8" />
-    <PackageReference Include="HtmlAgilityPack" Version="1.11.46" />
+    <PackageReference Include="HtmlAgilityPack" Version="1.11.49" />
     <PackageReference Include="ReverseMarkdown" Version="3.25.0" />
-    <PackageReference Include="supabase-csharp" Version="0.12.0" />
-    <PackageReference Include="System.Data.SQLite" Version="1.0.117" />
-    <PackageReference Include="TiktokenSharp" Version="1.0.5" />
-    <PackageReference Include="Unosquare.Swan.Lite" Version="3.1.0" />
+    <PackageReference Include="supabase-csharp" Version="0.12.1" />
+    <PackageReference Include="System.Data.SQLite" Version="1.0.118" />
+    <PackageReference Include="TiktokenSharp" Version="1.0.6" />
   </ItemGroup>
 
   <ItemGroup>
@@ -83,8 +82,17 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Update="src\Views\CloudLoggedinView .axaml.cs">
-      <DependentUpon>CloudLoggedinView .axaml</DependentUpon>
+    <Compile Update="src\Views\Options\LicenseView.axaml.cs">
+      <DependentUpon>LicenseView.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="src\Views\Options\AppSettingsView.axaml.cs">
+      <DependentUpon>AppSettingsView.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="src\Views\OptionSettingsView.axaml.cs">
+      <DependentUpon>OptionSettingsView.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="src\Views\CloudLoggedinView.axaml.cs">
+      <DependentUpon>CloudLoggedinView.axaml</DependentUpon>
     </Compile>
     <Compile Update="src\Views\CloudLoginView.axaml.cs">
       <DependentUpon>CloudLoginView.axaml</DependentUpon>

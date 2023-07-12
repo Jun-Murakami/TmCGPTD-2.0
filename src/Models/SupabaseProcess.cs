@@ -38,7 +38,8 @@ namespace TmCGPTD.Models
                 var options = new SupabaseOptions
                 {
                     SessionHandler = new CustomSessionHandler(),
-                    //AutoConnectRealtime = true,
+                    AutoConnectRealtime = true,
+                    AutoRefreshToken = true,
                 };
 
                 SupabaseStates.Instance.Supabase = new Supabase.Client(supabaseUrl!, supabaseKey, options);
@@ -137,7 +138,7 @@ namespace TmCGPTD.Models
         {
             try
             { 
-                await SupabaseStates.Instance.Supabase!.Realtime.ConnectAsync();
+                //await SupabaseStates.Instance.Supabase!.Realtime.ConnectAsync();
                 var channel = SupabaseStates.Instance.Supabase!.Realtime.Channel("realtime", "public", "*");
 
                 //channel.AddPostgresChangeHandler(Supabase.Realtime.PostgresChanges.PostgresChangesOptions.ListenType.Inserts, PostgresInsertedHandlerAsync);

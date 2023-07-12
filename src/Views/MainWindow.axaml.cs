@@ -45,12 +45,11 @@ namespace TmCGPTD.Views
             this.KeyDown += MainWindow_KeyDown;
             this.KeyUp += MainWindow_KeyUp;
 
-
             // Get the current culture info
             var cultureInfo = CultureInfo.CurrentCulture;
             if (cultureInfo.Name == "ja-JP")
             {
-                Translate("ja-JP");
+                VMLocator.AppSettingsViewModel.SelectedLanguage = "Japanese";
             }
         }
 
@@ -106,7 +105,7 @@ namespace TmCGPTD.Views
                     this.Position = new PixelPoint(5, 0);
                 }
 
-                VMLocator.DatabaseSettingsViewModel.DatabasePath = settings.DbPath;
+                VMLocator.AppSettingsViewModel.DatabasePath = settings.DbPath;
 
                 if (!File.Exists(settings.DbPath))
                 {
@@ -128,6 +127,8 @@ namespace TmCGPTD.Views
                 VMLocator.EditorViewModel.EditorCommonFontSize = settings.EditorFontSize > 0 ? settings.EditorFontSize : 1;
                 VMLocator.MainViewModel.SelectedPhraseItem = settings.PhrasePreset;
                 VMLocator.EditorViewModel.EditorModeIsChecked = true;
+                VMLocator.AppSettingsViewModel.SelectedLanguage = settings.Language;
+                AppSettings.Instance.Language = settings.Language;
 
                 AppSettings.Instance.Email = settings.Email;
                 AppSettings.Instance.Password = settings.Password;
@@ -195,7 +196,7 @@ namespace TmCGPTD.Views
                 {
                     var dialog = new ContentDialog() { Title = "Please enter your API key.", PrimaryButtonText = "OK" };
                     await VMLocator.MainViewModel.ContentDialogShowAsync(dialog);
-                    VMLocator.ChatViewModel.OpenApiSettings();
+                    VMLocator.MainViewModel.OpenOptionSettings();
                 }
 
                 await _supabaseProcess.InitializeSupabaseAsync();
@@ -321,6 +322,7 @@ namespace TmCGPTD.Views
             settings.PhrasePreset = VMLocator.MainViewModel.SelectedPhraseItem!;
             settings.SyntaxHighlighting = VMLocator.EditorViewModel.SelectedLangIndex;
             settings.PhraseExpanderMode = VMLocator.MainViewModel.PhraseExpanderIsOpened;
+            settings.Language = VMLocator.AppSettingsViewModel.SelectedLanguage;
 
             settings.EditorHeight1 = VMLocator.EditorViewModel.EditorHeight1;
             settings.EditorHeight2 = VMLocator.EditorViewModel.EditorHeight2;
@@ -356,20 +358,6 @@ namespace TmCGPTD.Views
         {
             var jsonString = System.Text.Json.JsonSerializer.Serialize(settings);
             File.WriteAllText(Path.Combine(settings.AppDataPath, "settings.json"), jsonString);
-        }
-
-        public void Translate(string targetLanguage)
-        {
-            var translations = App.Current!.Resources.MergedDictionaries.OfType<ResourceInclude>().FirstOrDefault(x => x.Source?.OriginalString?.Contains("/Lang/") ?? false);
-
-            if (translations != null)
-                App.Current.Resources.MergedDictionaries.Remove(translations);
-
-            App.Current.Resources.MergedDictionaries.Add(
-                (ResourceDictionary)AvaloniaXamlLoader.Load(
-                    new Uri($"avares://TmCGPTD/Assets/Lang/{targetLanguage}.axaml")
-                    )
-                );
         }
 
         private void InitializeComponent()

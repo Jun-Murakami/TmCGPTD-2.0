@@ -39,6 +39,7 @@ namespace TmCGPTD
         public GridLength EditorHeight5 { get; set; }
         public int SeparatorMode { get; set; }
         public string? Session { get; set; }
+        public string? Language { get; set; }
 
         private bool _syncIsOn;
 
@@ -100,6 +101,7 @@ namespace TmCGPTD
             Provider = "";
             Email = "";
             Password = "";
+            Language = "English";
 
             EditorHeight1 = new GridLength(0.21, GridUnitType.Star);
             EditorHeight2 = new GridLength(0.30, GridUnitType.Star);

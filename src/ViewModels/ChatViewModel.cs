@@ -33,7 +33,6 @@ namespace TmCGPTD.ViewModels
             TitleUpdateCommand = new AsyncRelayCommand(async () => await TitleUpdateAsync());
             CategoryUpdateCommand = new AsyncRelayCommand(async () => await CategoryUpdateAsync());
             InitializeChatCommand = new AsyncRelayCommand(async () => await InitializeChatAsync());
-            OpenApiSettingsCommand = new RelayCommand(OpenApiSettings);
 
             ShowSystemMessageInfoCommand = new RelayCommand(ShowSystemMessageInfo);
 
@@ -46,7 +45,6 @@ namespace TmCGPTD.ViewModels
         public IAsyncRelayCommand TitleUpdateCommand { get; }
         public IAsyncRelayCommand CategoryUpdateCommand { get; }
         public IAsyncRelayCommand InitializeChatCommand { get; }
-        public ICommand OpenApiSettingsCommand { get; }
         public ICommand ShowSystemMessageInfoCommand { get; }
         public IAsyncRelayCommand SearchPrev { get; }
         public IAsyncRelayCommand SearchNext { get; }
@@ -672,14 +670,6 @@ namespace TmCGPTD.ViewModels
                 _htmlContent = value;
                 OnPropertyChanged(nameof(HtmlContent));
             }
-        }
-
-        public void OpenApiSettings()
-        {
-            VMLocator.ChatViewModel.ChatViewIsVisible = false;
-            VMLocator.WebChatViewModel.WebChatViewIsVisible = false;
-            VMLocator.WebChatBardViewModel.WebChatBardViewIsVisible = false;
-            VMLocator.MainWindowViewModel.ApiSettingIsOpened = true;
         }
 
         private bool _chatIsRunning;

@@ -60,11 +60,11 @@ namespace TmCGPTD
             set => _phrasePresetsViewModel = value;
         }
 
-        private static DatabaseSettingsViewModel? _databaseSettingsViewModel;
-        public static DatabaseSettingsViewModel DatabaseSettingsViewModel
+        private static AppSettingsViewModel? _appSettingsViewModel;
+        public static AppSettingsViewModel AppSettingsViewModel
         {
-            get => _databaseSettingsViewModel ??= new DatabaseSettingsViewModel();
-            set => _databaseSettingsViewModel = value;
+            get => _appSettingsViewModel ??= new AppSettingsViewModel();
+            set => _appSettingsViewModel = value;
         }
 
         private static CloudLoginViewModel? _cloudLoginViewmodel;

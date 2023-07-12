@@ -13,18 +13,19 @@ using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.Input;
 using TmCGPTD.Views;
 using TmCGPTD.Models;
+using Avalonia.Markup.Xaml.Styling;
+using Avalonia.Markup.Xaml;
+using System.Linq;
 
 namespace TmCGPTD.ViewModels
 {
-    public class DatabaseSettingsViewModel : ViewModelBase
+    public class AppSettingsViewModel : ViewModelBase
     {
         DatabaseProcess _dbProcess = new DatabaseProcess();
 
-        public DatabaseSettingsViewModel()
+        public AppSettingsViewModel()
         {
-            Application.Current!.TryFindResource("My.Strings.DatabaseSettingsInfo", out object? resource1);
-            InfoText = resource1?.ToString();
-            ProcessLog = "";
+            ProcessLog = " ";
 
             MoveDatabaseCommand = new AsyncRelayCommand(MoveDatabaseAsync);
             LoadDatabaseCommand = new AsyncRelayCommand(LoadDatabaseAsync);
@@ -34,6 +35,32 @@ namespace TmCGPTD.ViewModels
         public IAsyncRelayCommand LoadDatabaseCommand { get; }
 
         private AppSettings _appSettings => AppSettings.Instance;
+
+        public List<string> LanguageList { get; } = new List<string>
+        {
+            "English",
+            "Japanese",
+        };
+
+        private string? _selectedLanguage;
+        public string? SelectedLanguage
+        {
+            get => _selectedLanguage;
+            set
+            {
+                if (SetProperty(ref _selectedLanguage, value))
+                {
+                    if (_selectedLanguage == "English")
+                    {
+                        Translate("en-US");
+                    }
+                    else if (_selectedLanguage == "Japanese")
+                    {
+                        Translate("ja-JP");
+                    }
+                }
+            }
+        }
 
         public string DatabasePath
         {
@@ -46,13 +73,6 @@ namespace TmCGPTD.ViewModels
                     OnPropertyChanged();
                 }
             }
-        }
-
-        private string? _infoText;
-        public string? InfoText
-        {
-            get => _infoText;
-            set => SetProperty(ref _infoText, value);
         }
 
         private string? _processLog;
@@ -166,5 +186,18 @@ namespace TmCGPTD.ViewModels
             }
         }
 
+        public void Translate(string targetLanguage)
+        {
+            var translations = App.Current!.Resources.MergedDictionaries.OfType<ResourceInclude>().FirstOrDefault(x => x.Source?.OriginalString?.Contains("/Lang/") ?? false);
+
+            if (translations != null)
+                App.Current.Resources.MergedDictionaries.Remove(translations);
+
+            App.Current.Resources.MergedDictionaries.Add(
+                (ResourceDictionary)AvaloniaXamlLoader.Load(
+                    new Uri($"avares://TmCGPTD/Assets/Lang/{targetLanguage}.axaml")
+                    )
+                );
+        }
     }
 }

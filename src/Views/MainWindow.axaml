@@ -13,13 +13,13 @@
         xmlns:local="using:TmCGPTD.Views"
         Icon="/Assets/TmCGPTD.ico"
         Title="TmCGPTD">
-    <dialogHost:DialogHost IsOpen="{Binding ApiSettingIsOpened}"
+    <dialogHost:DialogHost IsOpen="{Binding OptionSettingsIsOpened}"
                            DialogMargin="16"
                            DisableOpeningAnimation="True"
                            dialogHost:DialogHostStyle.CornerRadius="8"
                            Background="rgb(52, 53, 65)">
         <dialogHost:DialogHost.DialogContent>
-            <local:ApiSettingsView />
+            <local:OptionSettingsView />
         </dialogHost:DialogHost.DialogContent>
         <Panel>
             <local:MainView />

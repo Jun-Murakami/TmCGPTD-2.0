@@ -15,6 +15,9 @@ namespace TmCGPTD.Views
         private StackPanel _stackPanel;
         private ListBox lPane;
         private ListBox rPane;
+        private TextBlock _syncLogBlock;
+        private Frame _leftPane;
+        private Frame _rightPane;
         public MainView()
         {
             InitializeComponent();
@@ -50,10 +53,6 @@ namespace TmCGPTD.Views
             _rightPane.Navigate(typeof(EditorView));
             _leftPane.Navigate(typeof(ChatView));
         }
-
-        private TextBlock _syncLogBlock;
-        private Frame _leftPane;
-        private Frame _rightPane;
 
         private void OnRightListBoxSelectionChanged(object sender, SelectionChangedEventArgs e)
         {

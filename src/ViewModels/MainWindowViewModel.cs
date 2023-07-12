@@ -10,8 +10,8 @@ namespace TmCGPTD.ViewModels
     {
         public MainWindowViewModel()
         {
-            ApiSettingIsOpened = false;
-            ClosingApiSettingsCommand = new RelayCommand(ClosingApiSettings);
+            OptionSettingsIsOpened = false;
+            ClosingOptionSettingsCommand = new RelayCommand(ClosingOptionSettings);
             ResetApiSettingsCommand = new RelayCommand(ResetApiSettings);
             ValidateTextInputCommand = new RelayCommand<string>(ValidateTextInput);
 
@@ -61,13 +61,13 @@ namespace TmCGPTD.ViewModels
         public ICommand AltKey0Command { get; }
 
         public ICommand ValidateTextInputCommand { get; }
-        public ICommand ClosingApiSettingsCommand { get; }
+        public ICommand ClosingOptionSettingsCommand { get; }
         public ICommand ResetApiSettingsCommand { get; }
 
 
-        private void ClosingApiSettings()
+        private void ClosingOptionSettings()
         {
-            ApiSettingIsOpened = false;
+            OptionSettingsIsOpened = false;
             VMLocator.ChatViewModel.ChatViewIsVisible = true;
             VMLocator.WebChatViewModel.WebChatViewIsVisible = true;
             VMLocator.WebChatBardViewModel.WebChatBardViewIsVisible = true;
@@ -82,11 +82,26 @@ namespace TmCGPTD.ViewModels
             }
         }
 
-        private bool _apiSettingIsOpened;
-        public bool ApiSettingIsOpened
+        private bool _optionSettingsIsOpened;
+        public bool OptionSettingsIsOpened
         {
-            get => _apiSettingIsOpened;
-            set => SetProperty(ref _apiSettingIsOpened, value);
+            get => _optionSettingsIsOpened;
+            set => SetProperty(ref _optionSettingsIsOpened, value);
+        }
+
+        public List<string> DialogList { get; } = new List<string>
+        {
+            "API Parameters",
+            "Options",
+            "Hot Keys",
+            "License"
+        };
+
+        private string? _selectedDialogList;
+        public string? SelectedDialogList
+        {
+            get => _selectedDialogList;
+            set => SetProperty(ref _selectedDialogList, value);
         }
 
         private void ResetApiSettings()
