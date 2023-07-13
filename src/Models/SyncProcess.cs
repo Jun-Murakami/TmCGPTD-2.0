@@ -89,6 +89,8 @@ namespace TmCGPTD.Models
             int cloudRecords = 0;
             int localRecords = 0;
 
+            boolen isDeleted = false;
+
             try
             {
                 await SyncManagementTableAsync(); //削除フラグマネージメントテーブルの同期
@@ -149,6 +151,7 @@ namespace TmCGPTD.Models
                                     sql = $"DELETE FROM phrase WHERE id = {(long)reader["id"]}";
                                     using var commandDel = new SQLiteCommand(sql, connection);
                                     await commandDel.ExecuteNonQueryAsync();
+                                    isDeleted = true;
                                 }
                                 else
                                 {
@@ -200,6 +203,7 @@ namespace TmCGPTD.Models
                                     sql = $"DELETE FROM template WHERE id = {(long)reader["id"]}";
                                     using var commandDel = new SQLiteCommand(sql, connection);
                                     await commandDel.ExecuteNonQueryAsync();
+                                    isDeleted = true;
                                 }
                                 else
                                 {
@@ -251,6 +255,7 @@ namespace TmCGPTD.Models
                                     sql = $"DELETE FROM editorlog WHERE id = {(long)reader3["id"]}";
                                     using var commandDel = new SQLiteCommand(sql, connection);
                                     await commandDel.ExecuteNonQueryAsync();
+                                    isDeleted = true;
                                 }
                                 else
                                 {
@@ -302,6 +307,7 @@ namespace TmCGPTD.Models
                                     sql = $"DELETE FROM chatlog WHERE id = {(long)reader4["id"]}";
                                     using var commandDel = new SQLiteCommand(sql, connection);
                                     await commandDel.ExecuteNonQueryAsync();
+                                    isDeleted = true;
                                 }
                                 else
                                 {
@@ -323,6 +329,23 @@ namespace TmCGPTD.Models
                         };
                         await VMLocator.MainViewModel.ContentDialogShowAsync(cdialog);
                     }
+                }
+
+                if(isDeleted)
+                {
+                    // インメモリをいったん閉じてまた開く
+                    await DatabaseProcess.memoryConnection!.CloseAsync();
+                    await DatabaseProcess.Instance.DbLoadToMemoryAsync();
+                    VMLocator.DataGridViewModel.DataGridIsFocused = false;
+                    VMLocator.DataGridViewModel.ChatList = await DatabaseProcess.Instance.SearchChatDatabaseAsync();
+                    VMLocator.DataGridViewModel.SelectedItemIndex = -1;
+                    await DatabaseProcess.Instance.GetEditorLogDatabaseAsync();
+                    await DatabaseProcess.Instance.GetTemplateItemsAsync();
+                    string selectedPhraseItem = VMLocator.MainViewModel.SelectedPhraseItem!;
+                    await VMLocator.MainViewModel.LoadPhraseItemsAsync();
+                    VMLocator.MainViewModel.SelectedPhraseItem = selectedPhraseItem;
+                    VMLocator.EditorViewModel.SelectedEditorLogIndex = -1;
+                    VMLocator.EditorViewModel.SelectedTemplateItemIndex = -1;
                 }
 
                 //検証結果判定処理
