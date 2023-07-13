@@ -89,7 +89,7 @@ namespace TmCGPTD.Models
             int cloudRecords = 0;
             int localRecords = 0;
 
-            boolen isDeleted = false;
+            bool isDeleted = false;
 
             try
             {
