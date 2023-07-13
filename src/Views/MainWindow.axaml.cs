@@ -44,13 +44,6 @@ namespace TmCGPTD.Views
             // キーイベントハンドラ
             this.KeyDown += MainWindow_KeyDown;
             this.KeyUp += MainWindow_KeyUp;
-
-            // Get the current culture info
-            var cultureInfo = CultureInfo.CurrentCulture;
-            if (cultureInfo.Name == "ja-JP")
-            {
-                VMLocator.AppSettingsViewModel.SelectedLanguage = "Japanese";
-            }
         }
 
         private void MainWindow_KeyDown(object? sender, KeyEventArgs e)
@@ -127,6 +120,14 @@ namespace TmCGPTD.Views
                 VMLocator.EditorViewModel.EditorCommonFontSize = settings.EditorFontSize > 0 ? settings.EditorFontSize : 1;
                 VMLocator.MainViewModel.SelectedPhraseItem = settings.PhrasePreset;
                 VMLocator.EditorViewModel.EditorModeIsChecked = true;
+
+                // Get the current culture info
+                var cultureInfo = CultureInfo.CurrentCulture;
+                if (cultureInfo.Name == "ja-JP")
+                {
+                    VMLocator.AppSettingsViewModel.SelectedLanguage = "Japanese";
+                }
+
                 VMLocator.AppSettingsViewModel.SelectedLanguage = settings.Language;
                 AppSettings.Instance.Language = settings.Language;
 
