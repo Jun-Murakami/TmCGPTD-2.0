@@ -6,6 +6,7 @@ using FluentAvalonia.UI.Media.Animation;
 using System;
 using System.Threading.Tasks;
 using TmCGPTD.ViewModels;
+using Avalonia.Threading;
 
 namespace TmCGPTD.Views
 {
@@ -94,37 +95,47 @@ namespace TmCGPTD.Views
 
         private async void ViewModel_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
+
             if (e.PropertyName == nameof(MainViewModel.LoginStatus))
             {
-                if (MainViewModel.LoginStatus == 1)
+                await Dispatcher.UIThread.InvokeAsync(() =>
                 {
-                    _leftPane.Navigate(typeof(CloudLoginView));
-                    lPane.SelectedIndex = -1;
-                }
-                else if (MainViewModel.LoginStatus == 2)
-                {
-                    _leftPane.Navigate(typeof(WebLogInView), null, new SuppressNavigationTransitionInfo());
-                    lPane.SelectedIndex = -1;
-                }
-                else if (MainViewModel.LoginStatus == 3)
-                {
-                    _leftPane.Navigate(typeof(CloudLoggedinView));
-                    lPane.SelectedIndex = -1;
-                }
-                else if (MainViewModel.LoginStatus != -1)
-                {
-                    _leftPane.Navigate(typeof(ChatView));
-                    lPane.SelectedIndex = 0;
-                }
+                    if (MainViewModel.LoginStatus == 1)
+                    {
+                        _leftPane.Navigate(typeof(CloudLoginView));
+                        lPane.SelectedIndex = -1;
+                    }
+                    else if (MainViewModel.LoginStatus == 2)
+                    {
+                        _leftPane.Navigate(typeof(WebLogInView), null, new SuppressNavigationTransitionInfo());
+                        lPane.SelectedIndex = -1;
+                    }
+                    else if (MainViewModel.LoginStatus == 3)
+                    {
+                        _leftPane.Navigate(typeof(CloudLoggedinView));
+                        lPane.SelectedIndex = -1;
+                    }
+                    else if (MainViewModel.LoginStatus != -1)
+                    {
+                        _leftPane.Navigate(typeof(ChatView));
+                        lPane.SelectedIndex = 0;
+                    }
+                });
             }
             else if (e.PropertyName == nameof(MainViewModel.SyncLogText))
             {
-                _syncLogBlock.Classes.Add("FadeOut");
+                await Dispatcher.UIThread.InvokeAsync(() =>
+                {
+                    _syncLogBlock.Classes.Add("FadeOut");
+                });
 
                 await Task.Delay(10000);
 
-                VMLocator.MainViewModel.SyncLogText = "";
-                _syncLogBlock.Classes.Remove("FadeOut");
+                await Dispatcher.UIThread.InvokeAsync(() =>
+                {
+                    VMLocator.MainViewModel.SyncLogText = "";
+                    _syncLogBlock.Classes.Remove("FadeOut");
+                });
             }
         }
 

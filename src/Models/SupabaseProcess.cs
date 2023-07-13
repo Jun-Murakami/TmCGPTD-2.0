@@ -21,8 +21,6 @@ namespace TmCGPTD.Models
     {
         SyncProcess _syncProcess = new();
 
-        //private const string SocketEndpoint = "ws://localhost:4000/socket";
-
         public async Task InitializeSupabaseAsync()
         {
             try
@@ -44,14 +42,11 @@ namespace TmCGPTD.Models
 
                 SupabaseStates.Instance.Supabase = new Supabase.Client(supabaseUrl!, supabaseKey, options);
                 await SupabaseStates.Instance.Supabase.InitializeAsync();
-
-                //SupabaseStates.Instance.Supabase.Realtime = new Supabase.Realtime.Client(SocketEndpoint);
-
             }
             catch (Exception ex)
             {
                 var cdialog = new ContentDialog() { Title = $"Error", Content = $"{ex.Message}", CloseButtonText = "OK" };
-                await cdialog.ShowAsync();
+                await VMLocator.MainViewModel.ContentDialogShowAsync(cdialog);
             }
         }
 
@@ -138,13 +133,12 @@ namespace TmCGPTD.Models
         {
             try
             { 
-                //await SupabaseStates.Instance.Supabase!.Realtime.ConnectAsync();
+                await SupabaseStates.Instance.Supabase!.Realtime.ConnectAsync();
                 //var channel = SupabaseStates.Instance.Supabase!.Realtime.Channel("realtime", "public", "*");
+                
+                SupabaseStates.Instance.Supabase!.Realtime.AddDebugHandler(async (sender, message, exception) => await PostgresDebugHandlerAsync(message));
 
-                //channel.AddPostgresChangeHandler(Supabase.Realtime.PostgresChanges.PostgresChangesOptions.ListenType.Inserts, PostgresInsertedHandlerAsync);
-                //channel.AddPostgresChangeHandler(Supabase.Realtime.PostgresChanges.PostgresChangesOptions.ListenType.Updates, PostgresUpdatedHandlerAsync);
-                //channel.AddPostgresChangeHandler(Supabase.Realtime.PostgresChanges.PostgresChangesOptions.ListenType.Deletes, PostgresDeletedHandlerAsync);
-                //channel.AddPostgresChangeHandler(Supabase.Realtime.PostgresChanges.PostgresChangesOptions.ListenType.All, async (_, change) =>
+                //SupabaseStates.Instance.Supabase!.Realtime.Channel("realtime", "public", "*").AddPostgresChangeHandler(PostgresChangesOptions.ListenType.All, async (_, change) =>
                 //{
                     // The event type
                     //Debug.WriteLine("change.Event:" + change.Event);
@@ -155,33 +149,22 @@ namespace TmCGPTD.Models
                     //await _syncProcess.SyncDbAsync();
                 //});
 
-                //await channel.Subscribe();
+                await SupabaseStates.Instance.Supabase!.Realtime.Channel("realtime", "public", "*").Subscribe();
             }
             catch (Exception ex)
             {
                 var cdialog = new ContentDialog() { Title = $"Error", Content = $"{ex.Message}", CloseButtonText = "OK" };
-                await cdialog.ShowAsync();
+                await VMLocator.MainViewModel.ContentDialogShowAsync(cdialog);
             }   
         }
-        private async void PostgresDeletedHandlerAsync(IRealtimeChannel _, PostgresChangesResponse change)
-        {
-            await _syncProcess.SyncDbAsync();
-        }
 
-        private async void PostgresUpdatedHandlerAsync(IRealtimeChannel _, PostgresChangesResponse change)
+        private async Task PostgresDebugHandlerAsync(string message)
         {
-            await _syncProcess.SyncDbAsync();
-        }
-
-        private async void PostgresInsertedHandlerAsync(IRealtimeChannel _, PostgresChangesResponse change)
-        {
-            await _syncProcess.SyncDbAsync();
-        }
-
-        private async void SocketEventHandlerAsync(IRealtimeClient<RealtimeSocket, RealtimeChannel> sender,
-            SocketState state)
-        {
-            await _syncProcess.SyncDbAsync();
+            if (message.Contains("\"event\":\"postgres_changes\""))
+            {
+                await _syncProcess.SyncDbAsync();
+            }
+            
         }
     }
 }

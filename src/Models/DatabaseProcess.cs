@@ -326,10 +326,10 @@ namespace TmCGPTD.Models
             catch (Exception)
             {
                 await transaction.RollbackAsync();
-                await DoSync();
+                //await DoSync();
                 throw;
             }
-            await DoSync();
+            //await DoSync();
             await memoryConnection!.CloseAsync();
             await DbLoadToMemoryAsync();
         }
@@ -409,10 +409,10 @@ namespace TmCGPTD.Models
             catch (Exception ex)
             {
                 await transaction.RollbackAsync();
-                await DoSync();
+                //await DoSync();
                 throw new Exception($"Updating the name from '{oldName}' to '{newName}': {ex.Message}", ex);
             }
-            await DoSync();
+            //await DoSync();
             await memoryConnection!.CloseAsync();
             await DbLoadToMemoryAsync();
         }
@@ -452,10 +452,10 @@ namespace TmCGPTD.Models
             catch (Exception ex)
             {
                 await transaction.RollbackAsync();
-                await DoSync();
+                //await DoSync();
                 throw new Exception($"Updating the phrase preset '{name}': {ex.Message}", ex);
             }
-            await DoSync();
+            //await DoSync();
             await memoryConnection!.CloseAsync();
             await DbLoadToMemoryAsync();
         }
@@ -510,16 +510,16 @@ namespace TmCGPTD.Models
                 catch (Exception ex)
                 {
                     await transaction.RollbackAsync();
-                    await DoSync();
+                    //await DoSync();
                     throw new Exception("Occurred while deleting the selected preset.", ex);
                 }
             }
             catch (Exception ex)
             {
-                await DoSync();
+                //await DoSync();
                 throw new Exception("Occurred while connecting to the database.", ex);
             }
-            await DoSync();
+            //await DoSync();
             await memoryConnection!.CloseAsync();
             await DbLoadToMemoryAsync();
         }
@@ -680,7 +680,7 @@ namespace TmCGPTD.Models
                     catch (Exception)
                     {
                         await transaction.RollbackAsync();
-                        await DoSync();
+                        //await DoSync();
                         throw;
                     }
                 }
@@ -688,10 +688,10 @@ namespace TmCGPTD.Models
             }
             catch (Exception)
             {
-                await DoSync();
+                //await DoSync();
                 throw;
             }
-            await DoSync();
+            //await DoSync();
             await memoryConnection!.CloseAsync();
             await DbLoadToMemoryAsync();
 
@@ -866,12 +866,12 @@ namespace TmCGPTD.Models
                 catch (Exception)
                 {
                     await transaction.RollbackAsync();
-                    await DoSync();
+                    //await DoSync();
                     throw;
                 }
             }
             // インメモリをいったん閉じてまた開く
-            await DoSync();
+            //await DoSync();
             await memoryConnection!.CloseAsync();
             await DbLoadToMemoryAsync();
             return;
@@ -902,11 +902,11 @@ namespace TmCGPTD.Models
             }
             catch (Exception)
             {
-                await DoSync();
+                //await DoSync();
                 throw;
             }
             // インメモリをいったん閉じてまた開く
-            await DoSync();
+            //await DoSync();
             await memoryConnection!.CloseAsync();
             await DbLoadToMemoryAsync();
             VMLocator.DataGridViewModel.ChatList = await SearchChatDatabaseAsync();
@@ -937,11 +937,11 @@ namespace TmCGPTD.Models
             }
             catch (Exception)
             {
-                await DoSync();
+                //await DoSync();
                 throw;
             }
             // インメモリをいったん閉じてまた開く
-            await DoSync();
+            //await DoSync();
             await memoryConnection!.CloseAsync();
             await DbLoadToMemoryAsync();
             VMLocator.DataGridViewModel.ChatList = await SearchChatDatabaseAsync();
@@ -1080,11 +1080,11 @@ namespace TmCGPTD.Models
             {
                 // エラーが発生した場合、トランザクションをロールバックする
                 await transaction.RollbackAsync();
-                await DoSync();
+                //await DoSync();
                 throw;
             }
             // インメモリをいったん閉じてまた開く
-            await DoSync();
+            //await DoSync();
             await memoryConnection!.CloseAsync();
             await DbLoadToMemoryAsync();
             VMLocator.DataGridViewModel.ChatList = await SearchChatDatabaseAsync();
@@ -1145,10 +1145,10 @@ namespace TmCGPTD.Models
             catch (Exception)
             {
                 await transaction.RollbackAsync();
-                await DoSync();
+                //await DoSync();
                 throw;
             }
-            await DoSync();
+            //await DoSync();
             await memoryConnection!.CloseAsync();
             await DbLoadToMemoryAsync();
         }
@@ -1200,10 +1200,10 @@ namespace TmCGPTD.Models
             catch (Exception ex)
             {
                 await transaction.RollbackAsync();
-                await DoSync();
+                //await DoSync();
                 throw new Exception($"Updating template preset '{title}': {ex.Message}", ex);
             }
-            await DoSync();
+            //await DoSync();
             await memoryConnection!.CloseAsync();
             await DbLoadToMemoryAsync();
         }
@@ -1243,10 +1243,10 @@ namespace TmCGPTD.Models
             catch (Exception ex)
             {
                 await transaction.RollbackAsync();
-                await DoSync();
+                //await DoSync();
                 throw new Exception($"Updating the name from '{oldName}' to '{newName}': {ex.Message}", ex);
             }
-            await DoSync();
+            //await DoSync();
             await memoryConnection!.CloseAsync();
             await DbLoadToMemoryAsync();
         }
@@ -1299,16 +1299,16 @@ namespace TmCGPTD.Models
                 catch (Exception ex)
                 {
                     transaction.Rollback();
-                    await DoSync();
+                    //await DoSync();
                     throw new Exception("Occurred while deleting the selected template.", ex);
                 }
             }
             catch (Exception ex)
             {
-                await DoSync();
+                //await DoSync();
                 throw new Exception("Occurred while connecting to the database.", ex);
             }
-            await DoSync();
+            //await DoSync();
             await memoryConnection!.CloseAsync();
             await DbLoadToMemoryAsync();
         }
@@ -1832,14 +1832,14 @@ namespace TmCGPTD.Models
                 {
                     // エラーが発生した場合、トランザクションをロールバックする
                     await transaction.RollbackAsync();
-                    await DoSync();
+                    //await DoSync();
                     //var dialog = new ContentDialog() { Title = "Error : " + ex.Message, PrimaryButtonText = "OK" };
                     //await VMLocator.MainViewModel.ContentDialogShowAsync(dialog);
                     throw;
                 }
             }
             // インメモリをいったん閉じてまた開く
-            await DoSync();
+            //await DoSync();
             await memoryConnection!.CloseAsync();
             await DbLoadToMemoryAsync();
         }

@@ -53,10 +53,12 @@ namespace TmCGPTD.ViewModels
                     if (_selectedLanguage == "English")
                     {
                         Translate("en-US");
+                        AppSettings.Instance.Language = "English";
                     }
                     else if (_selectedLanguage == "Japanese")
                     {
                         Translate("ja-JP");
+                        AppSettings.Instance.Language = "Japanese";
                     }
                 }
             }

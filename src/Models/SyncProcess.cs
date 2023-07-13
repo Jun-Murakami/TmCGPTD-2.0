@@ -42,15 +42,19 @@ namespace TmCGPTD.Models
                 if (accountCheck == "switch")
                 {
                     Application.Current!.TryFindResource("My.Strings.NewAccountDetected", out object? resource1);
-                    var cdialog = new ContentDialog
+                    ContentDialog? cdialog = null;
+                    await Dispatcher.UIThread.InvokeAsync(() =>
                     {
-                        Title = "Confirmation",
+                        cdialog = new ContentDialog
+                        {
+                            Title = "Confirmation",
                         Content = resource1,
                         PrimaryButtonText = "Use Current Data",
                         SecondaryButtonText = "Use Cloud Data",
                         CloseButtonText = "Log Out"
-                    };
-                    var result = await VMLocator.MainViewModel.ContentDialogShowAsync(cdialog);
+                        };
+                    });
+                    var result = await VMLocator.MainViewModel.ContentDialogShowAsync(cdialog!);
                     if (result == ContentDialogResult.Primary)
                     {
                         //Do nothing
@@ -70,13 +74,17 @@ namespace TmCGPTD.Models
             }
             catch (Exception ex)
             {
-                var cdialog = new ContentDialog
+                ContentDialog? cdialog = null;
+                await Dispatcher.UIThread.InvokeAsync(() =>
                 {
-                    Title = "Error",
+                    cdialog = new ContentDialog
+                    {
+                        Title = "Error",
                     Content = ex.Message,
                     CloseButtonText = "OK"
-                };
-                await VMLocator.MainViewModel.ContentDialogShowAsync(cdialog);
+                    };
+                });
+                await VMLocator.MainViewModel.ContentDialogShowAsync(cdialog!);
                 return;
             }
 
@@ -321,13 +329,17 @@ namespace TmCGPTD.Models
                     catch (Exception ex)
                     {
                         await transaction.RollbackAsync();
-                        var cdialog = new ContentDialog
+                        ContentDialog? cdialog = null;
+                        await Dispatcher.UIThread.InvokeAsync(() =>
                         {
-                            Title = "Error",
-                            Content = ex.Message,
-                            CloseButtonText = "OK"
-                        };
-                        await VMLocator.MainViewModel.ContentDialogShowAsync(cdialog);
+                            cdialog = new ContentDialog
+                            {
+                                Title = "Error",
+                                Content = ex.Message,
+                                CloseButtonText = "OK"
+                            };
+                        });
+                        await VMLocator.MainViewModel.ContentDialogShowAsync(cdialog!);
                     }
                 }
 
@@ -338,14 +350,17 @@ namespace TmCGPTD.Models
                     await DatabaseProcess.Instance.DbLoadToMemoryAsync();
                     VMLocator.DataGridViewModel.DataGridIsFocused = false;
                     VMLocator.DataGridViewModel.ChatList = await DatabaseProcess.Instance.SearchChatDatabaseAsync();
-                    VMLocator.DataGridViewModel.SelectedItemIndex = -1;
                     await DatabaseProcess.Instance.GetEditorLogDatabaseAsync();
                     await DatabaseProcess.Instance.GetTemplateItemsAsync();
                     string selectedPhraseItem = VMLocator.MainViewModel.SelectedPhraseItem!;
                     await VMLocator.MainViewModel.LoadPhraseItemsAsync();
-                    VMLocator.MainViewModel.SelectedPhraseItem = selectedPhraseItem;
-                    VMLocator.EditorViewModel.SelectedEditorLogIndex = -1;
-                    VMLocator.EditorViewModel.SelectedTemplateItemIndex = -1;
+                    await Dispatcher.UIThread.InvokeAsync(() =>
+                    {
+                        VMLocator.DataGridViewModel.SelectedItemIndex = -1;
+                        VMLocator.MainViewModel.SelectedPhraseItem = selectedPhraseItem;
+                        VMLocator.EditorViewModel.SelectedEditorLogIndex = -1;
+                        VMLocator.EditorViewModel.SelectedTemplateItemIndex = -1;
+                    });
                 }
 
                 //検証結果判定処理
@@ -432,13 +447,17 @@ namespace TmCGPTD.Models
             }
             catch (Exception ex)
             {
-                var cdialog = new ContentDialog
+                ContentDialog? cdialog = null;
+                await Dispatcher.UIThread.InvokeAsync(() =>
                 {
-                    Title = "Error",
-                    Content = ex.Message + ex.StackTrace,
-                    CloseButtonText = "OK"
-                };
-                await VMLocator.MainViewModel.ContentDialogShowAsync(cdialog);
+                    cdialog = new ContentDialog
+                    {
+                        Title = "Error",
+                        Content = ex.Message + ex.StackTrace,
+                        CloseButtonText = "OK"
+                    };
+                });
+                await VMLocator.MainViewModel.ContentDialogShowAsync(cdialog!);
             }
         }
         // -------------------------------------------------------------------------------------------------------
@@ -1006,14 +1025,17 @@ namespace TmCGPTD.Models
                 await DatabaseProcess.Instance.DbLoadToMemoryAsync();
                 VMLocator.DataGridViewModel.DataGridIsFocused = false;
                 VMLocator.DataGridViewModel.ChatList = await DatabaseProcess.Instance.SearchChatDatabaseAsync();
-                VMLocator.DataGridViewModel.SelectedItemIndex = -1;
                 await DatabaseProcess.Instance.GetEditorLogDatabaseAsync();
                 await DatabaseProcess.Instance.GetTemplateItemsAsync();
                 string selectedPhraseItem = VMLocator.MainViewModel.SelectedPhraseItem!;
                 await VMLocator.MainViewModel.LoadPhraseItemsAsync();
-                VMLocator.MainViewModel.SelectedPhraseItem = selectedPhraseItem;
-                VMLocator.EditorViewModel.SelectedEditorLogIndex = -1;
-                VMLocator.EditorViewModel.SelectedTemplateItemIndex = -1;
+                await Dispatcher.UIThread.InvokeAsync(() =>
+                {
+                    VMLocator.DataGridViewModel.SelectedItemIndex = -1;
+                    VMLocator.MainViewModel.SelectedPhraseItem = selectedPhraseItem;
+                    VMLocator.EditorViewModel.SelectedEditorLogIndex = -1;
+                    VMLocator.EditorViewModel.SelectedTemplateItemIndex = -1;
+                });
             }
         }
 
@@ -1026,13 +1048,17 @@ namespace TmCGPTD.Models
             var supabase = SupabaseStates.Instance.Supabase;
             var uid = SupabaseStates.Instance.Supabase!.Auth.CurrentUser!.Id;
 
-            var cdialog = new ContentDialog() { Title = "Synchronizing..." };
-            cdialog.Content = new ProgressView()
+            ContentDialog? cdialog = null;
+            await Dispatcher.UIThread.InvokeAsync(() =>
             {
-                DataContext = VMLocator.ProgressViewModel
-            };
-            VMLocator.ProgressViewModel.SetDialog(cdialog);
-            _ = VMLocator.MainViewModel.ContentDialogShowAsync(cdialog);//awaitすると進まないのでawaitしないこと
+                cdialog = new ContentDialog() { Title = "Synchronizing..." };
+                cdialog.Content = new ProgressView()
+                {
+                    DataContext = VMLocator.ProgressViewModel
+                };
+                VMLocator.ProgressViewModel.SetDialog(cdialog);
+                _ = VMLocator.MainViewModel.ContentDialogShowAsync(cdialog);//awaitすると進まないのでawaitしないこと
+            });
 
             try
             {
@@ -1052,7 +1078,10 @@ namespace TmCGPTD.Models
                 while (await reader.ReadAsync())
                 {
                     i++;
-                    VMLocator.ProgressViewModel.ProgressValue = ((double)i / countTable);
+                    await Dispatcher.UIThread.InvokeAsync(() =>
+                    {
+                        VMLocator.ProgressViewModel.ProgressValue = ((double)i / countTable);
+                    });
                     if (reader["date"] == DBNull.Value)
                     {
                         DateTime date = DateTime.Now;
@@ -1072,7 +1101,10 @@ namespace TmCGPTD.Models
             }
             catch (Exception ex)
             {
-                VMLocator.ProgressViewModel.Hide();
+                await Dispatcher.UIThread.InvokeAsync(() =>
+                {
+                    VMLocator.ProgressViewModel.Hide();
+                });
                 throw new Exception($"Failed to upload phrase presets: {ex.Message}\n{ex.StackTrace}");
             }
 
@@ -1095,7 +1127,10 @@ namespace TmCGPTD.Models
                 while (await reader.ReadAsync())
                 {
                     i++;
-                    VMLocator.ProgressViewModel.ProgressValue = (double)i / countTable;
+                    await Dispatcher.UIThread.InvokeAsync(() =>
+                    {
+                        VMLocator.ProgressViewModel.ProgressValue = (double)i / countTable;
+                    });
                     if (reader["date"] == DBNull.Value)
                     {
                         DateTime date = DateTime.Now;
@@ -1115,7 +1150,10 @@ namespace TmCGPTD.Models
             }
             catch (Exception ex)
             {
-                VMLocator.ProgressViewModel.Hide();
+                await Dispatcher.UIThread.InvokeAsync(() =>
+                {
+                    VMLocator.ProgressViewModel.Hide();
+                });
                 throw new Exception($"Failed to upload editor logs: {ex.Message}\n{ex.StackTrace}");
             }
 
@@ -1138,7 +1176,10 @@ namespace TmCGPTD.Models
                 while (await reader.ReadAsync())
                 {
                     i++;
-                    VMLocator.ProgressViewModel.ProgressValue = ((double)i / countTable);
+                    await Dispatcher.UIThread.InvokeAsync(() =>
+                    {
+                        VMLocator.ProgressViewModel.ProgressValue = ((double)i / countTable);
+                    });
                     if (reader["date"] == DBNull.Value)
                     {
                         DateTime date = DateTime.Now;
@@ -1158,7 +1199,10 @@ namespace TmCGPTD.Models
             }
             catch (Exception ex)
             {
-                VMLocator.ProgressViewModel.Hide();
+                await Dispatcher.UIThread.InvokeAsync(() =>
+                {
+                    VMLocator.ProgressViewModel.Hide();
+                });
                 throw new Exception($"Failed to upload templates: {ex.Message}\n{ex.StackTrace}");
             }
 
@@ -1181,7 +1225,10 @@ namespace TmCGPTD.Models
                 while (await reader.ReadAsync())
                 {
                     j++;
-                    VMLocator.ProgressViewModel.ProgressValue = ((double)j / countTable);
+                    await Dispatcher.UIThread.InvokeAsync(() =>
+                    {
+                        VMLocator.ProgressViewModel.ProgressValue = ((double)j / countTable);
+                    });
                     var models1 = new List<ChatRoom>();
 
                     if (reader["date"] == DBNull.Value)
@@ -1210,13 +1257,19 @@ namespace TmCGPTD.Models
             }
             catch (Exception ex)
             {
-                VMLocator.ProgressViewModel.Hide();
+                await Dispatcher.UIThread.InvokeAsync(() =>
+                {
+                    VMLocator.ProgressViewModel.Hide();
+                });
                 throw new Exception($"Failed to upload chat logs: {ex.Message}\n{ex.StackTrace}");
             }
 
 
             VMLocator.ProgressViewModel.ProgressText = "Deleting local logs...";
-            VMLocator.ProgressViewModel.ProgressValue = 0;
+            await Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                VMLocator.ProgressViewModel.ProgressValue = 0;
+            });
             try
             {
                 await DeleteLocalDbAsync();
@@ -1224,7 +1277,10 @@ namespace TmCGPTD.Models
             }
             catch (Exception ex)
             {
-                VMLocator.ProgressViewModel.Hide();
+                await Dispatcher.UIThread.InvokeAsync(() =>
+                {
+                    VMLocator.ProgressViewModel.Hide();
+                });
                 throw new Exception($"Failed to delete local logs: {ex.Message}\n{ex.StackTrace}");
             }
 
@@ -1254,12 +1310,17 @@ namespace TmCGPTD.Models
                 catch (Exception ex)
                 {
                     transaction.Rollback();
-                    VMLocator.ProgressViewModel.Hide();
+                    await Dispatcher.UIThread.InvokeAsync(() =>
+                    {
+                        VMLocator.ProgressViewModel.Hide();
+                    });
                     throw new Exception($"Failed to download phrases: {ex.Message}\n{ex.StackTrace}");
                 }
             }
-
-            VMLocator.ProgressViewModel.ProgressValue = 0.25;
+            await Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                VMLocator.ProgressViewModel.ProgressValue = 0.25;
+            });
 
             var resultEditorLog = await supabase.From<EditorLog>().Get();
             using (var transaction = connection2.BeginTransaction())
@@ -1280,12 +1341,18 @@ namespace TmCGPTD.Models
                 catch (Exception ex)
                 {
                     transaction.Rollback();
-                    VMLocator.ProgressViewModel.Hide();
+                    await Dispatcher.UIThread.InvokeAsync(() =>
+                    {
+                        VMLocator.ProgressViewModel.Hide();
+                    }
                     throw new Exception($"Failed to download editor logs: {ex.Message}\n{ex.StackTrace}");
                 }
             }
 
-            VMLocator.ProgressViewModel.ProgressValue = 0.5;
+            await Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                VMLocator.ProgressViewModel.ProgressValue = 0.5;
+            });
 
             var resultTemplate = await supabase.From<Template>().Get();
             using (var transaction = connection2.BeginTransaction())
@@ -1307,14 +1374,19 @@ namespace TmCGPTD.Models
                 catch (Exception ex)
                 {
                     transaction.Rollback();
-                    VMLocator.ProgressViewModel.Hide();
+                    await Dispatcher.UIThread.InvokeAsync(() =>
+                    {
+                        VMLocator.ProgressViewModel.Hide();
+                    });
                     throw new Exception($"Failed to download templates: {ex.Message}\n{ex.StackTrace}");
                 }
             }
 
             var resultChatLog = await supabase.From<ChatRoom>().Get();
-
-            VMLocator.ProgressViewModel.ProgressValue = 0.75;
+            await Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                VMLocator.ProgressViewModel.ProgressValue = 0.75;
+            });
 
             using (var transaction = connection2.BeginTransaction())
             {
@@ -1344,7 +1416,10 @@ namespace TmCGPTD.Models
                 catch (Exception ex)
                 {
                     await transaction.RollbackAsync();
-                    VMLocator.ProgressViewModel.Hide();
+                    await Dispatcher.UIThread.InvokeAsync(() =>
+                    {
+                        VMLocator.ProgressViewModel.Hide();
+                    });
                     throw new Exception($"Failed to download chat logs: {ex.Message} {ex.StackTrace}");
                 }
             }
@@ -1355,26 +1430,36 @@ namespace TmCGPTD.Models
                 await connection2.CloseAsync();
 
                 VMLocator.ProgressViewModel.ProgressText = "Display is being updated...";
-                VMLocator.ProgressViewModel.ProgressValue = 1;
+                await Dispatcher.UIThread.InvokeAsync(() =>
+                {
+                    VMLocator.ProgressViewModel.ProgressValue = 1;
+                });
 
                 // インメモリをいったん閉じてまた開く
                 await DatabaseProcess.memoryConnection!.CloseAsync();
                 await DatabaseProcess.Instance.DbLoadToMemoryAsync();
                 VMLocator.DataGridViewModel.DataGridIsFocused = false;
                 VMLocator.DataGridViewModel.ChatList = await DatabaseProcess.Instance.SearchChatDatabaseAsync();
-                VMLocator.DataGridViewModel.SelectedItemIndex = -1;
                 await DatabaseProcess.Instance.GetEditorLogDatabaseAsync();
                 await DatabaseProcess.Instance.GetTemplateItemsAsync();
                 string selectedPhraseItem = VMLocator.MainViewModel.SelectedPhraseItem!;
                 await VMLocator.MainViewModel.LoadPhraseItemsAsync();
-                VMLocator.MainViewModel.SelectedPhraseItem = selectedPhraseItem;
-                VMLocator.EditorViewModel.SelectedEditorLogIndex = -1;
-                VMLocator.EditorViewModel.SelectedTemplateItemIndex = -1;
-                VMLocator.ProgressViewModel.Hide();
+                await Dispatcher.UIThread.InvokeAsync(() =>
+                {
+                    VMLocator.DataGridViewModel.SelectedItemIndex = -1;
+                    VMLocator.MainViewModel.SelectedPhraseItem = selectedPhraseItem;
+                    VMLocator.EditorViewModel.SelectedEditorLogIndex = -1;
+                    VMLocator.EditorViewModel.SelectedTemplateItemIndex = -1;
+                    VMLocator.ProgressViewModel.Hide();
+                });
+                
             }
             catch (Exception ex)
             {
-                VMLocator.ProgressViewModel.Hide();
+                await Dispatcher.UIThread.InvokeAsync(() =>
+                {
+                    VMLocator.ProgressViewModel.Hide();
+                });
                 throw new Exception($"Error during display update: {ex.Message}\n{ex.StackTrace}");
             }
         }
