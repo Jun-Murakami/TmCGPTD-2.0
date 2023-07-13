@@ -1344,7 +1344,7 @@ namespace TmCGPTD.Models
                     await Dispatcher.UIThread.InvokeAsync(() =>
                     {
                         VMLocator.ProgressViewModel.Hide();
-                    }
+                    });
                     throw new Exception($"Failed to download editor logs: {ex.Message}\n{ex.StackTrace}");
                 }
             }

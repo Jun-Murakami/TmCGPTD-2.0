@@ -136,18 +136,18 @@ namespace TmCGPTD.Models
                 await SupabaseStates.Instance.Supabase!.Realtime.ConnectAsync();
                 //var channel = SupabaseStates.Instance.Supabase!.Realtime.Channel("realtime", "public", "*");
                 
-                SupabaseStates.Instance.Supabase!.Realtime.AddDebugHandler(async (sender, message, exception) => await PostgresDebugHandlerAsync(message));
+                //SupabaseStates.Instance.Supabase!.Realtime.AddDebugHandler(async (sender, message, exception) => await PostgresDebugHandlerAsync(message));
 
-                //SupabaseStates.Instance.Supabase!.Realtime.Channel("realtime", "public", "*").AddPostgresChangeHandler(PostgresChangesOptions.ListenType.All, async (_, change) =>
-                //{
+                SupabaseStates.Instance.Supabase!.Realtime.Channel("realtime", "public", "*").AddPostgresChangeHandler(PostgresChangesOptions.ListenType.All, async (_, change) =>
+                {
                     // The event type
                     //Debug.WriteLine("change.Event:" + change.Event);
                     // The changed record
                     //Debug.WriteLine("change.Payload:" + change.Payload);
                     // The table name?
                     //Debug.WriteLine("sender: " + sender);
-                    //await _syncProcess.SyncDbAsync();
-                //});
+                    await _syncProcess.SyncDbAsync();
+                });
 
                 await SupabaseStates.Instance.Supabase!.Realtime.Channel("realtime", "public", "*").Subscribe();
             }
