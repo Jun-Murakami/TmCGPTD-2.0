@@ -10,20 +10,20 @@
              xmlns:local="using:TmCGPTD"
              x:Class="TmCGPTD.Views.OptionSettingsView">
     <StackPanel Orientation="Vertical">
-		<ListBox Name="DialogListBox"
-		         ItemsSource="{Binding DialogList}"
-		         SelectedItem="{Binding SelectedDialogList}">
-			<ListBox.ItemsPanel>
-				<ItemsPanelTemplate>
-					<WrapPanel />
-				</ItemsPanelTemplate>
-			</ListBox.ItemsPanel>
-		</ListBox>
-		<Border BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
+        <ListBox Name="DialogListBox"
+                 ItemsSource="{Binding DialogList}"
+                 SelectedItem="{Binding SelectedDialogList}">
+            <ListBox.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <WrapPanel />
+                </ItemsPanelTemplate>
+            </ListBox.ItemsPanel>
+        </ListBox>
+        <Border BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
                 BorderThickness="1"
-				Padding="15">
-          <ui:Frame Name="DialogFrame" />
-		</Border>
+                Padding="15">
+            <ui:Frame Name="DialogFrame" />
+        </Border>
         <Button Content="Close"
                 HorizontalAlignment="Center"
                 Margin="0,15,0,2"

@@ -38,7 +38,7 @@ namespace TmCGPTD.Models
                 var options = new SupabaseOptions
                 {
                     SessionHandler = new CustomSessionHandler(),
-                    AutoConnectRealtime = true,
+                    //AutoConnectRealtime = true,
                     AutoRefreshToken = true,
                 };
 
@@ -139,23 +139,23 @@ namespace TmCGPTD.Models
             try
             { 
                 //await SupabaseStates.Instance.Supabase!.Realtime.ConnectAsync();
-                var channel = SupabaseStates.Instance.Supabase!.Realtime.Channel("realtime", "public", "*");
+                //var channel = SupabaseStates.Instance.Supabase!.Realtime.Channel("realtime", "public", "*");
 
                 //channel.AddPostgresChangeHandler(Supabase.Realtime.PostgresChanges.PostgresChangesOptions.ListenType.Inserts, PostgresInsertedHandlerAsync);
                 //channel.AddPostgresChangeHandler(Supabase.Realtime.PostgresChanges.PostgresChangesOptions.ListenType.Updates, PostgresUpdatedHandlerAsync);
                 //channel.AddPostgresChangeHandler(Supabase.Realtime.PostgresChanges.PostgresChangesOptions.ListenType.Deletes, PostgresDeletedHandlerAsync);
-                channel.AddPostgresChangeHandler(Supabase.Realtime.PostgresChanges.PostgresChangesOptions.ListenType.All, async (_, change) =>
-                {
+                //channel.AddPostgresChangeHandler(Supabase.Realtime.PostgresChanges.PostgresChangesOptions.ListenType.All, async (_, change) =>
+                //{
                     // The event type
-                    Debug.WriteLine("change.Event:" + change.Event);
+                    //Debug.WriteLine("change.Event:" + change.Event);
                     // The changed record
-                    Debug.WriteLine("change.Payload:" + change.Payload);
+                    //Debug.WriteLine("change.Payload:" + change.Payload);
                     // The table name?
                     //Debug.WriteLine("sender: " + sender);
-                    await _syncProcess.SyncDbAsync();
-                });
+                    //await _syncProcess.SyncDbAsync();
+                //});
 
-                await channel.Subscribe();
+                //await channel.Subscribe();
             }
             catch (Exception ex)
             {

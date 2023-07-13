@@ -6,10 +6,10 @@
              d:DesignWidth="800"
              d:DesignHeight="450"
              x:Class="TmCGPTD.Views.LicenseView">
-	<TextBox Width="800"
-			 Height="450"
-			 AcceptsReturn="True"
-			 IsReadOnly="True"
-			 TextWrapping="Wrap"
-			 Text="{Binding LicenseText}" />
+    <TextBox Width="800"
+             Height="450"
+             AcceptsReturn="True"
+             IsReadOnly="True"
+             TextWrapping="Wrap"
+             Text="{Binding LicenseText}" />
 </UserControl>

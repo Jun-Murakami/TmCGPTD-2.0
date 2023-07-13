@@ -12,25 +12,25 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
-			<RowDefinition Height="Auto" />
-			<RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto" />
             <ColumnDefinition Width="Auto" />
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
-		<StackPanel Grid.Row="0"
-					Grid.ColumnSpan="3"
-			Orientation="Horizontal">
-		<TextBlock Text="Language :"
-				   VerticalAlignment="Center"
-				   HorizontalAlignment="Right"
-                   Margin="0,0,10,15" />
-		<ComboBox ItemsSource="{Binding LanguageList}"
-				  SelectedItem="{Binding SelectedLanguage}"
-				  Margin="0,0,0,15" />
-			</StackPanel>
+        <StackPanel Grid.Row="0"
+                    Grid.ColumnSpan="3"
+                    Orientation="Horizontal">
+            <TextBlock Text="Language :"
+                       VerticalAlignment="Center"
+                       HorizontalAlignment="Right"
+                       Margin="0,0,10,15" />
+            <ComboBox ItemsSource="{Binding LanguageList}"
+                      SelectedItem="{Binding SelectedLanguage}"
+                      Margin="0,0,0,15" />
+        </StackPanel>
         <TextBlock Grid.Row="1"
                    Grid.ColumnSpan="3"
                    Text="Database path :"
@@ -39,10 +39,10 @@
                    Grid.ColumnSpan="3"
                    Text="{Binding DatabasePath}"
                    Margin="0,0,0,10" />
-		<TextBlock Grid.Row="3"
-		   Grid.ColumnSpan="3"
-		   Text="{DynamicResource My.Strings.DatabaseSettingsInfo}"
-		   Margin="0,15,0,15" />
+        <TextBlock Grid.Row="3"
+                   Grid.ColumnSpan="3"
+                   Text="{DynamicResource My.Strings.DatabaseSettingsInfo}"
+                   Margin="0,15,0,15" />
         <Button Grid.Row="4"
                 Grid.Column="0"
                 Content="Move Database"

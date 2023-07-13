@@ -139,6 +139,7 @@ namespace TmCGPTD.Models
                                 {
                                     cloudIsNewer++;
                                 }
+                                localRecords++;
                             }
                             else //クラウドに該当IDがない
                             {
@@ -152,9 +153,9 @@ namespace TmCGPTD.Models
                                 else
                                 {
                                     localOnly++;
+                                    localRecords++;
                                 }
                             }
-                            localRecords++;
                         }
 
                         var resultTemplate = await supabase
@@ -189,12 +190,23 @@ namespace TmCGPTD.Models
                                 {
                                     cloudIsNewer++;
                                 }
+                                localRecords++;
                             }
                             else
                             {
-                                localOnly++;
+                                //削除フラグに含まれている場合はローカルのSQLデータベースを削除する
+                                if (resultManagement.Models.Exists(x => x.DeleteTable == "template" && x.DeleteId == (long)reader["id"]))
+                                {
+                                    sql = $"DELETE FROM template WHERE id = {(long)reader["id"]}";
+                                    using var commandDel = new SQLiteCommand(sql, connection);
+                                    await commandDel.ExecuteNonQueryAsync();
+                                }
+                                else
+                                {
+                                    localOnly++;
+                                    localRecords++;
+                                }
                             }
-                            localRecords++;
                         }
 
                         var resultEditorLog = await supabase
@@ -229,6 +241,7 @@ namespace TmCGPTD.Models
                                 {
                                     cloudIsNewer++;
                                 }
+                                localRecords++;
                             }
                             else
                             {
@@ -242,9 +255,9 @@ namespace TmCGPTD.Models
                                 else
                                 {
                                     localOnly++;
+                                    localRecords++;
                                 }
                             }
-                            localRecords++;
                         }
 
                         var resultChatRoom = await supabase
@@ -279,6 +292,7 @@ namespace TmCGPTD.Models
                                 {
                                     cloudIsNewer++;
                                 }
+                                localRecords++;
                             }
                             else
                             {
@@ -292,9 +306,9 @@ namespace TmCGPTD.Models
                                 else
                                 {
                                     localOnly++;
+                                    localRecords++;
                                 }
                             }
-                            localRecords++;
                         }
                         await transaction.CommitAsync();
                     }
