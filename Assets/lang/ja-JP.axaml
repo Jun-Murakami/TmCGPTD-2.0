@@ -46,4 +46,5 @@
 メール記載のリンクをクリックしてブラウザでログインし、メニューから新しいパスワードに変更してください。</system:String>
     <system:String x:Key="My.Strings.PasswordChanged">パスワードが変更されました。</system:String>
     <system:String x:Key="My.Strings.EmailLoginFailed">ログインに失敗しました。メールアドレスとパスワードを確認してもう一度お試しください。</system:String>
+    <system:String x:Key="My.Strings.OverWriteLog">同名のチャットログが存在します。上書きしますか？</system:String>
 </ResourceDictionary>

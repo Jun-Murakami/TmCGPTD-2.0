@@ -51,4 +51,6 @@ Please check your mailbox. Once your address is verified, you can log in.</syste
 After logging in with your browser, please set a new password from the menu.</system:String>
     <system:String x:Key="My.Strings.PasswordChanged">Your password has been changed.</system:String>
     <system:String x:Key="My.Strings.EmailLoginFailed">Login failed. Please check your email address and password.</system:String>
+    <system:String x:Key="My.Strings.OverWriteLog">A chat log with the same name exists.
+Do you want to overwrite it?</system:String>
 </ResourceDictionary>

@@ -977,8 +977,8 @@ namespace TmCGPTD.Models
 
             if (matchingId.HasValue)
             {
-                Console.WriteLine("Match found. ID: " + matchingId.Value);
-                var dialog = new ContentDialog() { Title = $"A chat log with the same name exists.{Environment.NewLine}Do you want to overwrite it? {Environment.NewLine}{Environment.NewLine}'{webChatTitle}'", PrimaryButtonText = "Overwrite", SecondaryButtonText = "Rename", CloseButtonText = "Cancel" };
+                Application.Current!.TryFindResource("My.Strings.OverWriteLog", out object? resource1);
+                var dialog = new ContentDialog() { Title = $"{resource1}{Environment.NewLine}{Environment.NewLine}'{webChatTitle}'", PrimaryButtonText = "Overwrite", SecondaryButtonText = "Rename", CloseButtonText = "Cancel" };
                 var dialogResult = await VMLocator.MainViewModel.ContentDialogShowAsync(dialog);
                 if (dialogResult == ContentDialogResult.Primary)
                 {
