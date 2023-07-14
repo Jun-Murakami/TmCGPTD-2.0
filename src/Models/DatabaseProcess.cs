@@ -39,17 +39,7 @@ namespace TmCGPTD.Models
 
         readonly SyncProcess _syncProcess = new();
         private static string? Uid => SupabaseStates.Instance.Supabase?.Auth.CurrentSession?.User?.Id;
-
         public static SQLiteConnection? memoryConnection; // メモリ上のSQLコネクション
-
-        //---------------------------------------------------------------------------
-        private async Task DoSync()
-        {
-            if (AppSettings.Instance.SyncIsOn && SupabaseStates.Instance.Supabase != null && Uid != null)
-            {
-                await _syncProcess.SyncDbAsync();
-            }
-        }
 
         // SQL db初期化--------------------------------------------------------------
         public static void CreateDatabase()
@@ -261,7 +251,6 @@ namespace TmCGPTD.Models
             await DbLoadToMemoryAsync();
         }
 
-
         // SQL dbファイルをメモリにロード--------------------------------------------------------------
         public async Task DbLoadToMemoryAsync()
         {
@@ -326,10 +315,8 @@ namespace TmCGPTD.Models
             catch (Exception)
             {
                 await transaction.RollbackAsync();
-                //await DoSync();
                 throw;
             }
-            //await DoSync();
             await memoryConnection!.CloseAsync();
             await DbLoadToMemoryAsync();
         }
@@ -409,10 +396,8 @@ namespace TmCGPTD.Models
             catch (Exception ex)
             {
                 await transaction.RollbackAsync();
-                //await DoSync();
                 throw new Exception($"Updating the name from '{oldName}' to '{newName}': {ex.Message}", ex);
             }
-            //await DoSync();
             await memoryConnection!.CloseAsync();
             await DbLoadToMemoryAsync();
         }
@@ -452,10 +437,8 @@ namespace TmCGPTD.Models
             catch (Exception ex)
             {
                 await transaction.RollbackAsync();
-                //await DoSync();
                 throw new Exception($"Updating the phrase preset '{name}': {ex.Message}", ex);
             }
-            //await DoSync();
             await memoryConnection!.CloseAsync();
             await DbLoadToMemoryAsync();
         }
@@ -510,16 +493,13 @@ namespace TmCGPTD.Models
                 catch (Exception ex)
                 {
                     await transaction.RollbackAsync();
-                    //await DoSync();
                     throw new Exception("Occurred while deleting the selected preset.", ex);
                 }
             }
             catch (Exception ex)
             {
-                //await DoSync();
                 throw new Exception("Occurred while connecting to the database.", ex);
             }
-            //await DoSync();
             await memoryConnection!.CloseAsync();
             await DbLoadToMemoryAsync();
         }
@@ -528,7 +508,6 @@ namespace TmCGPTD.Models
         public async Task<ObservableCollection<string>> ImportPhrasesFromTxtAsync(string selectedFilePath)
         {
             ObservableCollection<string> phrases = new ObservableCollection<string>();
-
             try
             {
                 // Check if the file exists
@@ -680,7 +659,6 @@ namespace TmCGPTD.Models
                     catch (Exception)
                     {
                         await transaction.RollbackAsync();
-                        //await DoSync();
                         throw;
                     }
                 }
@@ -688,13 +666,10 @@ namespace TmCGPTD.Models
             }
             catch (Exception)
             {
-                //await DoSync();
                 throw;
             }
-            //await DoSync();
             await memoryConnection!.CloseAsync();
             await DbLoadToMemoryAsync();
-
             return msg;
         }
 
@@ -709,7 +684,6 @@ namespace TmCGPTD.Models
                 var command = new SQLiteCommand($"SELECT * FROM {tableName};", memoryConnection);
                 using (SQLiteDataReader reader = (SQLiteDataReader)await command.ExecuteReaderAsync())
                 {
-
                     // CSV ファイルに書き込むための StreamWriter を作成
                     using var writer = new StreamWriter(fileName, false, System.Text.Encoding.UTF8);
 
@@ -866,12 +840,10 @@ namespace TmCGPTD.Models
                 catch (Exception)
                 {
                     await transaction.RollbackAsync();
-                    //await DoSync();
                     throw;
                 }
             }
             // インメモリをいったん閉じてまた開く
-            //await DoSync();
             await memoryConnection!.CloseAsync();
             await DbLoadToMemoryAsync();
             return;
@@ -902,11 +874,9 @@ namespace TmCGPTD.Models
             }
             catch (Exception)
             {
-                //await DoSync();
                 throw;
             }
             // インメモリをいったん閉じてまた開く
-            //await DoSync();
             await memoryConnection!.CloseAsync();
             await DbLoadToMemoryAsync();
             VMLocator.DataGridViewModel.ChatList = await SearchChatDatabaseAsync();
@@ -937,11 +907,9 @@ namespace TmCGPTD.Models
             }
             catch (Exception)
             {
-                //await DoSync();
                 throw;
             }
             // インメモリをいったん閉じてまた開く
-            //await DoSync();
             await memoryConnection!.CloseAsync();
             await DbLoadToMemoryAsync();
             VMLocator.DataGridViewModel.ChatList = await SearchChatDatabaseAsync();
@@ -996,7 +964,6 @@ namespace TmCGPTD.Models
                         models.AddRange(_syncProcess.DivideMessage(webLog, chatRoomId, Uid));
 
                         await SupabaseStates.Instance.Supabase.From<Message>().Insert(models);
-
                     }
                     query = $"UPDATE chatlog SET date=@date, title=@title, json=@json, text=@text, category=category WHERE id={matchingId.Value}";
                 }
@@ -1080,11 +1047,9 @@ namespace TmCGPTD.Models
             {
                 // エラーが発生した場合、トランザクションをロールバックする
                 await transaction.RollbackAsync();
-                //await DoSync();
                 throw;
             }
             // インメモリをいったん閉じてまた開く
-            //await DoSync();
             await memoryConnection!.CloseAsync();
             await DbLoadToMemoryAsync();
             VMLocator.DataGridViewModel.ChatList = await SearchChatDatabaseAsync();
@@ -1145,10 +1110,8 @@ namespace TmCGPTD.Models
             catch (Exception)
             {
                 await transaction.RollbackAsync();
-                //await DoSync();
                 throw;
             }
-            //await DoSync();
             await memoryConnection!.CloseAsync();
             await DbLoadToMemoryAsync();
         }
@@ -1200,10 +1163,8 @@ namespace TmCGPTD.Models
             catch (Exception ex)
             {
                 await transaction.RollbackAsync();
-                //await DoSync();
                 throw new Exception($"Updating template preset '{title}': {ex.Message}", ex);
             }
-            //await DoSync();
             await memoryConnection!.CloseAsync();
             await DbLoadToMemoryAsync();
         }
@@ -1243,10 +1204,8 @@ namespace TmCGPTD.Models
             catch (Exception ex)
             {
                 await transaction.RollbackAsync();
-                //await DoSync();
                 throw new Exception($"Updating the name from '{oldName}' to '{newName}': {ex.Message}", ex);
             }
-            //await DoSync();
             await memoryConnection!.CloseAsync();
             await DbLoadToMemoryAsync();
         }
@@ -1299,16 +1258,13 @@ namespace TmCGPTD.Models
                 catch (Exception ex)
                 {
                     transaction.Rollback();
-                    //await DoSync();
                     throw new Exception("Occurred while deleting the selected template.", ex);
                 }
             }
             catch (Exception ex)
             {
-                //await DoSync();
                 throw new Exception("Occurred while connecting to the database.", ex);
             }
-            //await DoSync();
             await memoryConnection!.CloseAsync();
             await DbLoadToMemoryAsync();
         }
@@ -1832,14 +1788,12 @@ namespace TmCGPTD.Models
                 {
                     // エラーが発生した場合、トランザクションをロールバックする
                     await transaction.RollbackAsync();
-                    //await DoSync();
                     //var dialog = new ContentDialog() { Title = "Error : " + ex.Message, PrimaryButtonText = "OK" };
                     //await VMLocator.MainViewModel.ContentDialogShowAsync(dialog);
                     throw;
                 }
             }
             // インメモリをいったん閉じてまた開く
-            //await DoSync();
             await memoryConnection!.CloseAsync();
             await DbLoadToMemoryAsync();
         }
@@ -1878,7 +1832,6 @@ namespace TmCGPTD.Models
 
                     // すべてのテーブルが存在するため、true を返す
                     return true;
-
                 }
             }
             catch (Exception)
