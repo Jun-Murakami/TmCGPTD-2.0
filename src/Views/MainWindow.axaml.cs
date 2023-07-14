@@ -118,6 +118,7 @@ namespace TmCGPTD.Views
                 await _dbProcess.GetTemplateItemsAsync();
 
                 VMLocator.EditorViewModel.EditorCommonFontSize = settings.EditorFontSize > 0 ? settings.EditorFontSize : 1;
+                AppSettings.Instance.EditorFontSize = settings.EditorFontSize > 0 ? settings.EditorFontSize : 1;
                 VMLocator.MainViewModel.SelectedPhraseItem = settings.PhrasePreset;
                 VMLocator.EditorViewModel.EditorModeIsChecked = true;
 

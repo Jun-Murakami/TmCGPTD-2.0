@@ -50,18 +50,26 @@
         <Style Selector="Grid Button:pointerover">
             <Setter Property="Background" Value="rgb(84, 85, 99)" />
             <Setter Property="BorderBrush" Value="rgb(106, 108, 125)" />
+			<Setter Property="CornerRadius" Value="6" />
         </Style>
+		<Style Selector="Grid Button:pressed">
+			<Setter Property="Background" Value="rgb(84, 85, 99)" />
+			<Setter Property="BorderBrush" Value="rgb(106, 108, 125)" />
+			<Setter Property="CornerRadius" Value="6" />
+		</Style>
         <Style Selector="Grid Button:pointerover /template/ ContentPresenter#PART_ContentPresenter">
             <Setter Property="Background" Value="rgb(84, 85, 99)" />
             <Setter Property="BorderBrush" Value="rgb(106, 108, 125)" />
+			<Setter Property="CornerRadius" Value="6" />
         </Style>
 
         <Style Selector="Grid Button.Post:disabled /template/ ContentPresenter#PART_ContentPresenter">
             <Setter Property="Background" Value="rgb(100, 90, 165)" />
+			<Setter Property="CornerRadius" Value="6" />
         </Style>
 
         <Style Selector="Grid#PhrasePresets Button">
-            <Setter Property="Width" Value="40" />
+            <Setter Property="Width" Value="42" />
             <Setter Property="Margin" Value="0,2,2,2" />
             <Setter Property="Transitions">
                 <Transitions>

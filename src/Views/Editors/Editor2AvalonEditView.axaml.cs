@@ -11,9 +11,7 @@ using Avalonia.Input;
 using TmCGPTD.ViewModels;
 using System.Collections.ObjectModel;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Diagnostics;
-using Avalonia.Threading;
 using Avalonia;
 
 namespace TmCGPTD.Views

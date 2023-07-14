@@ -32,32 +32,31 @@ namespace TmCGPTD
                 .LogToTrace()
                 .With(new Win32PlatformOptions
                 {
-                    UseWindowsUIComposition = false
+                     // off in Avalonia11
                 })
-                      .AfterSetup(_ => CefRuntimeLoader.Initialize(new CefSettings()
-                      {
-                          CachePath = AppSettings.Instance.AppDataPath,
-                          //RemoteDebuggingPort = 9222,
-                          LogSeverity = CefLogSeverity.Error,
-                          LogFile = AppSettings.Instance.AppDataPath + "\\cef_" + ".log",
-                          UserAgent = @"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36 /CefSharp Browser"" + Cef.CefSharpVersion;",
-                          //BackgroundColor = new CefColor(255, 52, 53, 65),
+                .AfterSetup(_ => CefRuntimeLoader.Initialize(new CefSettings()
+                {
+                    CachePath = AppSettings.Instance.AppDataPath,
+                    //RemoteDebuggingPort = 9222,
+                    LogSeverity = CefLogSeverity.Error,
+                    LogFile = AppSettings.Instance.AppDataPath + "\\cef_" + ".log",
+                    UserAgent = @"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36 /CefSharp Browser"" + Cef.CefSharpVersion;",
+                    //BackgroundColor = new CefColor(255, 52, 53, 65),
 #if WINDOWLESS
-                          WindowlessRenderingEnabled = true
+                    WindowlessRenderingEnabled = true
 #else
-                          WindowlessRenderingEnabled = false
+                    WindowlessRenderingEnabled = false
 #endif
-                      },
-                      customSchemes: new[] {
-                        new CustomScheme()
-                        {
-                            SchemeName = "TmCGPTDScheme",
-                            SchemeHandlerFactory = new CustomSchemeHandler(),
-                            DomainName = "TmCGPTD",
-                            IsStandard = true
-                        }
-                      }))
-            ;
+                },
+                customSchemes: new[] {
+                new CustomScheme()
+                {
+                    SchemeName = "TmCGPTDScheme",
+                    SchemeHandlerFactory = new CustomSchemeHandler(),
+                    DomainName = "TmCGPTD",
+                    IsStandard = true
+                }
+                }));
 
         private static void OnUnhandledException(object sender, UnhandledExceptionEventArgs e)
         {

@@ -1,3 +1,4 @@
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
@@ -78,13 +79,12 @@ namespace TmCGPTD.Views
                 int buttonNumber = int.Parse(button.Name!.Substring(6))!;
                 TextBox textBox = this.FindControl<TextBox>($"TextBox{buttonNumber}")!;
 
-                if (textBox.Text == null )
-                {
-                    return;
-                }
+                if (textBox.Text == null ) return;
 
                 // Get the currently focused control
-                var focusedControl = FocusManager.Instance!.Current;
+                var focusManager = TopLevel.GetTopLevel(this)!.FocusManager;
+                var focusedControl = focusManager?.GetFocusedElement();
+                if (focusedControl == null) return;
 
                 if (focusedControl is TextBox focusedTextBox)
                 {

@@ -9,6 +9,7 @@
     <Grid HorizontalAlignment="Stretch">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
+			<RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
@@ -31,29 +32,40 @@
                       SelectedItem="{Binding SelectedLanguage}"
                       Margin="0,0,0,15" />
         </StackPanel>
-        <TextBlock Grid.Row="1"
+		<StackPanel Grid.Row="1"
+			Grid.ColumnSpan="3"
+			Orientation="Horizontal">
+			<TextBlock Text="Editor font size :"
+                       VerticalAlignment="Center"
+                       HorizontalAlignment="Right"
+                       Margin="0,0,10,15" />
+			<ComboBox ItemsSource="{Binding FontSizeList}"
+                      SelectedItem="{Binding EditorCommonFontSize}"
+                      Margin="0,0,0,15" />
+		</StackPanel>
+        <TextBlock Grid.Row="2"
                    Grid.ColumnSpan="3"
                    Text="Database path :"
                    Margin="0,0,0,5" />
-        <TextBlock Grid.Row="2"
+        <TextBlock Grid.Row="3"
                    Grid.ColumnSpan="3"
                    Text="{Binding DatabasePath}"
                    Margin="0,0,0,10" />
-        <TextBlock Grid.Row="3"
+        <TextBlock Grid.Row="4"
                    Grid.ColumnSpan="3"
                    Text="{DynamicResource My.Strings.DatabaseSettingsInfo}"
                    Margin="0,15,0,15" />
-        <Button Grid.Row="4"
+        <Button Grid.Row="5"
                 Grid.Column="0"
                 Content="Move Database"
                 Margin="0,10,10,10"
                 Command="{Binding MoveDatabaseCommand}" />
-        <Button Grid.Row="4"
+        <Button Grid.Row="5"
                 Grid.Column="1"
                 Content="Load Database"
                 Margin="0,10,0,10"
                 Command="{Binding LoadDatabaseCommand}" />
-        <TextBlock Grid.Row="5"
+        <TextBlock Grid.Row="6"
                    Grid.ColumnSpan="3"
                    Text="{Binding ProcessLog}" />
     </Grid>

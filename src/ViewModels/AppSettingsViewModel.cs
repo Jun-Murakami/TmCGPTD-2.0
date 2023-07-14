@@ -42,6 +42,24 @@ namespace TmCGPTD.ViewModels
             "Japanese",
         };
 
+        public List<double> FontSizeList { get; } = new List<double>
+        {
+            5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20
+        };
+
+        private double _editorCommonFontSize;
+        public double EditorCommonFontSize
+        {
+            get => _editorCommonFontSize;
+            set
+            {
+                if(SetProperty(ref _editorCommonFontSize, value))
+                {
+                    AppSettings.Instance.EditorFontSize = value;
+                }
+            }
+        }
+
         private string? _selectedLanguage;
         public string? SelectedLanguage
         {

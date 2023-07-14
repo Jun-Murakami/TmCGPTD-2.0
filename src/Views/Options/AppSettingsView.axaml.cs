@@ -21,6 +21,7 @@ namespace TmCGPTD.Views
         private void AppSettingsView_AttachedToVisualTree(object? sender, Avalonia.VisualTreeAttachmentEventArgs e)
         {
             AppSettingsViewModel.SelectedLanguage = AppSettings.Instance.Language;
+            AppSettingsViewModel.EditorCommonFontSize = AppSettings.Instance.EditorFontSize;
         }
 
         private void InitializeComponent()

@@ -11,9 +11,7 @@ using Avalonia.Input;
 using TmCGPTD.ViewModels;
 using System.Collections.ObjectModel;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Diagnostics;
-using Avalonia.Threading;
 using Avalonia;
 
 namespace TmCGPTD.Views
@@ -35,11 +33,12 @@ namespace TmCGPTD.Views
 
             _editor2.AttachedToVisualTree += OnEditor2AttachedToVisualTree;
 
+            ConfigureTextEditor(_editor2);
         }
 
         private void OnEditor2AttachedToVisualTree(object? sender, VisualTreeAttachmentEventArgs e)
         {
-            Language language = _editorViewModel!.SelectedLang;
+            Language language = _editorViewModel!.SelectedLang!;
 
             if (_foldingManager != null)
             {
@@ -83,7 +82,7 @@ namespace TmCGPTD.Views
         {
             if (e.PropertyName == nameof(EditorViewModel.SelectedLang))
             {
-                Language language = _editorViewModel!.SelectedLang;
+                Language language = _editorViewModel!.SelectedLang!;
 
                 if (_foldingManager != null)
                 {

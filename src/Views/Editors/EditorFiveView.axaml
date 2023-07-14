@@ -5,6 +5,7 @@
              mc:Ignorable="d"
              d:DesignWidth="800"
              d:DesignHeight="450"
+             xmlns:ui="using:FluentAvalonia.UI.Controls"
              xmlns:views="clr-namespace:TmCGPTD.Views"
              x:Class="TmCGPTD.Views.EditorFiveView">
     <Grid>
@@ -33,13 +34,8 @@
                       Height="2"
                       Background="rgb(57, 58, 70)"
                       Focusable="False" />
-        <TransitioningContentControl Grid.Row="2"
-                                     Content="{Binding Source={StaticResource VMLocator}, Path=EditorViewModel.SelectedEditor2View}">
-            <TransitioningContentControl.PageTransition>
-                <PageSlide Duration="0:00:00.050"
-                           Orientation="Horizontal" />
-            </TransitioningContentControl.PageTransition>
-        </TransitioningContentControl>
+		<ui:Frame Grid.Row="2"
+		  Name="Editor5_2Frame" />
         <GridSplitter Grid.Row="3"
                       Height="2"
                       Background="rgb(57, 58, 70)"
@@ -53,13 +49,8 @@
                       Height="2"
                       Background="rgb(57, 58, 70)"
                       Focusable="False" />
-        <TransitioningContentControl Grid.Row="6"
-                                     Content="{Binding Source={StaticResource VMLocator}, Path=EditorViewModel.SelectedEditor4View}">
-            <TransitioningContentControl.PageTransition>
-                <PageSlide Duration="0:00:00.050"
-                           Orientation="Horizontal" />
-            </TransitioningContentControl.PageTransition>
-        </TransitioningContentControl>
+		<ui:Frame Grid.Row="6"
+		  Name="Editor5_4Frame" />
         <GridSplitter Grid.Row="7"
                       Height="2"
                       Background="rgb(57, 58, 70)"

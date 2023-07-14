@@ -65,7 +65,6 @@ namespace TmCGPTD.ViewModels
             set => SetProperty(ref _editorLogLists, value);
         }
 
-
         private EditorLogs? _selectedEditorLog;
         public EditorLogs? SelectedEditorLog
         {
@@ -133,80 +132,11 @@ namespace TmCGPTD.ViewModels
             set => SetProperty(ref _selectedLangIndex, value);
         }
 
-        private UserControl? _selectedEditor2View;
-        public UserControl? SelectedEditor2View
-        {
-            get => _selectedEditor2View;
-            set => SetProperty(ref _selectedEditor2View, value);
-        }
-
-        private UserControl? _selectedEditor4View;
-        public UserControl? SelectedEditor4View
-        {
-            get => _selectedEditor4View;
-            set => SetProperty(ref _selectedEditor4View, value);
-        }
-
-        private UserControl? _selectedEditor3_2View;
-        public UserControl? SelectedEditor3_2View
-        {
-            get => _selectedEditor3_2View;
-            set => SetProperty(ref _selectedEditor3_2View, value);
-        }
-
         private bool _editorModeIsChecked;
         public bool EditorModeIsChecked
         {
             get => _editorModeIsChecked;
-            set
-            {
-                if (SetProperty(ref _editorModeIsChecked, value))
-                {
-                    UpdateSelectedEditorView();
-                }
-            }
-        }
-
-        private Editor2AvalonEditView? _editor2AvalonEditView;
-        private Editor2TextBoxView? _editor2TextBoxView;
-        private Editor4AvalonEditView? _editor4AvalonEditView;
-        private Editor4TextBoxView? _editor4TextBoxView;
-
-        private Editor3_2AvalonEditView? _editor3_2AvalonEditView;
-        private Editor3_2TextBoxView? _editor3_2TextBoxView;
-
-        private void UpdateSelectedEditorView()
-        {
-            if (_editorModeIsChecked)
-            {
-                if (_editor2AvalonEditView == null)
-                {
-                    _editor2AvalonEditView = new Editor2AvalonEditView();
-                    _editor3_2AvalonEditView = new Editor3_2AvalonEditView();
-                }
-                if (_editor4AvalonEditView == null)
-                {
-                    _editor4AvalonEditView = new Editor4AvalonEditView();
-                }
-                SelectedEditor2View = _editor2AvalonEditView;
-                SelectedEditor4View = _editor4AvalonEditView;
-                SelectedEditor3_2View = _editor3_2AvalonEditView;
-            }
-            else
-            {
-                if (_editor2TextBoxView == null)
-                {
-                    _editor2TextBoxView = new Editor2TextBoxView();
-                    _editor3_2TextBoxView = new Editor3_2TextBoxView();
-                }
-                if (_editor4TextBoxView == null)
-                {
-                    _editor4TextBoxView = new Editor4TextBoxView();
-                }
-                SelectedEditor2View = _editor2TextBoxView;
-                SelectedEditor4View = _editor4TextBoxView;
-                SelectedEditor3_2View = _editor3_2TextBoxView;
-            }
+            set => SetProperty(ref _editorModeIsChecked, value);
         }
 
         private ObservableCollection<PromptTemplate>? _templateItems;
@@ -544,7 +474,13 @@ namespace TmCGPTD.ViewModels
         public double EditorCommonFontSize
         {
             get => _editorCommonFontSize;
-            set => SetProperty(ref _editorCommonFontSize, value);
+            set
+            {
+                if (SetProperty(ref _editorCommonFontSize, value))
+                {
+                    AppSettings.Instance.EditorFontSize = value;
+                }
+            }
         }
 
         private string? _editor1Text;
