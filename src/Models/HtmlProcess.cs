@@ -9,6 +9,7 @@ using System.IO;
 using System.Threading.Tasks;
 using System.Text.RegularExpressions;
 using Avalonia.Controls;
+using CommunityToolkit.Mvvm.DependencyInjection;
 
 namespace TmCGPTD.Models
 {
@@ -707,88 +708,90 @@ namespace TmCGPTD.Models
         // ストリーム表示用チャットログHTML変換--------------------------------------------------------------
         public async Task<string> ConvertAddLogToHtml(string plainTextChatLog, DateTime resDate)
         {
-            plainTextChatLog = Regex.Replace(plainTextChatLog, @"\r\n|\r|\n", Environment.NewLine);
-            var codeSnippetRegex = new Regex(@"^```(?:([\w-+#.]+)\s+)?([\s\S]*?)(^```)", RegexOptions.Multiline);
-            var usageRegex = new Regex(@"(^usage=)|(^(\[tokens\]))", RegexOptions.Multiline);
+            var doc = new HtmlDocument();
 
-
-            string WrapCodeSnippet(Match match)
+            await Task.Run(() =>
             {
-                var language = string.IsNullOrEmpty(match.Groups[1].Value) ? "" : $" class=\"{match.Groups[1].Value}\"";
-                var codeContent = match.Groups[2].Value;
+                plainTextChatLog = Regex.Replace(plainTextChatLog, @"\r\n|\r|\n", Environment.NewLine);
+                var codeSnippetRegex = new Regex(@"^```(?:([\w-+#.]+)\s+)?([\s\S]*?)(^```)", RegexOptions.Multiline);
+                var usageRegex = new Regex(@"(^usage=)|(^(\[tokens\]))", RegexOptions.Multiline);
 
-                codeContent = codeContent.Trim('\r', '\n');
-
-                var codeHeader = "";
-                var codeStyle = "";
-                var preStyle = " style=\"margin:1.8em 0px 2.5em 0px\"";
-                if (!string.IsNullOrEmpty(match.Groups[1].Value))
+                string WrapCodeSnippet(Match match)
                 {
-                    codeHeader = "<div class=\"codeHeader\"><span class=\"lang\">" + match.Groups[1].Value + "</span><span class=\"codeCopy\"><button id=\"copyButton\">Copy code</button></span></div>";
-                    codeStyle = " id=\"headerOn\"";
-                    preStyle = " style=\"margin:0px 0px 2.5em 0px\"";
+                    var language = string.IsNullOrEmpty(match.Groups[1].Value) ? "" : $" class=\"{match.Groups[1].Value}\"";
+                    var codeContent = match.Groups[2].Value;
+
+                    codeContent = codeContent.Trim('\r', '\n');
+
+                    var codeHeader = "";
+                    var codeStyle = "";
+                    var preStyle = " style=\"margin:1.8em 0px 2.5em 0px\"";
+                    if (!string.IsNullOrEmpty(match.Groups[1].Value))
+                    {
+                        codeHeader = "<div class=\"codeHeader\"><span class=\"lang\">" + match.Groups[1].Value + "</span><span class=\"codeCopy\"><button id=\"copyButton\">Copy code</button></span></div>";
+                        codeStyle = " id=\"headerOn\"";
+                        preStyle = " style=\"margin:0px 0px 2.5em 0px\"";
+                    }
+
+                    return $"</div>{codeHeader}<pre{preStyle}><code{language}{codeStyle}>{codeContent}</code></pre><div style=\"white-space: pre-wrap\" id=\"document\">";
                 }
 
-                return $"</div>{codeHeader}<pre{preStyle}><code{language}{codeStyle}>{codeContent}</code></pre><div style=\"white-space: pre-wrap\" id=\"document\">";
-            }
+                var content = WebUtility.HtmlEncode(plainTextChatLog); // エスケープを適用
+                content = codeSnippetRegex.Replace(content, WrapCodeSnippet);
 
-            var content = WebUtility.HtmlEncode(plainTextChatLog); // エスケープを適用
-            content = codeSnippetRegex.Replace(content, WrapCodeSnippet);
+                string pattern = @"\[\!\[(.*?)\]\((.*?)\)\]\((.*?)\)";
+                content = Regex.Replace(content, pattern, @"<a href=""$3"" target=""_blank"" rel=""noopener noreferrer""><img src=""$2"" alt=""$1""></a>");
 
-            string pattern = @"\[\!\[(.*?)\]\((.*?)\)\]\((.*?)\)";
-            content = Regex.Replace(content, pattern, @"<a href=""$3"" target=""_blank"" rel=""noopener noreferrer""><img src=""$2"" alt=""$1""></a>");
+                Regex linkRegex = new Regex(@"\[([^\]]+?)\]\(([^\)]+?)\)");
+                content = linkRegex.Replace(content, m => $"<a href=\"{m.Groups[2].Value}\" target=\"_blank\" rel=\"noopener noreferrer\">{m.Groups[1].Value}</a>");
 
-            Regex linkRegex = new Regex(@"\[([^\]]+?)\]\(([^\)]+?)\)");
-            content = linkRegex.Replace(content, m => $"<a href=\"{m.Groups[2].Value}\" target=\"_blank\" rel=\"noopener noreferrer\">{m.Groups[1].Value}</a>");
+                Regex imgRegex = new Regex(@"!\[([^\]]*?)\]\(([^\)]+?)\)");
+                content = imgRegex.Replace(content, m => $"<img src=\"{m.Groups[2].Value}\" alt=\"{m.Groups[1].Value}\">");
 
-            Regex imgRegex = new Regex(@"!\[([^\]]*?)\]\(([^\)]+?)\)");
-            content = imgRegex.Replace(content, m => $"<img src=\"{m.Groups[2].Value}\" alt=\"{m.Groups[1].Value}\">");
+                Regex strongRegex = new Regex(@"\*\*(.+?)\*\*");
+                content = strongRegex.Replace(content, m => $"<strong>{m.Groups[1].Value}</strong>");
 
-            Regex strongRegex = new Regex(@"\*\*(.+?)\*\*");
-            content = strongRegex.Replace(content, m => $"<strong>{m.Groups[1].Value}</strong>");
+                pattern = @"`(.*?)`";
+                string replacement = "<code class=\"inline\">`$1`</code>";
+                content = Regex.Replace(content, pattern, replacement);
 
-            pattern = @"`(.*?)`";
-            string replacement = "<code class=\"inline\">`$1`</code>";
-            content = Regex.Replace(content, pattern, replacement);
-
-            var usageMatch = usageRegex.Match(content);
-            if (usageMatch.Success)
-            {
-                content = content.Substring(0, usageMatch.Index) + "<div class=\"usage\">" + content.Substring(usageMatch.Index).Trim('\r', '\n');
-                content += "</div>";
-            }
-
-            content = $"<span class=\"assistantHeader\">[{resDate}] by AI</span><div style=\"white-space: pre-wrap\" id=\"document\">{content}</div>";
-
-            var doc = new HtmlDocument();
-            doc.LoadHtml(content);
-
-            var documentDivs = doc.DocumentNode.SelectNodes("//div[@id='document']");
-
-            if (documentDivs != null)
-            {
-                foreach (var documentDiv in documentDivs)
+                var usageMatch = usageRegex.Match(content);
+                if (usageMatch.Success)
                 {
-                    // ノードの先頭と末尾のテキストノードのみをトリム
-                    if (documentDiv.HasChildNodes)
-                    {
-                        var firstNode = documentDiv.ChildNodes.First();
-                        if (firstNode.NodeType == HtmlNodeType.Text)
-                        {
-                            firstNode.InnerHtml = firstNode.InnerHtml.TrimStart('\r', '\n');
-                        }
+                    content = content.Substring(0, usageMatch.Index) + "<div class=\"usage\">" + content.Substring(usageMatch.Index).Trim('\r', '\n');
+                    content += "</div>";
+                }
 
-                        var lastNode = documentDiv.ChildNodes.Last();
-                        if (lastNode.NodeType == HtmlNodeType.Text)
+                content = $"<span class=\"assistantHeader\">[{resDate}] by AI</span><div style=\"white-space: pre-wrap\" id=\"document\">{content}</div>";
+
+
+                doc.LoadHtml(content);
+
+                var documentDivs = doc.DocumentNode.SelectNodes("//div[@id='document']");
+
+                if (documentDivs != null)
+                {
+                    foreach (var documentDiv in documentDivs)
+                    {
+                        // ノードの先頭と末尾のテキストノードのみをトリム
+                        if (documentDiv.HasChildNodes)
                         {
-                            lastNode.InnerHtml = lastNode.InnerHtml.TrimEnd('\r', '\n');
+                            var firstNode = documentDiv.ChildNodes.First();
+                            if (firstNode.NodeType == HtmlNodeType.Text)
+                            {
+                                firstNode.InnerHtml = firstNode.InnerHtml.TrimStart('\r', '\n');
+                            }
+
+                            var lastNode = documentDiv.ChildNodes.Last();
+                            if (lastNode.NodeType == HtmlNodeType.Text)
+                            {
+                                lastNode.InnerHtml = lastNode.InnerHtml.TrimEnd('\r', '\n');
+                            }
                         }
                     }
                 }
-            }
-
+            });
             return doc.DocumentNode.OuterHtml;
-
         }
     }
 }

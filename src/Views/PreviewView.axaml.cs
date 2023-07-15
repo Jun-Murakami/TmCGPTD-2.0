@@ -13,9 +13,9 @@ namespace TmCGPTD.Views
 
             var previewTextBox = this.FindControl<TextBox>("PreviewTextBox");
 
-            this.AttachedToVisualTree += async (sender, e) =>
+            this.AttachedToVisualTree += (sender, e) =>
             {
-                if (previewTextBox == null || VMLocator.EditorViewModel == null|| VMLocator.EditorViewModel.GetRecentText() == null) return;
+                if (previewTextBox == null || VMLocator.EditorViewModel == null || VMLocator.EditorViewModel.GetRecentText() == null) return;
                 previewTextBox.Text = VMLocator.EditorViewModel.GetRecentText();
             };
         }

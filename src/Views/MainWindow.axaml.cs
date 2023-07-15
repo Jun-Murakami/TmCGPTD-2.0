@@ -91,7 +91,7 @@ namespace TmCGPTD.Views
                     var screen = Screens.Primary;
                     var workingArea = screen!.WorkingArea;
 
-                    double dpiScaling = screen.PixelDensity;
+                    double dpiScaling = screen.Scaling;
                     this.Width = 1300 * dpiScaling;
                     this.Height = 840 * dpiScaling;
 

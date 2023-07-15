@@ -1642,10 +1642,12 @@ namespace TmCGPTD.Models
                 {
                     if ((string)reader["user_id"] != SupabaseStates.Instance.Supabase?.Auth.CurrentUser!.Id)
                     {
+                        await connection.CloseAsync();
                         return "switch";
                     }
                     else
                     {
+                        await connection.CloseAsync();
                         return "ok";
                     }
                 }
@@ -1662,9 +1664,9 @@ namespace TmCGPTD.Models
                     command.Parameters.AddWithValue("@Date", date.ToString("s"));
                     await command.ExecuteNonQueryAsync();
 
+                    await connection.CloseAsync();
                     return "new";
                 }
-                await connection.CloseAsync();
             }
             catch (Exception ex)
             {

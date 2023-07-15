@@ -7,11 +7,11 @@ using Avalonia;
 
 namespace TmCGPTD
 {
-    public class CustomNumericUpDown : NumericUpDown, IStyleable
+    public class CustomNumericUpDown : NumericUpDown
     {
         private TextBox? _textBox;
 
-        Type IStyleable.StyleKey => typeof(NumericUpDown);
+        protected override Type StyleKeyOverride => typeof(NumericUpDown);
 
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {

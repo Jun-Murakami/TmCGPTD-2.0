@@ -15,7 +15,7 @@ namespace TmCGPTD.Views
             InitializeComponent();
             DataContext = VMLocator.EditorViewModel;
 
-            this.AttachedToVisualTree += async (sender, e) =>
+            this.AttachedToVisualTree += (sender, e) =>
             {
                 var br = Environment.NewLine;
                 if (VMLocator.EditorViewModel == null || VMLocator.EditorViewModel.GetRecentText() == null) return;

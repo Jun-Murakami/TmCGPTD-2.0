@@ -24,7 +24,7 @@ namespace TmCGPTD.Models
 
         public SupabaseProcess()
         {
-            _debouncer = new Debouncer(TimeSpan.FromMinutes(1));
+            _debouncer = new Debouncer(TimeSpan.FromMinutes(0.1));
         }
 
         public async Task InitializeSupabaseAsync()

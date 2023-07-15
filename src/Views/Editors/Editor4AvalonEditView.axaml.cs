@@ -37,7 +37,7 @@ namespace TmCGPTD.Views
 
         private void OnEditor4AttachedToVisualTree(object? sender, VisualTreeAttachmentEventArgs e)
         {
-            Language language = _editorViewModel!.SelectedLang;
+            Language language = _editorViewModel!.SelectedLang!;
 
             if (_foldingManager != null)
             {
@@ -76,7 +76,7 @@ namespace TmCGPTD.Views
         {
             if (e.PropertyName == nameof(EditorViewModel.SelectedLang))
             {
-                Language language = _editorViewModel!.SelectedLang;
+                Language language = _editorViewModel!.SelectedLang!;
 
                 if (_foldingManager != null)
                 {
