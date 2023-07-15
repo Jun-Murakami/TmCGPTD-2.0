@@ -20,6 +20,12 @@ namespace TmCGPTD.Models
     public class SupabaseProcess
     {
         SyncProcess _syncProcess = new();
+        private readonly Debouncer _debouncer;
+
+        public SupabaseProcess()
+        {
+            _debouncer = new Debouncer(TimeSpan.FromMinutes(1));
+        }
 
         public async Task InitializeSupabaseAsync()
         {
@@ -134,22 +140,37 @@ namespace TmCGPTD.Models
             try
             { 
                 await SupabaseStates.Instance.Supabase!.Realtime.ConnectAsync();
-                //var channel = SupabaseStates.Instance.Supabase!.Realtime.Channel("realtime", "public", "*");
-                
-                //SupabaseStates.Instance.Supabase!.Realtime.AddDebugHandler(async (sender, message, exception) => await PostgresDebugHandlerAsync(message));
+                var channel = SupabaseStates.Instance.Supabase!.Realtime.Channel("realtime", "public", "*");
 
-                SupabaseStates.Instance.Supabase!.Realtime.Channel("realtime", "public", "*").AddPostgresChangeHandler(PostgresChangesOptions.ListenType.All, async (_, change) =>
+                //SupabaseStates.Instance.Supabase!.Realtime.AddDebugHandler((sender, message, exception) => PostgresDebugHandlerAsync(message));
+
+                //channel.OnPostgresChange += async (sender, args) =>
+                //{
+                //Debug.WriteLine("change.Event:" + args.Response!._event);
+                //Debug.WriteLine("change.Payload.Data.Type:" + args.Response.Payload!.Data!.Type);
+                //await _syncProcess.SyncDbAsync();
+                //};
+                //var debouncer = new Debouncer(TimeSpan.FromMinutes(1));
+
+                channel.AddPostgresChangeHandler(PostgresChangesOptions.ListenType.All, (_, change) =>
                 {
-                    // The event type
-                    //Debug.WriteLine("change.Event:" + change.Event);
-                    // The changed record
-                    //Debug.WriteLine("change.Payload:" + change.Payload);
-                    // The table name?
-                    //Debug.WriteLine("sender: " + sender);
-                    await _syncProcess.SyncDbAsync();
+                    _debouncer.Debounce(async () =>
+                    {
+                        try
+                        {
+                            Debug.WriteLine("change.Event:" + change.Event);
+                            Debug.WriteLine("change.Payload:" + change.Payload);
+                            await _syncProcess.SyncDbAsync();
+                        }
+                        catch (Exception ex)
+                        {
+                            var cdialog = new ContentDialog() { Title = $"Error", Content = $"{ex.Message}", CloseButtonText = "OK" };
+                            await VMLocator.MainViewModel.ContentDialogShowAsync(cdialog);
+                        }
+                    });
                 });
 
-                await SupabaseStates.Instance.Supabase!.Realtime.Channel("realtime", "public", "*").Subscribe();
+                await channel.Subscribe();
             }
             catch (Exception ex)
             {
@@ -158,11 +179,23 @@ namespace TmCGPTD.Models
             }   
         }
 
-        private async Task PostgresDebugHandlerAsync(string message)
+        private void PostgresDebugHandlerAsync(string message)
         {
             if (message.Contains("\"event\":\"postgres_changes\""))
             {
-                await _syncProcess.SyncDbAsync();
+                _debouncer.Debounce(async () =>
+                {
+                    try
+                    {
+                        Debug.WriteLine("message:" + message);
+                        await _syncProcess.SyncDbAsync();
+                    }
+                    catch (Exception ex)
+                    {
+                        var cdialog = new ContentDialog() { Title = $"Error", Content = $"{ex.Message}", CloseButtonText = "OK" };
+                        await VMLocator.MainViewModel.ContentDialogShowAsync(cdialog);
+                    }
+                });
             }
             
         }

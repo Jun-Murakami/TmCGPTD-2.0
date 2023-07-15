@@ -1664,6 +1664,7 @@ namespace TmCGPTD.Models
 
                     return "new";
                 }
+                await connection.CloseAsync();
             }
             catch (Exception ex)
             {
@@ -1751,6 +1752,7 @@ namespace TmCGPTD.Models
                         await supabase.From<Management>().Insert(models);
                     }
                 }
+                await connection.CloseAsync();
             }
             catch (Exception ex)
             {

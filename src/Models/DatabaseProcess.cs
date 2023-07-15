@@ -17,11 +17,9 @@ using TmCGPTD.Views;
 using Avalonia;
 using System.Reflection;
 using Avalonia.Controls;
-using Supabase;
 using System.Diagnostics;
 using System.Text.RegularExpressions;
 using static TmCGPTD.Models.PostageSqlModels;
-using System.Xml.Linq;
 using static Postgrest.Constants;
 
 namespace TmCGPTD.Models
