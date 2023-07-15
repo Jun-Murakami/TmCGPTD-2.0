@@ -23,7 +23,7 @@ namespace TmCGPTD.Views
 
             _editorPane.IsNavigationStackEnabled = false;
 
-            _editorPane.Navigate(typeof(EditorFiveView));
+            _editorPane.Navigate(typeof(MacEditorFiveView));
         }
 
         private void UserControl_PointerWheelChanged(object? sender, PointerWheelEventArgs e)
@@ -49,10 +49,10 @@ namespace TmCGPTD.Views
                 switch (EditorViewModel.EditorSeparateMode)
                 {
                     case 5:
-                        _editorPane.Navigate(typeof(EditorFiveView));
+                        _editorPane.Navigate(typeof(MacEditorFiveView));
                         break;
                     case 3:
-                        _editorPane.Navigate(typeof(EditorThreeView));
+                        _editorPane.Navigate(typeof(MacEditorThreeView));
                         break;
                     case 1:
                         _editorPane.Navigate(typeof(EditorOneView));
