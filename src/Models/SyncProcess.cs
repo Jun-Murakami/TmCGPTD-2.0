@@ -20,10 +20,17 @@ namespace TmCGPTD.Models
 {
     public class SyncProcess
     {
+        private bool syncIsRunning = false;
+
         // -------------------------------------------------------------------------------------------------------
 
         public async Task SyncDbAsync()
         {
+            if (syncIsRunning)
+            {
+                return;
+            }
+            syncIsRunning = true;
             string accountCheck;
 
             try
@@ -85,6 +92,7 @@ namespace TmCGPTD.Models
                     };
                 });
                 await VMLocator.MainViewModel.ContentDialogShowAsync(cdialog!);
+                syncIsRunning = false;
                 return;
             }
 
@@ -340,6 +348,8 @@ namespace TmCGPTD.Models
                             };
                         });
                         await VMLocator.MainViewModel.ContentDialogShowAsync(cdialog!);
+                        syncIsRunning = false;
+                        return;
                     }
                 }
 
@@ -443,6 +453,7 @@ namespace TmCGPTD.Models
                         await CopyAllLocalToCloudDbAsync(); //IDの競合を避けるためにクラウドを一旦削除して全同期しなおす
                         VMLocator.MainViewModel.SyncLogText = "Database sync completed.";
                     }
+                    syncIsRunning = false;
                 }
             }
             catch (Exception ex)
@@ -458,6 +469,8 @@ namespace TmCGPTD.Models
                     };
                 });
                 await VMLocator.MainViewModel.ContentDialogShowAsync(cdialog!);
+                syncIsRunning = false;
+                return;
             }
         }
         // -------------------------------------------------------------------------------------------------------
