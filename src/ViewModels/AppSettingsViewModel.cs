@@ -55,6 +55,7 @@ namespace TmCGPTD.ViewModels
             {
                 if(SetProperty(ref _editorCommonFontSize, value))
                 {
+                    VMLocator.EditorViewModel.EditorCommonFontSize = value;
                     AppSettings.Instance.EditorFontSize = value;
                 }
             }

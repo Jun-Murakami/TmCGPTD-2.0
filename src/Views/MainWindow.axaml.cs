@@ -120,7 +120,15 @@ namespace TmCGPTD.Views
                 VMLocator.EditorViewModel.EditorCommonFontSize = settings.EditorFontSize > 0 ? settings.EditorFontSize : 1;
                 AppSettings.Instance.EditorFontSize = settings.EditorFontSize > 0 ? settings.EditorFontSize : 1;
                 VMLocator.MainViewModel.SelectedPhraseItem = settings.PhrasePreset;
-                VMLocator.EditorViewModel.EditorModeIsChecked = true;
+
+                if (OperatingSystem.IsMacOS())
+                {
+                    VMLocator.EditorViewModel.EditorModeIsChecked = false;
+                }
+                else
+                {
+                    VMLocator.EditorViewModel.EditorModeIsChecked = true;
+                }
 
                 // Get the current culture info
                 var cultureInfo = CultureInfo.CurrentCulture;
@@ -188,7 +196,12 @@ namespace TmCGPTD.Views
 
                 VMLocator.DataGridViewModel.ChatList = await _dbProcess.SearchChatDatabaseAsync();
                 VMLocator.DataGridViewModel.SelectedItemIndex = -1;
-                VMLocator.EditorViewModel.EditorModeIsChecked = settings.EditorMode;
+
+                if (!OperatingSystem.IsMacOS())
+                {
+                    VMLocator.EditorViewModel.EditorModeIsChecked = settings.EditorMode;
+                }
+                
                 VMLocator.EditorViewModel.SelectedLangIndex = settings.SyntaxHighlighting;
                 VMLocator.EditorViewModel.EditorSeparateMode = settings.SeparatorMode;
 

@@ -440,7 +440,8 @@ namespace TmCGPTD.Models
                 {
                     return "Cancel";
                 }
-                return $"Successfully imported log:{Environment.NewLine}{Environment.NewLine}'{webChatTitle}' ({count} Messages)";
+                return "OK";
+                //return $"Successfully imported log:{Environment.NewLine}{Environment.NewLine}'{webChatTitle}' ({count} Messages)";
             }
             catch (Exception ex)
             {

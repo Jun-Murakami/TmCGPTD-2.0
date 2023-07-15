@@ -14,8 +14,8 @@ namespace TmCGPTD.Views
 
             this.AttachedToVisualTree += async (sender, e) =>
             {
-                if (editorOne == null || VMLocator.EditorViewModel == null || await VMLocator.EditorViewModel.GetRecentText() == null) return;
-                VMLocator.EditorViewModel.Editor1Text = await VMLocator.EditorViewModel.GetRecentText();
+                if (editorOne == null || VMLocator.EditorViewModel == null || VMLocator.EditorViewModel.GetRecentText() == null) return;
+                VMLocator.EditorViewModel.Editor1Text = VMLocator.EditorViewModel.GetRecentText();
                 VMLocator.EditorViewModel.Editor2Text = string.Empty;
                 VMLocator.EditorViewModel.Editor3Text = string.Empty;
                 VMLocator.EditorViewModel.Editor4Text = string.Empty;

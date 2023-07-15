@@ -24,6 +24,7 @@ namespace TmCGPTD.ViewModels
     {
         readonly DatabaseProcess _dbProcess = new();
         private readonly Subject<Unit> _textChanged = new();
+        private ITokenizer? _tokenizer;
 
         public EditorViewModel()
         {
@@ -31,6 +32,7 @@ namespace TmCGPTD.ViewModels
             EditorModeIsChecked = true;
             EditorSeparateMode = 5;
 
+            InitializeTokenizer();
             TextClear();
 
             _editorLogLists = new ObservableCollection<EditorLogs>();
@@ -46,7 +48,7 @@ namespace TmCGPTD.ViewModels
 
             _textChanged
                 .Throttle(TimeSpan.FromMilliseconds(200)) // 200ミリ秒のデバウンス時間を設定
-                .Subscribe(_ => Task.Run(async () => await GetRecentText()));
+                .Subscribe(_ => GetRecentText());
         }
 
         public ICommand PrevCommand { get; }
@@ -226,7 +228,7 @@ namespace TmCGPTD.ViewModels
                         return;
                     }
                 }
-                else if (string.IsNullOrWhiteSpace(await GetRecentText()))
+                else if (string.IsNullOrWhiteSpace(GetRecentText()))
                 {
                     return;
                 }
@@ -371,7 +373,7 @@ namespace TmCGPTD.ViewModels
 
         private async Task ExportTemplateAsync()
         {
-            if (SelectedTemplateItemIndex < 0 || string.IsNullOrWhiteSpace(await GetRecentText()))
+            if (SelectedTemplateItemIndex < 0 || string.IsNullOrWhiteSpace(GetRecentText()))
             {
                 return;
             }
@@ -438,7 +440,12 @@ namespace TmCGPTD.ViewModels
             EditorHeight3 = new GridLength(0.33, GridUnitType.Star);
         }
 
-        public async Task<string> GetRecentText()
+        private async void InitializeTokenizer()
+        {
+            _tokenizer = await TokenizerBuilder.CreateByModelNameAsync("gpt-3.5-turbo"); // トークナイザーの初期化
+        }
+
+        public string GetRecentText()
         {
             List<string> inputText = new List<string>
             {
@@ -453,8 +460,7 @@ namespace TmCGPTD.ViewModels
             outputText.RemoveAll(s => string.IsNullOrWhiteSpace(s)); // 空行を削除
             string outputTextStr = string.Join(Environment.NewLine + "---" + Environment.NewLine, outputText);
 
-            var tokenizer = await TokenizerBuilder.CreateByModelNameAsync("gpt-3.5-turbo"); // トークナイザーの初期化
-            VMLocator.MainViewModel.InputTokens = tokenizer.Encode(outputTextStr, Array.Empty<string>()).Count.ToString() + " Tokens"; // トークナイズ
+            VMLocator.MainViewModel.InputTokens = _tokenizer!.Encode(outputTextStr, Array.Empty<string>()).Count.ToString() + " Tokens"; // トークナイズ
 
             return outputTextStr;
         }

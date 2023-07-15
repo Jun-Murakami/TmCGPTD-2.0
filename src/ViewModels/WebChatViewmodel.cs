@@ -29,7 +29,7 @@ namespace TmCGPTD.ViewModels
         {
             try
             {
-                string escapedString = JsonSerializer.Serialize(await VMLocator.EditorViewModel.GetRecentText());
+                string escapedString = JsonSerializer.Serialize(VMLocator.EditorViewModel.GetRecentText());
 
                 string script = @"const mainTag = document.querySelector('main');
                         const formTag = mainTag.querySelector('form');
@@ -65,12 +65,12 @@ namespace TmCGPTD.ViewModels
         {
             var htmlSource = await _browser!.EvaluateJavaScript<string>("return document.documentElement.outerHTML;");
             var msg = await _htmlProcess.GetWebChatLogAsync(htmlSource);
-            if (msg == "Cancel")
+            if (msg == "Cancel" || msg == "OK")
             {
                 return;
             }
-            //var dialog = new ContentDialog() { Title = msg, PrimaryButtonText = "OK" };
-            //await VMLocator.MainViewModel.ContentDialogShowAsync(dialog);
+            var dialog = new ContentDialog() { Title = msg, PrimaryButtonText = "OK" };
+            await VMLocator.MainViewModel.ContentDialogShowAsync(dialog);
         }
 
         public async Task TextSearch(string searchKeyword, bool searchDirection, bool searchReset = false)

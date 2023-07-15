@@ -19,6 +19,7 @@ namespace TmCGPTD.Views
         private TextBlock _syncLogBlock;
         private Frame _leftPane;
         private Frame _rightPane;
+        private Type _editorViewType;
         public MainView()
         {
             InitializeComponent();
@@ -32,6 +33,11 @@ namespace TmCGPTD.Views
             if (OperatingSystem.IsMacOS())
             {
                 _stackPanel.HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center;
+                _editorViewType = typeof(EditorMacView);
+            }
+            else
+            {
+                _editorViewType = typeof(EditorView);
             }
 
             _syncLogBlock = this.FindControl<TextBlock>("SyncLogText")!;
@@ -50,9 +56,6 @@ namespace TmCGPTD.Views
             rPane!.SelectionChanged += OnRightListBoxSelectionChanged!;
             lPane.SelectedIndex = 0;
             rPane.SelectedIndex = 0;
-
-            _rightPane.Navigate(typeof(EditorView));
-            _leftPane.Navigate(typeof(ChatView));
         }
 
         private void OnRightListBoxSelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -62,9 +65,8 @@ namespace TmCGPTD.Views
             switch (listBox.SelectedIndex)
             {
                 case 0:
-                    _rightPane.Navigate(typeof(EditorView));
+                    _rightPane.Navigate(_editorViewType);
                     break;
-
                 case 1:
                     _rightPane.Navigate(typeof(PreviewView));
                     break;

@@ -15,8 +15,8 @@ namespace TmCGPTD.Views
 
             this.AttachedToVisualTree += async (sender, e) =>
             {
-                if (previewTextBox == null || VMLocator.EditorViewModel == null|| await VMLocator.EditorViewModel.GetRecentText() == null) return;
-                previewTextBox.Text = await VMLocator.EditorViewModel.GetRecentText();
+                if (previewTextBox == null || VMLocator.EditorViewModel == null|| VMLocator.EditorViewModel.GetRecentText() == null) return;
+                previewTextBox.Text = VMLocator.EditorViewModel.GetRecentText();
             };
         }
 
