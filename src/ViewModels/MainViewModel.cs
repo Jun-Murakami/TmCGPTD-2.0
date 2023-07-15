@@ -274,7 +274,7 @@ namespace TmCGPTD.ViewModels
 
         private async Task PostAsync()
         {
-            if (string.IsNullOrWhiteSpace(VMLocator.EditorViewModel.GetRecentText()) || VMLocator.ChatViewModel.ChatIsRunning)
+            if (string.IsNullOrWhiteSpace(await VMLocator.EditorViewModel.GetRecentText()) || VMLocator.ChatViewModel.ChatIsRunning)
             {
                 return;
             }
@@ -743,7 +743,7 @@ namespace TmCGPTD.ViewModels
 
         private async Task CopyToClipboard()
         {
-            if (string.IsNullOrWhiteSpace(VMLocator.EditorViewModel.GetRecentText()))
+            if (string.IsNullOrWhiteSpace(await VMLocator.EditorViewModel.GetRecentText()))
             {
                 return;
             }
@@ -753,7 +753,7 @@ namespace TmCGPTD.ViewModels
             {
                 await _dbProcess.InserEditorLogDatabasetAsync();
 
-                await ApplicationExtensions.GetTopLevel(Avalonia.Application.Current!)!.Clipboard!.SetTextAsync(VMLocator.EditorViewModel.GetRecentText());
+                await ApplicationExtensions.GetTopLevel(Avalonia.Application.Current!)!.Clipboard!.SetTextAsync(await VMLocator.EditorViewModel.GetRecentText());
 
                 await _dbProcess.GetEditorLogDatabaseAsync();
                 VMLocator.EditorViewModel.SelectedEditorLogIndex = -1;

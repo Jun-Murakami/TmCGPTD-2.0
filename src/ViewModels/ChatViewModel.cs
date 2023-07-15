@@ -82,7 +82,8 @@ namespace TmCGPTD.ViewModels
                 }
 
                 // ユーザー入力を取得
-                string postText = VMLocator.EditorViewModel.GetRecentText().Trim().Trim('\r', '\n');
+                string postText = await VMLocator.EditorViewModel.GetRecentText();
+                postText = postText.Trim().Trim('\r', '\n');
 
                 // ロゴを削除
                 string jsCode = $@"var element = document.querySelector('.svg-container');

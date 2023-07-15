@@ -8,7 +8,7 @@ using System.Net;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
-using TiktokenSharp;
+using Microsoft.DeepDev;
 using System.Threading;
 
 namespace TmCGPTD.Models
@@ -60,12 +60,12 @@ namespace TmCGPTD.Models
 
       List<Dictionary<string, object>>? conversationHistory = chatParameters.ConversationHistory; // 会話履歴
 
-      TikToken tokenizer = TikToken.EncodingForModel("gpt-3.5-turbo"); // トークナイザーの初期化
+      var tokenizer = await TokenizerBuilder.CreateByModelNameAsync("gpt-3.5-turbo"); // トークナイザーの初期化 // トークナイザーの初期化
 
-      int inputTokenCount = tokenizer.Encode(chatTextPost!).Count; // 入力文字列のトークン数を取得
+      int inputTokenCount = tokenizer.Encode(chatTextPost!, Array.Empty<string>()).Count; // 入力文字列のトークン数を取得
 
       // 過去の会話履歴と現在の入力を結合する前に、過去の会話履歴に含まれるcontent文字列のトークン数を取得
-      int historyContentTokenCount = conversationHistory!.Sum(d => tokenizer.Encode(d["content"].ToString()!).Count);
+      int historyContentTokenCount = conversationHistory!.Sum(d => tokenizer.Encode(d["content"].ToString()!, Array.Empty<string>()).Count);
 
       chatParameters.PreSummarizedHistoryTokenCount = historyContentTokenCount; // 要約前のトークン数を記録
 
@@ -109,7 +109,7 @@ namespace TmCGPTD.Models
         for (int i = 0; i < reversedHistoryList.Count; i += 1)
         {
           string? mes = reversedHistoryList[i]["content"].ToString();
-          int messageTokenCount = tokenizer.Encode(mes!).Count;
+          int messageTokenCount = tokenizer.Encode(mes!, Array.Empty<string>()).Count;
           historyTokenCount += messageTokenCount;
 
           if (i <= 4 && historyTokenCount < limitLength / 5) //直近の会話が短ければそのまま生かす
@@ -387,12 +387,12 @@ namespace TmCGPTD.Models
               chatTextRes += $"{Environment.NewLine}{Environment.NewLine}[ERROR] Connection has been terminated.";
             }
 
-            // 入力トークン数を計算
-            TikToken tokenizer = TikToken.EncodingForModel("gpt-3.5-turbo");
-            var inputConversationTokenCount = tokenizer.Encode(conversationHistory!.Select(d => d["content"].ToString()).Aggregate((a, b) => a + b)!).Count;
+                        // 入力トークン数を計算
+                        var tokenizer = await TokenizerBuilder.CreateByModelNameAsync("gpt-3.5-turbo");
+                        var inputConversationTokenCount = tokenizer.Encode(conversationHistory!.Select(d => d["content"].ToString()).Aggregate((a, b) => a + b)!, Array.Empty<string>()).Count;
 
             // レスポンスのトークン数を計算
-            var responseTokenCount = tokenizer.Encode(chatTextRes).Count;
+            var responseTokenCount = tokenizer.Encode(chatTextRes, Array.Empty<string>()).Count;
 
             // レス本文
             chatTextRes = Environment.NewLine + chatTextRes + Environment.NewLine + Environment.NewLine;
@@ -414,13 +414,13 @@ namespace TmCGPTD.Models
 
             // 要約が実行された場合、メソッドの戻り値の最後に要約前のトークン数と要約後のトークン数をメッセージとして付け加える
             string? postConversation = conversationHistory.Select(d => d["content"].ToString()).Aggregate((a, b) => a + b);
-            if (chatParameters.PreSummarizedHistoryTokenCount > tokenizer.Encode(postConversation!).Count)
+            if (chatParameters.PreSummarizedHistoryTokenCount > tokenizer.Encode(postConversation!, Array.Empty<string>()).Count)
             {
-              chatTextRes += $"-Conversation has been summarized. before: {chatParameters.PreSummarizedHistoryTokenCount}, after: {tokenizer.Encode(postConversation!).Count}.{Environment.NewLine}";
+              chatTextRes += $"-Conversation has been summarized. before: {chatParameters.PreSummarizedHistoryTokenCount}, after: {tokenizer.Encode(postConversation!, Array.Empty<string>()).Count}.{Environment.NewLine}";
             }
             else if (chatParameters.IsDeleteHistory) // 会話履歴が全て削除された場合
             {
-              chatTextRes += $"-Conversation history has been removed. before: {chatParameters.PreSummarizedHistoryTokenCount}, after: {tokenizer.Encode(postConversation!).Count}.{Environment.NewLine}";
+              chatTextRes += $"-Conversation history has been removed. before: {chatParameters.PreSummarizedHistoryTokenCount}, after: {tokenizer.Encode(postConversation!, Array.Empty<string>()).Count}.{Environment.NewLine}";
             }
 
             await VMLocator.ChatViewModel.UpdateUIWithReceivedMessage("[DONE]", chatTextRes.Trim()); // Stream終了処理

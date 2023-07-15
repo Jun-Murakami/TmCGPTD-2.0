@@ -16,7 +16,7 @@ using Avalonia.Platform.Storage;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Reactive;
-using TiktokenSharp;
+using Microsoft.DeepDev;
 
 namespace TmCGPTD.ViewModels
 {
@@ -45,8 +45,8 @@ namespace TmCGPTD.ViewModels
             ExportTemplateCommand = new AsyncRelayCommand(ExportTemplateAsync);
 
             _textChanged
-                .Throttle(TimeSpan.FromMilliseconds(500)) // 500ミリ秒のデバウンス時間を設定
-                .Subscribe(_ => GetRecentText());
+                .Throttle(TimeSpan.FromMilliseconds(200)) // 200ミリ秒のデバウンス時間を設定
+                .Subscribe(_ => Task.Run(async () => await GetRecentText()));
         }
 
         public ICommand PrevCommand { get; }
@@ -226,7 +226,7 @@ namespace TmCGPTD.ViewModels
                         return;
                     }
                 }
-                else if (string.IsNullOrWhiteSpace(GetRecentText()))
+                else if (string.IsNullOrWhiteSpace(await GetRecentText()))
                 {
                     return;
                 }
@@ -371,7 +371,7 @@ namespace TmCGPTD.ViewModels
 
         private async Task ExportTemplateAsync()
         {
-            if (SelectedTemplateItemIndex < 0 || string.IsNullOrWhiteSpace(GetRecentText()))
+            if (SelectedTemplateItemIndex < 0 || string.IsNullOrWhiteSpace(await GetRecentText()))
             {
                 return;
             }
@@ -438,7 +438,7 @@ namespace TmCGPTD.ViewModels
             EditorHeight3 = new GridLength(0.33, GridUnitType.Star);
         }
 
-        public string GetRecentText()
+        public async Task<string> GetRecentText()
         {
             List<string> inputText = new List<string>
             {
@@ -453,8 +453,8 @@ namespace TmCGPTD.ViewModels
             outputText.RemoveAll(s => string.IsNullOrWhiteSpace(s)); // 空行を削除
             string outputTextStr = string.Join(Environment.NewLine + "---" + Environment.NewLine, outputText);
 
-            TikToken tokenizer = TikToken.EncodingForModel("gpt-3.5-turbo"); // トークナイザーの初期化
-            VMLocator.MainViewModel.InputTokens = tokenizer.Encode(outputTextStr).Count.ToString() + " Tokens"; // トークナイズ
+            var tokenizer = await TokenizerBuilder.CreateByModelNameAsync("gpt-3.5-turbo"); // トークナイザーの初期化
+            VMLocator.MainViewModel.InputTokens = tokenizer.Encode(outputTextStr, Array.Empty<string>()).Count.ToString() + " Tokens"; // トークナイズ
 
             return outputTextStr;
         }
