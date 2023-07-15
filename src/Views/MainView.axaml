@@ -223,16 +223,16 @@
                                    IsVisible="{Binding CloudIconSelector, Converter={StaticResource InverseBooleanConverter}, Mode=OneWay}" />
                         </Panel>
                     </Button>
-					<Button ToolTip.Tip="Option settings"
+                    <Button ToolTip.Tip="Option settings"
                             HorizontalAlignment="Right"
                             VerticalAlignment="Center"
                             BorderThickness="0"
                             Width="28"
                             Height="28"
                             Command="{Binding OpenOptionSettingsCommand}">
-						<Image Source="/Assets/iconSetting.png"
+                        <Image Source="/Assets/iconSetting.png"
                                VerticalAlignment="Center" />
-					</Button>
+                    </Button>
                 </Grid>
                 <Border Grid.Row="1"
                         Grid.Column="2"
@@ -241,7 +241,7 @@
                     <Grid>
                         <ui:Frame Name="RightFrame" />
                         <TextBlock Name="InputTokenTextBlock"
-							VerticalAlignment="Bottom"
+                                   VerticalAlignment="Bottom"
                                    HorizontalAlignment="Right"
                                    Margin="0,0,5,55"
                                    Foreground="rgb(106, 108, 125)"

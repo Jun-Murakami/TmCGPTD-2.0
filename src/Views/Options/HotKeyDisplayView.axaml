@@ -12,6 +12,6 @@
         <Image Source="/Assets/TmcGPTD_SC.png"
                VerticalAlignment="Stretch"
                HorizontalAlignment="Stretch"
-               Width="800"/>
+               Width="800" />
     </StackPanel>
 </UserControl>

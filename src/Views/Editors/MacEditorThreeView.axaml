@@ -7,7 +7,7 @@
              d:DesignHeight="450"
              xmlns:ui="using:FluentAvalonia.UI.Controls"
              xmlns:views="clr-namespace:TmCGPTD.Views"
-             x:Class="TmCGPTD.Views.EditorThreeView">
+             x:Class="TmCGPTD.Views.MacEditorThreeView">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="{Binding Source={StaticResource VMLocator}, Path=EditorViewModel.EditorHeight1,Mode=TwoWay}"
@@ -28,7 +28,7 @@
                       Height="2"
                       Background="rgb(57, 58, 70)"
                       Focusable="False" />
-		<TextBox Grid.Row="2"
+        <TextBox Grid.Row="2"
                  Name="Editor3_2"
                  AcceptsReturn="True"
                  Text="{Binding Source={StaticResource VMLocator}, Path=EditorViewModel.Editor2Text,Mode=TwoWay}"

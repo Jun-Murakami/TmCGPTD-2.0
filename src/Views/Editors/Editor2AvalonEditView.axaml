@@ -1,19 +1,22 @@
 <UserControl xmlns="https://github.com/avaloniaui"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-		xmlns:i="clr-namespace:Avalonia.Xaml.Interactivity;assembly=Avalonia.Xaml.Interactivity"
-		xmlns:views="clr-namespace:TmCGPTD.Views"
-		xmlns:AvalonEdit="clr-namespace:AvaloniaEdit;assembly=AvaloniaEdit"
-		xmlns:behaviors="clr-namespace:TmCGPTD.Behaviors;assembly=TmCGPTD"
-        x:Class="TmCGPTD.Views.Editor2AvalonEditView">
-	<Panel>
-		<AvalonEdit:TextEditor VerticalAlignment="Stretch" Name="Editor2Avalon"
-							   FontSize="{Binding Path=DataContext.EditorCommonFontSize, RelativeSource={RelativeSource FindAncestor, AncestorType=views:EditorView}}">
-			<i:Interaction.Behaviors>
-				<behaviors:DocumentTextBindingBehavior Text="{Binding Path=DataContext.Editor2Text, RelativeSource={RelativeSource FindAncestor, AncestorType=views:EditorView},Mode=TwoWay}" />
-			</i:Interaction.Behaviors>
-		</AvalonEdit:TextEditor>
-	</Panel>
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             d:DesignWidth="800"
+             d:DesignHeight="450"
+             xmlns:i="clr-namespace:Avalonia.Xaml.Interactivity;assembly=Avalonia.Xaml.Interactivity"
+             xmlns:views="clr-namespace:TmCGPTD.Views"
+             xmlns:AvalonEdit="clr-namespace:AvaloniaEdit;assembly=AvaloniaEdit"
+             xmlns:behaviors="clr-namespace:TmCGPTD.Behaviors;assembly=TmCGPTD"
+             x:Class="TmCGPTD.Views.Editor2AvalonEditView">
+    <Panel>
+        <AvalonEdit:TextEditor VerticalAlignment="Stretch"
+                               Name="Editor2Avalon"
+                               FontSize="{Binding Path=DataContext.EditorCommonFontSize, RelativeSource={RelativeSource FindAncestor, AncestorType=views:EditorView}}">
+            <i:Interaction.Behaviors>
+                <behaviors:DocumentTextBindingBehavior Text="{Binding Path=DataContext.Editor2Text, RelativeSource={RelativeSource FindAncestor, AncestorType=views:EditorView},Mode=TwoWay}" />
+            </i:Interaction.Behaviors>
+        </AvalonEdit:TextEditor>
+    </Panel>
 </UserControl>

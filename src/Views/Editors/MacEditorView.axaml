@@ -1,106 +1,118 @@
 <UserControl xmlns="https://github.com/avaloniaui"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-		xmlns:ui="using:FluentAvalonia.UI.Controls"
-		PointerWheelChanged="UserControl_PointerWheelChanged"
-        x:Class="TmCGPTD.Views.MacEditorView">
-		<Grid VerticalAlignment="Stretch" Name="EditorGrid">
-			<Grid.RowDefinitions>
-				<RowDefinition Height="50" />
-				<RowDefinition Height="*" />
-			</Grid.RowDefinitions>
-			<Border Grid.Row="0" BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}" BorderThickness="0,0,0,1">
-				<Grid>
-					<Grid.ColumnDefinitions>
-						<ColumnDefinition Width="Auto"/>
-						<ColumnDefinition Width="0.5*"/>
-						<ColumnDefinition Width="Auto"/>
-						<ColumnDefinition Width="1"/>
-						<ColumnDefinition Width="Auto"/>
-						<ColumnDefinition Width="0.5*"/>
-						<ColumnDefinition Width="Auto"/>
-						<ColumnDefinition Width="Auto"/>
-					</Grid.ColumnDefinitions>
-					<TextBlock Grid.Column="0"
-							   Text="Template :"
-							   VerticalAlignment="Center"
-							   Margin="10,0,0,0" />
-					<ComboBox Grid.Column="1"
-							  VerticalAlignment="Center"
-							  HorizontalAlignment="Stretch"
-							  Margin="5,5,2,5"
-							  ItemsSource="{Binding TemplateItems}"
-							  SelectedIndex="{Binding SelectedTemplateItemIndex}"
-							  SelectedItem="{Binding SelectedTemplateItem}">
-						<ComboBox.ItemTemplate>
-							<DataTemplate>
-								<TextBlock Text="{Binding Title}" />
-							</DataTemplate>
-						</ComboBox.ItemTemplate>
-					</ComboBox>
-					<Button Grid.Column="2"
-							Flyout="{StaticResource TemplateMenuFlyout}"
-							Classes="ImageButton"
-							VerticalAlignment="Center"
-							Padding="4,0"
-							Margin="0,0,6,0">
-						<Image Classes="ButtonIcon"
-							   Source="/Assets/iconSave.png"
-							   VerticalAlignment="Center" />
-					</Button>
-					<Border Grid.Column="3"
-							Background="rgb(64, 65, 79)"/>
-					<TextBlock Grid.Column="4"
-							   Text="Log :"
-							   VerticalAlignment="Center"
-							   Margin="10,0,0,0"/>
-					<ComboBox Grid.Column="5"
-							  VerticalAlignment="Center"
-							  Margin="5,0,2,0"
-							  HorizontalAlignment="Stretch"
-							  ItemsSource="{Binding EditorLogLists}"
-							  SelectedIndex="{Binding SelectedEditorLogIndex}"
-							  SelectedItem="{Binding SelectedEditorLog}">
-						<ComboBox.ItemTemplate>
-							<DataTemplate>
-								<TextBlock Text="{Binding Title}" />
-							</DataTemplate>
-						</ComboBox.ItemTemplate>
-					</ComboBox>
-					<Button Grid.Column="6"
-							Classes="ImageButton"
-							VerticalAlignment="Center"
-							Padding="0"
-							Margin="0,0,2,0"
-							Command="{Binding PrevCommand}">
-						<Image Classes="ButtonIcon"
-							   Source="/Assets/iconUp.png"
-							   VerticalAlignment="Center" />
-					</Button>
-					<Button Grid.Column="7"
-							Classes="ImageButton"
-							VerticalAlignment="Center"
-							Padding="0"
-							Margin="0,0,5,0"
-							Command="{Binding NextCommand}">
-						<Image Classes="ButtonIcon"
-							   Source="/Assets/iconDown.png"
-							   VerticalAlignment="Center" />
-					</Button>
-				</Grid>
-			</Border>
-			<ui:Frame Grid.Row="1" Name="EditorFrame" />
-		</Grid>
-		<UserControl.Resources>
-			<MenuFlyout x:Key="TemplateMenuFlyout" Placement="Bottom">
-				<MenuItem Header="Save Template" Command="{Binding SaveTemplateCommand}"/>
-				<MenuItem Header="Rename Template" Command="{Binding RenameTemplateCommand}" />
-				<MenuItem Header="Delete Template" Command="{Binding DeleteTemplateCommand}" />
-				<Separator />
-				<MenuItem Header="Import from TXT" Command="{Binding ImportTemplateCommand}" />
-				<MenuItem Header="Export to TXT" Command="{Binding ExportTemplateCommand}" />
-			</MenuFlyout>
-		</UserControl.Resources>
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             d:DesignWidth="800"
+             d:DesignHeight="450"
+             xmlns:ui="using:FluentAvalonia.UI.Controls"
+             PointerWheelChanged="UserControl_PointerWheelChanged"
+             x:Class="TmCGPTD.Views.MacEditorView">
+    <Grid VerticalAlignment="Stretch"
+          Name="EditorGrid">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="50" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <Border Grid.Row="0"
+                BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
+                BorderThickness="0,0,0,1">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="0.5*" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="1" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="0.5*" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0"
+                           Text="Template :"
+                           VerticalAlignment="Center"
+                           Margin="10,0,0,0" />
+                <ComboBox Grid.Column="1"
+                          VerticalAlignment="Center"
+                          HorizontalAlignment="Stretch"
+                          Margin="5,5,2,5"
+                          ItemsSource="{Binding TemplateItems}"
+                          SelectedIndex="{Binding SelectedTemplateItemIndex}"
+                          SelectedItem="{Binding SelectedTemplateItem}">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding Title}" />
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+                <Button Grid.Column="2"
+                        Flyout="{StaticResource TemplateMenuFlyout}"
+                        Classes="ImageButton"
+                        VerticalAlignment="Center"
+                        Padding="4,0"
+                        Margin="0,0,6,0">
+                    <Image Classes="ButtonIcon"
+                           Source="/Assets/iconSave.png"
+                           VerticalAlignment="Center" />
+                </Button>
+                <Border Grid.Column="3"
+                        Background="rgb(64, 65, 79)" />
+                <TextBlock Grid.Column="4"
+                           Text="Log :"
+                           VerticalAlignment="Center"
+                           Margin="10,0,0,0" />
+                <ComboBox Grid.Column="5"
+                          VerticalAlignment="Center"
+                          Margin="5,0,2,0"
+                          HorizontalAlignment="Stretch"
+                          ItemsSource="{Binding EditorLogLists}"
+                          SelectedIndex="{Binding SelectedEditorLogIndex}"
+                          SelectedItem="{Binding SelectedEditorLog}">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding Title}" />
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+                <Button Grid.Column="6"
+                        Classes="ImageButton"
+                        VerticalAlignment="Center"
+                        Padding="0"
+                        Margin="0,0,2,0"
+                        Command="{Binding PrevCommand}">
+                    <Image Classes="ButtonIcon"
+                           Source="/Assets/iconUp.png"
+                           VerticalAlignment="Center" />
+                </Button>
+                <Button Grid.Column="7"
+                        Classes="ImageButton"
+                        VerticalAlignment="Center"
+                        Padding="0"
+                        Margin="0,0,5,0"
+                        Command="{Binding NextCommand}">
+                    <Image Classes="ButtonIcon"
+                           Source="/Assets/iconDown.png"
+                           VerticalAlignment="Center" />
+                </Button>
+            </Grid>
+        </Border>
+        <ui:Frame Grid.Row="1"
+                  Name="EditorFrame" />
+    </Grid>
+    <UserControl.Resources>
+        <MenuFlyout x:Key="TemplateMenuFlyout"
+                    Placement="Bottom">
+            <MenuItem Header="Save Template"
+                      Command="{Binding SaveTemplateCommand}" />
+            <MenuItem Header="Rename Template"
+                      Command="{Binding RenameTemplateCommand}" />
+            <MenuItem Header="Delete Template"
+                      Command="{Binding DeleteTemplateCommand}" />
+            <Separator />
+            <MenuItem Header="Import from TXT"
+                      Command="{Binding ImportTemplateCommand}" />
+            <MenuItem Header="Export to TXT"
+                      Command="{Binding ExportTemplateCommand}" />
+        </MenuFlyout>
+    </UserControl.Resources>
 </UserControl>

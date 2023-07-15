@@ -28,8 +28,8 @@
                       Height="2"
                       Background="rgb(57, 58, 70)"
                       Focusable="False" />
-		<ui:Frame Grid.Row="2"
-		  Name="Editor3_2Frame" />
+        <ui:Frame Grid.Row="2"
+                  Name="Editor3_2Frame" />
         <GridSplitter Grid.Row="3"
                       Height="2"
                       Background="rgb(57, 58, 70)"

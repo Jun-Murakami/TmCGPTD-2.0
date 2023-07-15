@@ -9,7 +9,7 @@
     <Grid HorizontalAlignment="Stretch">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
-			<RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
@@ -32,17 +32,17 @@
                       SelectedItem="{Binding SelectedLanguage}"
                       Margin="0,0,0,15" />
         </StackPanel>
-		<StackPanel Grid.Row="1"
-			Grid.ColumnSpan="3"
-			Orientation="Horizontal">
-			<TextBlock Text="Editor font size :"
+        <StackPanel Grid.Row="1"
+                    Grid.ColumnSpan="3"
+                    Orientation="Horizontal">
+            <TextBlock Text="Editor font size :"
                        VerticalAlignment="Center"
                        HorizontalAlignment="Right"
                        Margin="0,0,10,15" />
-			<ComboBox ItemsSource="{Binding FontSizeList}"
+            <ComboBox ItemsSource="{Binding FontSizeList}"
                       SelectedItem="{Binding EditorCommonFontSize}"
                       Margin="0,0,0,15" />
-		</StackPanel>
+        </StackPanel>
         <TextBlock Grid.Row="2"
                    Grid.ColumnSpan="3"
                    Text="Database path :"
