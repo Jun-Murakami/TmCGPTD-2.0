@@ -96,8 +96,11 @@
                 </Button>
             </Grid>
         </Border>
-        <ui:Frame Grid.Row="1"
-                  Name="EditorFrame" />
+        <Border Grid.Row="1"
+                BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
+                BorderThickness="0,0,0,1">
+            <ui:Frame Name="EditorFrame" />
+        </Border>
     </Grid>
     <UserControl.Resources>
         <MenuFlyout x:Key="TemplateMenuFlyout"
