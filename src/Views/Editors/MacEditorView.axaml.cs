@@ -6,12 +6,12 @@ using FluentAvalonia.UI.Controls;
 
 namespace TmCGPTD.Views
 {
-    public partial class EditorMacView : UserControl
+    public partial class MacEditorView : UserControl
     {
         private Frame _editorPane;
         public EditorViewModel EditorViewModel { get; } = new EditorViewModel();
 
-        public EditorMacView()
+        public MacEditorView()
         {
             InitializeComponent();
             DataContext = EditorViewModel;

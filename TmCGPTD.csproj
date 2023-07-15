@@ -82,6 +82,15 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Update="src\Views\Editors\MacEditorThreeView.axaml.cs">
+      <DependentUpon>MacEditorThreeView.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="src\Views\Editors\MacEditorFiveView.axaml.cs">
+      <DependentUpon>MacEditorFiveView.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="src\Views\Editors\MacEditorView.axaml.cs">
+      <DependentUpon>MacEditorView.axaml</DependentUpon>
+    </Compile>
     <Compile Update="src\Views\Options\LicenseView.axaml.cs">
       <DependentUpon>LicenseView.axaml</DependentUpon>
     </Compile>

@@ -35,7 +35,7 @@ namespace TmCGPTD.Views
             if (OperatingSystem.IsMacOS())
             {
                 _stackPanel.HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center;
-                _editorViewType = typeof(EditorMacView);
+                _editorViewType = typeof(MacEditorView);
                 _inputTokenTextBlock.Margin = new Avalonia.Thickness(0,0,5,5);
             }
             else
