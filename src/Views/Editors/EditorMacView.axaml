@@ -89,7 +89,6 @@
 							   Source="/Assets/iconDown.png"
 							   VerticalAlignment="Center" />
 					</Button>
-
 				</Grid>
 			</Border>
 			<ui:Frame Grid.Row="1" Name="EditorFrame" />

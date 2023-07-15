@@ -240,7 +240,8 @@
                         BorderThickness="1,1,1,0">
                     <Grid>
                         <ui:Frame Name="RightFrame" />
-                        <TextBlock VerticalAlignment="Bottom"
+                        <TextBlock Name="InputTokenTextBlock"
+							VerticalAlignment="Bottom"
                                    HorizontalAlignment="Right"
                                    Margin="0,0,5,55"
                                    Foreground="rgb(106, 108, 125)"
