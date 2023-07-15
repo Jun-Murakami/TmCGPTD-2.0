@@ -38,7 +38,7 @@
                       Background="rgb(57, 58, 70)"
                       Focusable="False" />
         <TextBox Grid.Row="4"
-                 Name="Editor3_2"
+                 Name="Editor3_3"
                  AcceptsReturn="True"
                  Text="{Binding Source={StaticResource VMLocator}, Path=EditorViewModel.Editor3Text,Mode=TwoWay}"
                  FontSize="{Binding Source={StaticResource VMLocator}, Path=EditorViewModel.EditorCommonFontSize}" />
