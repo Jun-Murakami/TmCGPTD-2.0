@@ -20,6 +20,7 @@ using Supabase.Gotrue.Interfaces;
 using Supabase.Gotrue;
 using static Supabase.Gotrue.Constants;
 using System.Reflection;
+using TiktokenSharp;
 
 namespace TmCGPTD.Views
 {
@@ -202,6 +203,7 @@ namespace TmCGPTD.Views
                 }
 
                 await _supabaseProcess.InitializeSupabaseAsync();
+                TikToken.PBEFileDirectory = settings.AppDataPath;
 
                 if (SupabaseStates.Instance.Supabase != null && settings.Session != null)
                 {
