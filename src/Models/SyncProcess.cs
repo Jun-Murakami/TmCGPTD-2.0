@@ -87,7 +87,7 @@ namespace TmCGPTD.Models
                     cdialog = new ContentDialog
                     {
                         Title = "Error",
-                    Content = ex.Message,
+                    Content = ex.Message + ex.StackTrace,
                     CloseButtonText = "OK"
                     };
                 });
@@ -343,7 +343,7 @@ namespace TmCGPTD.Models
                             cdialog = new ContentDialog
                             {
                                 Title = "Error",
-                                Content = ex.Message,
+                                Content = ex.Message + ex.StackTrace,
                                 CloseButtonText = "OK"
                             };
                         });
@@ -453,8 +453,9 @@ namespace TmCGPTD.Models
                         await CopyAllLocalToCloudDbAsync(); //IDの競合を避けるためにクラウドを一旦削除して全同期しなおす
                         VMLocator.MainViewModel.SyncLogText = "Database sync completed.";
                     }
-                    syncIsRunning = false;
                 }
+
+                syncIsRunning = false;
             }
             catch (Exception ex)
             {
