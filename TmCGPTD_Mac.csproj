@@ -22,9 +22,13 @@
 	<ItemGroup>
     <AvaloniaResource Include="Assets\**" />
     <AvaloniaXaml Remove="Helper\**" />
+    <AvaloniaXaml Remove="src\Views\Editors\Windows\**" />
     <Compile Remove="Helper\**" />
+    <Compile Remove="src\Views\Editors\Windows\**" />
     <EmbeddedResource Remove="Helper\**" />
+    <EmbeddedResource Remove="src\Views\Editors\Windows\**" />
     <None Remove="Helper\**" />
+    <None Remove="src\Views\Editors\Windows\**" />
     <AvaloniaResource Include="Assets\Styles.axaml" />
     <None Remove=".gitignore" />
     <None Remove="appsettings.json" />
