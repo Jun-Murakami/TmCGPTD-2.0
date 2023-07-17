@@ -1,0 +1,37 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 25.0.1705.6
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TmCGPTD_Mac", "TmCGPTD_Mac.csproj", "{EF117701-2F6D-45EB-93C7-067C02A19CB8}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Debug|x64 = Debug|x64
+		Release|Any CPU = Release|Any CPU
+		Release|x64 = Release|x64
+		Debug64|Any CPU = Debug64|Any CPU
+		Debug64|x64 = Debug64|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{EF117701-2F6D-45EB-93C7-067C02A19CB8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EF117701-2F6D-45EB-93C7-067C02A19CB8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EF117701-2F6D-45EB-93C7-067C02A19CB8}.Debug|x64.ActiveCfg = Debug|x64
+		{EF117701-2F6D-45EB-93C7-067C02A19CB8}.Debug|x64.Build.0 = Debug|x64
+		{EF117701-2F6D-45EB-93C7-067C02A19CB8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EF117701-2F6D-45EB-93C7-067C02A19CB8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EF117701-2F6D-45EB-93C7-067C02A19CB8}.Release|x64.ActiveCfg = Release|x64
+		{EF117701-2F6D-45EB-93C7-067C02A19CB8}.Release|x64.Build.0 = Release|x64
+		{EF117701-2F6D-45EB-93C7-067C02A19CB8}.Debug64|Any CPU.ActiveCfg = Debug64|Any CPU
+		{EF117701-2F6D-45EB-93C7-067C02A19CB8}.Debug64|Any CPU.Build.0 = Debug64|Any CPU
+		{EF117701-2F6D-45EB-93C7-067C02A19CB8}.Debug64|x64.ActiveCfg = Debug64|x64
+		{EF117701-2F6D-45EB-93C7-067C02A19CB8}.Debug64|x64.Build.0 = Debug64|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {2ABBE3DA-F7A0-4105-91BB-D4445E6713CA}
+	EndGlobalSection
+EndGlobal
