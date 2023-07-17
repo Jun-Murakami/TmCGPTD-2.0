@@ -22,9 +22,13 @@
 	<ItemGroup>
     <AvaloniaResource Include="Assets\**" />
     <AvaloniaXaml Remove="Helper\**" />
+    <AvaloniaXaml Remove="src\Views\Editors\Mac\**" />
     <Compile Remove="Helper\**" />
+    <Compile Remove="src\Views\Editors\Mac\**" />
     <EmbeddedResource Remove="Helper\**" />
+    <EmbeddedResource Remove="src\Views\Editors\Mac\**" />
     <None Remove="Helper\**" />
+    <None Remove="src\Views\Editors\Mac\**" />
     <AvaloniaResource Include="Assets\Styles.axaml" />
     <None Remove=".gitignore" />
     <None Remove="appsettings.json" />
