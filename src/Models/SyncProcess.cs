@@ -118,10 +118,6 @@ namespace TmCGPTD.Models
                     .Order(x => x.Id, Ordering.Descending)
                     .Get();
 
-
-                using SQLiteConnection connection = new($"Data Source={AppSettings.Instance.DbPath}");
-                await connection.OpenAsync();
-
                 var resultPhrase = await supabase
                                     .From<Phrase>()
                                     .Select(x => new object[] { x.Id, x.Date })
@@ -133,7 +129,7 @@ namespace TmCGPTD.Models
                 List<long> phraseDeletedId = new();
 
                 string sql = "SELECT id, date FROM phrase ORDER BY id DESC";
-                using var command = new SQLiteCommand(sql, connection);
+                using var command = new SQLiteCommand(sql, DatabaseProcess.memoryConnection);
                 using var reader = await command.ExecuteReaderAsync();
 
                 while (await reader.ReadAsync())
@@ -186,7 +182,7 @@ namespace TmCGPTD.Models
                 List<long> templeteDeletedId = new();
 
                 sql = "SELECT id, date FROM template ORDER BY id DESC";
-                using var command2 = new SQLiteCommand(sql, connection);
+                using var command2 = new SQLiteCommand(sql, DatabaseProcess.memoryConnection);
                 using var reader2 = await command2.ExecuteReaderAsync();
 
                 while (await reader2.ReadAsync())
@@ -238,7 +234,7 @@ namespace TmCGPTD.Models
                 List<long> editorlogDeletedId = new();
 
                 sql = "SELECT id, date FROM editorlog ORDER BY id DESC";
-                using var command3 = new SQLiteCommand(sql, connection);
+                using var command3 = new SQLiteCommand(sql, DatabaseProcess.memoryConnection);
                 using var reader3 = await command3.ExecuteReaderAsync();
 
                 while (await reader3.ReadAsync())
@@ -290,7 +286,7 @@ namespace TmCGPTD.Models
                 List<long> chatlogDeletedId = new();
 
                 sql = "SELECT id, date FROM chatlog ORDER BY id DESC";
-                using var command4 = new SQLiteCommand(sql, connection);
+                using var command4 = new SQLiteCommand(sql, DatabaseProcess.memoryConnection);
                 using var reader4 = await command4.ExecuteReaderAsync();
 
                 while (await reader4.ReadAsync())
@@ -330,7 +326,8 @@ namespace TmCGPTD.Models
                     }
                 }
 
-                await connection.CloseAsync(); //一回閉じてから再度開く
+                using SQLiteConnection connection = new($"Data Source={AppSettings.Instance.DbPath}");
+                await connection.CloseAsync();
                 await connection.OpenAsync();
 
                 using var transaction = connection.BeginTransaction(); //プールした削除を実行する
@@ -348,8 +345,8 @@ namespace TmCGPTD.Models
                         if (templeteDeletedId.Count > 0)
                         {
                             sql = $"DELETE FROM template WHERE id IN ({string.Join(",", templeteDeletedId)})";
-                            using var commandDel = new SQLiteCommand(sql, connection);
-                            await commandDel.ExecuteNonQueryAsync();
+                            using var commandDel2 = new SQLiteCommand(sql, connection);
+                            await commandDel2.ExecuteNonQueryAsync();
                             isDeleted = true;
                         }
 
@@ -357,16 +354,16 @@ namespace TmCGPTD.Models
                         if (editorlogDeletedId.Count > 0)
                         {
                             sql = $"DELETE FROM editorlog WHERE id IN ({string.Join(",", editorlogDeletedId)})";
-                            using var commandDel = new SQLiteCommand(sql, connection);
-                            await commandDel.ExecuteNonQueryAsync();
+                            using var commandDel3 = new SQLiteCommand(sql, connection);
+                            await commandDel3.ExecuteNonQueryAsync();
                             isDeleted = true;
                         }
 
                         if (chatlogDeletedId.Count > 0)
                         {
                             sql = $"DELETE FROM chatlog WHERE id IN ({string.Join(",", chatlogDeletedId)})";
-                            using var commandDel = new SQLiteCommand(sql, connection);
-                            await commandDel.ExecuteNonQueryAsync();
+                            using var commandDel4 = new SQLiteCommand(sql, connection);
+                            await commandDel4.ExecuteNonQueryAsync();
                             isDeleted = true;
                         }
 

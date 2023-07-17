@@ -12,11 +12,6 @@ namespace TmCGPTD
         public override void Initialize()
         {
             AvaloniaXamlLoader.Load(this);
-
-            if (!OperatingSystem.IsMacOS())
-            {
-                this.Styles.Add(new StyleInclude(new Uri("avares://AvaloniaEdit/Themes/Fluent/AvaloniaEdit.xaml")));
-            }
         }
 
         public override void OnFrameworkInitializationCompleted()
