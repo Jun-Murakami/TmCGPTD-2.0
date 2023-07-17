@@ -32,7 +32,6 @@
     <None Remove="Helper\**" />
     <None Remove="src\Views\Editors\Windows\**" />
     <AvaloniaResource Remove="Assets\StylesWindows.axaml" />
-    <AvaloniaXaml Remove="Assets\Styles.axaml" />
     <AvaloniaXaml Remove="Assets\StylesWindows.axaml" />
     <Compile Remove="src\Views\Class\DocumentTextBindingBehavior.cs" />
     <Compile Remove="src\Views\Class\ElementGenerator.cs" />
