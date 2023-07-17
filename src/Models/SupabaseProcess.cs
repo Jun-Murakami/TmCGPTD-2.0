@@ -14,6 +14,7 @@ using Supabase.Realtime.Interfaces;
 using Supabase.Realtime.PostgresChanges;
 using Supabase.Realtime;
 using Supabase.Realtime.Socket;
+using Avalonia.Threading;
 
 namespace TmCGPTD.Models
 {
@@ -164,8 +165,12 @@ namespace TmCGPTD.Models
                         }
                         catch (Exception ex)
                         {
-                            var cdialog = new ContentDialog() { Title = $"Error", Content = $"{ex.Message}", CloseButtonText = "OK" };
-                            await VMLocator.MainViewModel.ContentDialogShowAsync(cdialog);
+                            ContentDialog? cdialog = null;
+                            await Dispatcher.UIThread.InvokeAsync(() =>
+                            {
+                                cdialog = new ContentDialog() { Title = $"Error", Content = $"{ex.Message}", CloseButtonText = "OK" };
+                            });
+                            await VMLocator.MainViewModel.ContentDialogShowAsync(cdialog!);
                         }
                     });
                 });
@@ -174,8 +179,12 @@ namespace TmCGPTD.Models
             }
             catch (Exception ex)
             {
-                var cdialog = new ContentDialog() { Title = $"Error", Content = $"{ex.Message}", CloseButtonText = "OK" };
-                await VMLocator.MainViewModel.ContentDialogShowAsync(cdialog);
+                ContentDialog? cdialog = null;
+                await Dispatcher.UIThread.InvokeAsync(() =>
+                {
+                    cdialog = new ContentDialog() { Title = $"Error", Content = $"{ex.Message}", CloseButtonText = "OK" };
+                });
+                await VMLocator.MainViewModel.ContentDialogShowAsync(cdialog!);
             }   
         }
 

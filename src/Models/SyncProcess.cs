@@ -375,7 +375,8 @@ namespace TmCGPTD.Models
                         });
                         await VMLocator.MainViewModel.ContentDialogShowAsync(cdialog!);
                         syncIsRunning = false;
-                        return;
+                        throw;
+                        //return;
                     }
                 }
 
