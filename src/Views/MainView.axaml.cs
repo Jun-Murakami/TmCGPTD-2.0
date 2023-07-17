@@ -35,13 +35,18 @@ namespace TmCGPTD.Views
             if (OperatingSystem.IsMacOS())
             {
                 _stackPanel.HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center;
-                _editorViewType = typeof(MacEditorView);
-                _inputTokenTextBlock.Margin = new Avalonia.Thickness(0,0,5,5);
+#if MAC
+    _editorViewType = typeof(MacEditorView);
+#endif
+                _inputTokenTextBlock.Margin = new Avalonia.Thickness(0, 0, 5, 5);
             }
             else
             {
-                _editorViewType = typeof(EditorView);
+#if WINDOWS
+    _editorViewType = typeof(EditorView);
+#endif
             }
+
 
             _syncLogBlock = this.FindControl<TextBlock>("SyncLogText")!;
 

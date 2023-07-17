@@ -85,4 +85,13 @@
     </AvaloniaResource>
   </ItemGroup>
 
+	<PropertyGroup Condition="'$(OS)' == 'Windows_NT'">
+		<DefineConstants>WINDOWS</DefineConstants>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(OS)' != 'Windows_NT'">
+		<DefineConstants>MAC</DefineConstants>
+	</PropertyGroup>
+
+
 </Project>

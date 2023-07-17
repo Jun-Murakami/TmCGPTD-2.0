@@ -5,6 +5,8 @@ VisualStudioVersion = 17.6.33829.357
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TmCGPTD", "TmCGPTD.csproj", "{AA1AD7E5-67DB-458E-9190-FF5D49579264}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TmCGPTD_Mac", "TmCGPTD_Mac.csproj", "{72A05262-6ADD-4EFA-8362-1A63F0D01870}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,18 @@ Global
 		{AA1AD7E5-67DB-458E-9190-FF5D49579264}.Release|Any CPU.Build.0 = Release|Any CPU
 		{AA1AD7E5-67DB-458E-9190-FF5D49579264}.Release|x64.ActiveCfg = Release|x64
 		{AA1AD7E5-67DB-458E-9190-FF5D49579264}.Release|x64.Build.0 = Release|x64
+		{72A05262-6ADD-4EFA-8362-1A63F0D01870}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{72A05262-6ADD-4EFA-8362-1A63F0D01870}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{72A05262-6ADD-4EFA-8362-1A63F0D01870}.Debug|x64.ActiveCfg = Debug|x64
+		{72A05262-6ADD-4EFA-8362-1A63F0D01870}.Debug|x64.Build.0 = Debug|x64
+		{72A05262-6ADD-4EFA-8362-1A63F0D01870}.Debug64|Any CPU.ActiveCfg = Debug64|Any CPU
+		{72A05262-6ADD-4EFA-8362-1A63F0D01870}.Debug64|Any CPU.Build.0 = Debug64|Any CPU
+		{72A05262-6ADD-4EFA-8362-1A63F0D01870}.Debug64|x64.ActiveCfg = Debug64|x64
+		{72A05262-6ADD-4EFA-8362-1A63F0D01870}.Debug64|x64.Build.0 = Debug64|x64
+		{72A05262-6ADD-4EFA-8362-1A63F0D01870}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{72A05262-6ADD-4EFA-8362-1A63F0D01870}.Release|Any CPU.Build.0 = Release|Any CPU
+		{72A05262-6ADD-4EFA-8362-1A63F0D01870}.Release|x64.ActiveCfg = Release|x64
+		{72A05262-6ADD-4EFA-8362-1A63F0D01870}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
