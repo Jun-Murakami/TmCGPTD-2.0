@@ -15,6 +15,7 @@ using Supabase.Realtime.PostgresChanges;
 using Supabase.Realtime;
 using Supabase.Realtime.Socket;
 using Avalonia.Threading;
+using System.Threading;
 
 namespace TmCGPTD.Models
 {
@@ -161,7 +162,17 @@ namespace TmCGPTD.Models
                         {
                             Debug.WriteLine("change.Event:" + change.Event);
                             Debug.WriteLine("change.Payload:" + change.Payload);
-                            await _syncProcess.SyncDbAsync();
+
+                            // セマフォスリムを使用して、一度に一つのタスクだけがSyncDbAsync()メソッドを実行
+                            await SupabaseStates.Instance.SemaphoreSlim.WaitAsync();
+                            try
+                            {
+                                await _syncProcess.SyncDbAsync();
+                            }
+                            finally
+                            {
+                                SupabaseStates.Instance.SemaphoreSlim.Release();
+                            }
                         }
                         catch (Exception ex)
                         {

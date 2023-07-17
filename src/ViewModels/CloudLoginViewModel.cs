@@ -76,7 +76,17 @@ namespace TmCGPTD.ViewModels
                     VMLocator.CloudLoggedinViewModel.Email = SupabaseStates.Instance.Supabase.Auth.CurrentSession.User!.Email;
                     await SupabaseStates.Instance.Supabase.Auth.RefreshSession();
                     await _databaseProcess.CleanUpEditorLogDatabaseAsync();
-                    await _syncProcess.SyncDbAsync();
+
+                    await SupabaseStates.Instance.SemaphoreSlim.WaitAsync();
+                    try
+                    {
+                        await _syncProcess.SyncDbAsync();
+                    }
+                    finally
+                    {
+                        SupabaseStates.Instance.SemaphoreSlim.Release();
+                    }
+
                     await _supabaseProcess.SubscribeAsync();
                 }
                 else
@@ -232,7 +242,17 @@ namespace TmCGPTD.ViewModels
                         AppSettings.Instance.Provider = "You are logged in with Google.";
                         await SupabaseStates.Instance.Supabase.Auth.RefreshSession();
                         await _databaseProcess.CleanUpEditorLogDatabaseAsync();
-                        await _syncProcess.SyncDbAsync();
+
+                        await SupabaseStates.Instance.SemaphoreSlim.WaitAsync();
+                        try
+                        {
+                            await _syncProcess.SyncDbAsync();
+                        }
+                        finally
+                        {
+                            SupabaseStates.Instance.SemaphoreSlim.Release();
+                        }
+
                         await _supabaseProcess.SubscribeAsync();
                     }
                 }
@@ -279,7 +299,17 @@ namespace TmCGPTD.ViewModels
                         VMLocator.CloudLoggedinViewModel.Email = SupabaseStates.Instance.Supabase.Auth.CurrentSession.User!.Email;
                         await SupabaseStates.Instance.Supabase.Auth.RefreshSession();
                         await _databaseProcess.CleanUpEditorLogDatabaseAsync();
-                        await _syncProcess.SyncDbAsync();
+
+                        await SupabaseStates.Instance.SemaphoreSlim.WaitAsync();
+                        try
+                        {
+                            await _syncProcess.SyncDbAsync();
+                        }
+                        finally
+                        {
+                            SupabaseStates.Instance.SemaphoreSlim.Release();
+                        }
+
                         await _supabaseProcess.SubscribeAsync();
                     }
                 }
