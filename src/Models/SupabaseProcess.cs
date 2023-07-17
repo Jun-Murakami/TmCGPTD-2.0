@@ -180,6 +180,14 @@ namespace TmCGPTD.Models
                 {
                     _debouncer.Debounce(async () =>
                     {
+                        if(VMLocator.ChatViewModel.ChatIsRunning)
+                        {
+                            while(VMLocator.ChatViewModel.ChatIsRunning)
+                            {
+                                await Task.Delay(1000);
+                            }
+                        }
+
                         try
                         {
                             Debug.WriteLine("change.Event:" + change.Event);

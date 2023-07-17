@@ -42,7 +42,7 @@ namespace TmCGPTD.Models
         // SQL db初期化--------------------------------------------------------------
         public static void CreateDatabase()
         {
-            using var connection = new SQLiteConnection($"Data Source={AppSettings.Instance.DbPath}");
+            using var connection = new SQLiteConnection($"Data Source={AppSettings.Instance.DbPath};Version=3;");
             string sql = "CREATE TABLE phrase (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL DEFAULT '', phrase TEXT NOT NULL DEFAULT '', date DATE);";
 
             using var command = new SQLiteCommand(sql, connection);
@@ -97,7 +97,7 @@ namespace TmCGPTD.Models
             try
             {
                 // SQLiteデータベースに接続
-                using SQLiteConnection connection = new($"Data Source={AppSettings.Instance.DbPath}");
+                using SQLiteConnection connection = new($"Data Source={AppSettings.Instance.DbPath};Version=3;");
                 await connection.OpenAsync();
 
                 bool categoryExists = false;
@@ -252,7 +252,7 @@ namespace TmCGPTD.Models
         // SQL dbファイルをメモリにロード--------------------------------------------------------------
         public async Task DbLoadToMemoryAsync()
         {
-            var fileConnection = new SQLiteConnection($"Data Source={AppSettings.Instance.DbPath}");
+            var fileConnection = new SQLiteConnection($"Data Source={AppSettings.Instance.DbPath};Version=3;");
             fileConnection.Open();
             // メモリ上のDBファイルを作成
             memoryConnection = new SQLiteConnection("Data Source=:memory:");
@@ -279,10 +279,10 @@ namespace TmCGPTD.Models
         {
             DateTime now = DateTime.Now;
             now = now.AddTicks(-(now.Ticks % TimeSpan.TicksPerSecond));  // ミリ秒以下を切り捨てる
-            using var connection = new SQLiteConnection($"Data Source={AppSettings.Instance.DbPath}");
+            using var connection = new SQLiteConnection($"Data Source={AppSettings.Instance.DbPath};Version=3;");
             await connection.OpenAsync();
 
-            using var transaction = connection.BeginTransaction();
+            using var transaction = await connection.BeginTransactionAsync();
             try
             {
                 if (AppSettings.Instance.SyncIsOn && SupabaseStates.Instance.Supabase != null && Uid != null)
@@ -291,7 +291,7 @@ namespace TmCGPTD.Models
 
                     string sql = $"INSERT INTO phrase (id, name, phrase, date) VALUES (@id, @name, @phrase, @date)";
 
-                    using var command = new SQLiteCommand(sql, connection);
+                    using var command = new SQLiteCommand(sql, connection, (SQLiteTransaction)transaction);
                     command.Parameters.AddWithValue("@id", result.Models[0].Id);
                     command.Parameters.AddWithValue("@name", name);
                     command.Parameters.AddWithValue("@phrase", phrasesText);
@@ -302,7 +302,7 @@ namespace TmCGPTD.Models
                 {
                     string sql = $"INSERT INTO phrase (name, phrase, date) VALUES (@name, @phrase, @date)";
 
-                    using var command = new SQLiteCommand(sql, connection);
+                    using var command = new SQLiteCommand(sql, connection, (SQLiteTransaction)transaction);
                     command.Parameters.AddWithValue("@name", name);
                     command.Parameters.AddWithValue("@phrase", phrasesText);
                     command.Parameters.AddWithValue("@date", now.ToString("s"));
@@ -362,10 +362,10 @@ namespace TmCGPTD.Models
         // 定型句プリセットRename--------------------------------------------------------------
         public async Task UpdatePhrasePresetNameAsync(string oldName, string newName)
         {
-            using var connection = new SQLiteConnection($"Data Source={AppSettings.Instance.DbPath}");
+            using var connection = new SQLiteConnection($"Data Source={AppSettings.Instance.DbPath};Version=3;");
             await connection.OpenAsync();
 
-            using var transaction = connection.BeginTransaction();
+            using var transaction = await connection.BeginTransactionAsync();
             try
             {
                 if (AppSettings.Instance.SyncIsOn && SupabaseStates.Instance.Supabase != null && Uid != null)
@@ -403,10 +403,10 @@ namespace TmCGPTD.Models
         // 定型句プリセットUpdate--------------------------------------------------------------
         public async Task UpdatePhrasePresetAsync(string name, string phrasesText)
         {
-            using var connection = new SQLiteConnection($"Data Source={AppSettings.Instance.DbPath}");
+            using var connection = new SQLiteConnection($"Data Source={AppSettings.Instance.DbPath};Version=3;");
             await connection.OpenAsync();
 
-            using var transaction = connection.BeginTransaction();
+            using var transaction = await connection.BeginTransactionAsync();
             try
             {
                 if (AppSettings.Instance.SyncIsOn && SupabaseStates.Instance.Supabase != null && Uid != null)
@@ -446,10 +446,10 @@ namespace TmCGPTD.Models
         {
             try
             {
-                using var connection = new SQLiteConnection($"Data Source={AppSettings.Instance.DbPath}");
+                using var connection = new SQLiteConnection($"Data Source={AppSettings.Instance.DbPath};Version=3;");
                 await connection.OpenAsync();
 
-                using var transaction = connection.BeginTransaction(System.Data.IsolationLevel.Serializable);
+                using var transaction = await connection.BeginTransactionAsync(System.Data.IsolationLevel.Serializable);
                 try
                 {
                     DateTime date = DateTime.Now;
@@ -470,7 +470,7 @@ namespace TmCGPTD.Models
                     }
 
                     string sql = "DELETE FROM phrase WHERE name = @selectedPhraseItem";
-                    using var command = new SQLiteCommand(sql, connection, transaction);
+                    using var command = new SQLiteCommand(sql, connection, (SQLiteTransaction)transaction);
                     command.Parameters.AddWithValue("@selectedPhraseItem", selectedPhraseItem);
                     await command.ExecuteNonQueryAsync();
 
@@ -478,7 +478,7 @@ namespace TmCGPTD.Models
                     {
                         //削除履歴を追加
                         sql = "INSERT INTO management (user_id, delete_table, delete_id, date) VALUES (@Uid, @DeleteTable, @DeleteId, @Date)";
-                        using var command2 = new SQLiteCommand(sql, connection, transaction);
+                        using var command2 = new SQLiteCommand(sql, connection, (SQLiteTransaction)transaction);
                         command2.Parameters.AddWithValue("@Uid", Uid);
                         command2.Parameters.AddWithValue("@DeleteTable", "phrase");
                         command2.Parameters.AddWithValue("@DeleteId", targetId);
@@ -569,9 +569,9 @@ namespace TmCGPTD.Models
                 using var csvReader = new CsvReader(reader, config);
                 csvReader.Read(); // ヘッダー行をスキップ
 
-                using var con = new SQLiteConnection($"Data Source={AppSettings.Instance.DbPath}");
+                using var con = new SQLiteConnection($"Data Source={AppSettings.Instance.DbPath};Version=3;");
                 await con.OpenAsync();
-                using (var transaction = con.BeginTransaction())
+                using (var transaction = await con.BeginTransactionAsync())
                 {
                     try
                     {
@@ -642,7 +642,7 @@ namespace TmCGPTD.Models
                             }
 
                             // データをデータベースに挿入
-                            using (var command = new SQLiteCommand(insertQuery, con))
+                            using (var command = new SQLiteCommand(insertQuery, con, (SQLiteTransaction)transaction))
                             {
                                 for (int i = 0, loopTo1 = rowData.Count - 1; i <= loopTo1; i++)
                                     command.Parameters.AddWithValue($"@value{i}", rowData[i]);
@@ -799,10 +799,10 @@ namespace TmCGPTD.Models
         // チャットログ削除--------------------------------------------------------------
         public async Task DeleteChatLogDatabaseAsync(long chatId)
         {
-            using (var connection = new SQLiteConnection($"Data Source={AppSettings.Instance.DbPath}"))
+            using (var connection = new SQLiteConnection($"Data Source={AppSettings.Instance.DbPath};Version=3;"))
             {
                 connection.Open();
-                using var transaction = connection.BeginTransaction();
+                using var transaction = await connection.BeginTransactionAsync();
                 try
                 {
                     DateTime date = DateTime.Now;
@@ -817,14 +817,14 @@ namespace TmCGPTD.Models
                         await SupabaseStates.Instance.Supabase.From<Management>().Insert(new Management { UserId = Uid!, DeleteTable = "chatlog", DeleteId = chatId, Date = date });
                     }
 
-                    using (var command = new SQLiteCommand("DELETE FROM chatlog WHERE id = @id", connection, transaction))
+                    using (var command = new SQLiteCommand("DELETE FROM chatlog WHERE id = @id", connection, (SQLiteTransaction)transaction))
                     {
                         command.Parameters.AddWithValue("@id", chatId);
                         await command.ExecuteNonQueryAsync();
                     }
 
                     //削除履歴を追加
-                    using (var command = new SQLiteCommand("INSERT INTO management (user_id, delete_table, delete_id, date) VALUES (@user_id, @delete_table, @delete_id, @date)", connection, transaction))
+                    using (var command = new SQLiteCommand("INSERT INTO management (user_id, delete_table, delete_id, date) VALUES (@user_id, @delete_table, @delete_id, @date)", connection, (SQLiteTransaction)transaction))
                     {
                         command.Parameters.AddWithValue("@user_id", Uid);
                         command.Parameters.AddWithValue("@delete_table", "chatlog");
@@ -860,7 +860,7 @@ namespace TmCGPTD.Models
                                                 .Update();
                 }
 
-                using var connection = new SQLiteConnection($"Data Source={AppSettings.Instance.DbPath}");
+                using var connection = new SQLiteConnection($"Data Source={AppSettings.Instance.DbPath};Version=3;");
                 await connection.OpenAsync();
 
                 string query = "UPDATE chatlog SET title=@title WHERE id = @id";
@@ -893,7 +893,7 @@ namespace TmCGPTD.Models
                                                 .Update();
                 }
 
-                using var connection = new SQLiteConnection($"Data Source={AppSettings.Instance.DbPath}");
+                using var connection = new SQLiteConnection($"Data Source={AppSettings.Instance.DbPath};Version=3;");
                 await connection.OpenAsync();
 
                 string query = "UPDATE chatlog SET category=@category WHERE id = @id";
@@ -1021,14 +1021,14 @@ namespace TmCGPTD.Models
                 }
             }
 
-            using var connection = new SQLiteConnection($"Data Source={AppSettings.Instance.DbPath}");
+            using var connection = new SQLiteConnection($"Data Source={AppSettings.Instance.DbPath};Version=3;");
             await connection.OpenAsync();
             // トランザクションを開始する
-            using var transaction = connection.BeginTransaction();
+            using var transaction = await connection.BeginTransactionAsync();
             try
             {
                 // logテーブルにデータをインサートする
-                using (var command = new SQLiteCommand(query, connection))
+                using (var command = new SQLiteCommand(query, connection, (SQLiteTransaction)transaction))
                 {
                     command.Parameters.AddWithValue("@date", date.ToString("s"));
                     command.Parameters.AddWithValue("@title", webChatTitle);
@@ -1072,10 +1072,10 @@ namespace TmCGPTD.Models
             };
             string finalText = string.Join(Environment.NewLine + "<---TMCGPT--->" + Environment.NewLine, inputText);
 
-            using var connection = new SQLiteConnection($"Data Source={AppSettings.Instance.DbPath}");
+            using var connection = new SQLiteConnection($"Data Source={AppSettings.Instance.DbPath};Version=3;");
             await connection.OpenAsync();
 
-            using var transaction = connection.BeginTransaction();
+            using var transaction = await connection.BeginTransactionAsync();
             try
             {
                 if (AppSettings.Instance.SyncIsOn && SupabaseStates.Instance.Supabase != null && Uid != null)
@@ -1084,7 +1084,7 @@ namespace TmCGPTD.Models
 
                     long templateId = result.Models[0].Id;
 
-                    using (var command = new SQLiteCommand("INSERT INTO template(id, title, text, date) VALUES (@id, @title, @text, @date)", connection))
+                    using (var command = new SQLiteCommand("INSERT INTO template(id, title, text, date) VALUES (@id, @title, @text, @date)", connection, (SQLiteTransaction)transaction))
                     {
                         command.Parameters.AddWithValue("@id", templateId);
                         command.Parameters.AddWithValue("@title", title);
@@ -1095,7 +1095,7 @@ namespace TmCGPTD.Models
                 }
                 else
                 {
-                    using (var command = new SQLiteCommand("INSERT INTO template(title, text, date) VALUES (@title, @text, @date)", connection))
+                    using (var command = new SQLiteCommand("INSERT INTO template(title, text, date) VALUES (@title, @text, @date)", connection, (SQLiteTransaction)transaction))
                     {
                         command.Parameters.AddWithValue("@title", title);
                         command.Parameters.AddWithValue("@text", finalText);
@@ -1117,10 +1117,10 @@ namespace TmCGPTD.Models
         // Template Update--------------------------------------------------------------
         public async Task UpdateTemplateAsync(string title)
         {
-            using var connection = new SQLiteConnection($"Data Source={AppSettings.Instance.DbPath}");
+            using var connection = new SQLiteConnection($"Data Source={AppSettings.Instance.DbPath};Version=3;");
             await connection.OpenAsync();
 
-            using var transaction = connection.BeginTransaction();
+            using var transaction = await connection.BeginTransactionAsync();
             try
             {
                 var _editorViewModel = VMLocator.EditorViewModel;
@@ -1170,10 +1170,10 @@ namespace TmCGPTD.Models
         // Template Rename--------------------------------------------------------------
         public async Task UpdateTemplateNameAsync(string oldName, string newName)
         {
-            using var connection = new SQLiteConnection($"Data Source={AppSettings.Instance.DbPath}");
+            using var connection = new SQLiteConnection($"Data Source={AppSettings.Instance.DbPath};Version=3;");
             await connection.OpenAsync();
 
-            using var transaction = connection.BeginTransaction();
+            using var transaction = await connection.BeginTransactionAsync();
             try
             {
                 if (AppSettings.Instance.SyncIsOn && SupabaseStates.Instance.Supabase != null && Uid != null)
@@ -1213,10 +1213,10 @@ namespace TmCGPTD.Models
         {
             try
             {
-                using var connection = new SQLiteConnection($"Data Source={AppSettings.Instance.DbPath}");
+                using var connection = new SQLiteConnection($"Data Source={AppSettings.Instance.DbPath};Version=3;");
                 await connection.OpenAsync();
 
-                using var transaction = connection.BeginTransaction(System.Data.IsolationLevel.Serializable);
+                using var transaction = await connection.BeginTransactionAsync(System.Data.IsolationLevel.Serializable);
                 try
                 {
                     DateTime date = DateTime.Now;
@@ -1236,7 +1236,7 @@ namespace TmCGPTD.Models
                     }
 
                     string sql = "DELETE FROM template WHERE title = @selectedTemplateItem";
-                    using var command = new SQLiteCommand(sql, connection, transaction);
+                    using var command = new SQLiteCommand(sql, connection, (SQLiteTransaction)transaction);
                     command.Parameters.AddWithValue("@selectedTemplateItem", selectedTemplateItem);
                     await command.ExecuteNonQueryAsync();
 
@@ -1244,7 +1244,7 @@ namespace TmCGPTD.Models
                     {
                         //削除履歴を追加
                         sql = "INSERT INTO management (user_id, delete_table, delete_id, date) VALUES (@Uid, @DeleteTable, @DeleteId, @Date)";
-                        using var command2 = new SQLiteCommand(sql, connection, transaction);
+                        using var command2 = new SQLiteCommand(sql, connection, (SQLiteTransaction)transaction);
                         command2.Parameters.AddWithValue("@Uid", Uid);
                         command2.Parameters.AddWithValue("@DeleteTable", "template");
                         command2.Parameters.AddWithValue("@DeleteId", targetId);
@@ -1406,10 +1406,10 @@ namespace TmCGPTD.Models
             DateTime date = DateTime.Now;
             date = date.AddTicks(-(date.Ticks % TimeSpan.TicksPerSecond));
 
-            using var connection = new SQLiteConnection($"Data Source={AppSettings.Instance.DbPath}");
+            using var connection = new SQLiteConnection($"Data Source={AppSettings.Instance.DbPath};Version=3;");
             await connection.OpenAsync();
 
-            using var transaction = connection.BeginTransaction();
+            using var transaction = await connection.BeginTransactionAsync();
             try
             {
                 if (AppSettings.Instance.SyncIsOn && SupabaseStates.Instance.Supabase != null && Uid != null)
@@ -1418,7 +1418,7 @@ namespace TmCGPTD.Models
 
                     long resultId = result.Models[0].Id;
 
-                    using var command = new SQLiteCommand("INSERT INTO editorlog(id, date, text) VALUES (@id, @date, @text)", connection);
+                    using var command = new SQLiteCommand("INSERT INTO editorlog(id, date, text) VALUES (@id, @date, @text)", connection, (SQLiteTransaction)transaction);
                     command.Parameters.AddWithValue("@id", resultId);
                     command.Parameters.AddWithValue("@date", date.ToString("s"));
                     command.Parameters.AddWithValue("@text", finalText);
@@ -1426,7 +1426,7 @@ namespace TmCGPTD.Models
                 }
                 else
                 {
-                    using var command = new SQLiteCommand("INSERT INTO editorlog(date, text) VALUES (@date, @text)", connection);
+                    using var command = new SQLiteCommand("INSERT INTO editorlog(date, text) VALUES (@date, @text)", connection, (SQLiteTransaction)transaction);
                     command.Parameters.AddWithValue("@date", date.ToString("s"));
                     command.Parameters.AddWithValue("@text", finalText);
                     await command.ExecuteNonQueryAsync();
@@ -1538,7 +1538,7 @@ namespace TmCGPTD.Models
                 }
             }
 
-            using SQLiteConnection connection = new SQLiteConnection($"Data Source={AppSettings.Instance.DbPath}");
+            using SQLiteConnection connection = new SQLiteConnection($"Data Source={AppSettings.Instance.DbPath};Version=3;");
             await connection.OpenAsync();
 
             using (SQLiteCommand command = new SQLiteCommand("SELECT COUNT(*) FROM editorlog", connection))
@@ -1617,11 +1617,11 @@ namespace TmCGPTD.Models
                 jsonLastConversationHistory = "";
             }
 
-            using (var connection = new SQLiteConnection($"Data Source={AppSettings.Instance.DbPath}"))
+            using (var connection = new SQLiteConnection($"Data Source={AppSettings.Instance.DbPath};Version=3;"))
             {
                 connection.Open();
                 // トランザクションを開始する
-                using var transaction = connection.BeginTransaction();
+                using var transaction = await connection.BeginTransactionAsync();
                 try
                 {
                     if (lastRowId != -1)
@@ -1707,7 +1707,7 @@ namespace TmCGPTD.Models
                         }
 
                         // 指定されたIDに対してデータを更新する
-                        using (var command = new SQLiteCommand("UPDATE chatlog SET date=@date, title=@title, json=@json, text=@text, category=@category, lastprompt=@lastprompt, jsonprev=@jsonprev WHERE id=@id", connection))
+                        using (var command = new SQLiteCommand("UPDATE chatlog SET date=@date, title=@title, json=@json, text=@text, category=@category, lastprompt=@lastprompt, jsonprev=@jsonprev WHERE id=@id", connection, (SQLiteTransaction)transaction))
                         {
                             command.Parameters.AddWithValue("@date", resDate.ToString("s"));
                             command.Parameters.AddWithValue("@title", titleText);
@@ -1735,7 +1735,7 @@ namespace TmCGPTD.Models
                             await SupabaseStates.Instance.Supabase.From<Message>().Insert(models);
 
                             // logテーブルにデータをインサートする
-                            using (var command = new SQLiteCommand("INSERT INTO chatlog(id, date, title, json, text, category, lastprompt, jsonprev) VALUES (@id, @date, @title, @json, @text, @category, @lastprompt, @jsonprev)", connection))
+                            using (var command = new SQLiteCommand("INSERT INTO chatlog(id, date, title, json, text, category, lastprompt, jsonprev) VALUES (@id, @date, @title, @json, @text, @category, @lastprompt, @jsonprev)", connection, (SQLiteTransaction)transaction))
                             {
                                 command.Parameters.AddWithValue("@id", chatRoomId);
                                 command.Parameters.AddWithValue("@date", resDate.ToString("s"));
@@ -1751,7 +1751,7 @@ namespace TmCGPTD.Models
                         else
                         {
                             // logテーブルにデータをインサートする
-                            using (var command = new SQLiteCommand("INSERT INTO chatlog(date, title, json, text, category, lastprompt, jsonprev) VALUES (@date, @title, @json, @text, @category, @lastprompt, @jsonprev)", connection))
+                            using (var command = new SQLiteCommand("INSERT INTO chatlog(date, title, json, text, category, lastprompt, jsonprev) VALUES (@date, @title, @json, @text, @category, @lastprompt, @jsonprev)", connection, (SQLiteTransaction)transaction))
                             {
                                 command.Parameters.AddWithValue("@date", resDate.ToString("s"));
                                 command.Parameters.AddWithValue("@title", titleText);
@@ -1766,7 +1766,7 @@ namespace TmCGPTD.Models
 
                         // 更新中チャットのIDを取得
                         string sqlLastRowId = "SELECT last_insert_rowid();";
-                        using (var command = new SQLiteCommand(sqlLastRowId, connection))
+                        using (var command = new SQLiteCommand(sqlLastRowId, connection, (SQLiteTransaction)transaction))
                         {
                             long insertedId = Convert.ToInt64(command.ExecuteScalar());
                             if (insertedId != VMLocator.ChatViewModel.LastId)

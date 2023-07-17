@@ -326,12 +326,12 @@ namespace TmCGPTD.Models
                     }
                 }
 
-                using SQLiteConnection connection = new($"Data Source={AppSettings.Instance.DbPath}");
+                using SQLiteConnection connection = new($"Data Source={AppSettings.Instance.DbPath};Version=3;");
                 await connection.CloseAsync();
                 await connection.OpenAsync();
 
-                //using var transaction = connection.BeginTransaction(); //プールした削除を実行する
-                //{
+                using var transaction = await connection.BeginTransactionAsync(); //プールした削除を実行する
+                {
                     try
                     {
                         if (phraseDeletedId.Count > 0)
@@ -367,11 +367,11 @@ namespace TmCGPTD.Models
                             isDeleted = true;
                         }
 
-                        //await transaction.CommitAsync();
+                        await transaction.CommitAsync();
                     }
                     catch (Exception ex)
                     {
-                        //await transaction.RollbackAsync();
+                        await transaction.RollbackAsync();
                         ContentDialog? cdialog = null;
                         await Dispatcher.UIThread.InvokeAsync(() =>
                         {
@@ -386,7 +386,7 @@ namespace TmCGPTD.Models
                         syncIsRunning = false;
                         return;
                     }
-                //}
+                }
 
                 if(isDeleted)
                 {
@@ -515,7 +515,7 @@ namespace TmCGPTD.Models
             var supabase = SupabaseStates.Instance.Supabase;
             var uid = SupabaseStates.Instance.Supabase!.Auth.CurrentUser!.Id;
 
-            using SQLiteConnection connection = new($"Data Source={AppSettings.Instance.DbPath}");
+            using SQLiteConnection connection = new($"Data Source={AppSettings.Instance.DbPath};Version=3;");
             await connection.OpenAsync();
 
             try
@@ -567,12 +567,12 @@ namespace TmCGPTD.Models
                 if (isMerge && mergedIdList.Count > 0)
                 {
                     //保存したローカルIDのレコードをトランザクションで削除
-                    using var transaction = connection.BeginTransaction();
+                    using var transaction = await connection.BeginTransactionAsync();
                     try
                     {
                         foreach (var id in mergedIdList)
                         {
-                            using var command = new SQLiteCommand($"DELETE FROM phrase WHERE id = {id}", connection, transaction);
+                            using var command = new SQLiteCommand($"DELETE FROM phrase WHERE id = {id}", connection, (SQLiteTransaction)transaction);
                             await command.ExecuteNonQueryAsync();
                         }
                         await transaction.CommitAsync();
@@ -639,12 +639,12 @@ namespace TmCGPTD.Models
                 if (isMerge && mergedIdList.Count > 0)
                 {
                     //保存したローカルIDのレコードをトランザクションで削除
-                    using var transaction = connection.BeginTransaction();
+                    using var transaction = await connection.BeginTransactionAsync();
                     try
                     {
                         foreach (var id in mergedIdList)
                         {
-                            using var command = new SQLiteCommand($"DELETE FROM editorlog WHERE id = {id}", connection, transaction);
+                            using var command = new SQLiteCommand($"DELETE FROM editorlog WHERE id = {id}", connection, (SQLiteTransaction)transaction);
                             await command.ExecuteNonQueryAsync();
                         }
                         await transaction.CommitAsync();
@@ -711,12 +711,12 @@ namespace TmCGPTD.Models
                 if (isMerge && mergedIdList.Count > 0)
                 {
                     //保存したローカルIDのレコードをトランザクションで削除
-                    using var transaction = connection.BeginTransaction();
+                    using var transaction = await connection.BeginTransactionAsync();
                     try
                     {
                         foreach (var id in mergedIdList)
                         {
-                            using var command = new SQLiteCommand($"DELETE FROM template WHERE id = {id}", connection, transaction);
+                            using var command = new SQLiteCommand($"DELETE FROM template WHERE id = {id}", connection, (SQLiteTransaction)transaction);
                             await command.ExecuteNonQueryAsync();
                         }
                         await transaction.CommitAsync();
@@ -796,12 +796,12 @@ namespace TmCGPTD.Models
                 if (isMerge && mergedIdList.Count > 0)
                 {
                     //保存したローカルIDのレコードをトランザクションで削除
-                    using var transaction = connection.BeginTransaction();
+                    using var transaction = await connection.BeginTransactionAsync();
                     try
                     {
                         foreach (var id in mergedIdList)
                         {
-                            using var command = new SQLiteCommand($"DELETE FROM chatlog WHERE id = {id}", connection, transaction);
+                            using var command = new SQLiteCommand($"DELETE FROM chatlog WHERE id = {id}", connection, (SQLiteTransaction)transaction);
                             await command.ExecuteNonQueryAsync();
                         }
                         await transaction.CommitAsync();
@@ -825,10 +825,10 @@ namespace TmCGPTD.Models
         {
             var supabase = SupabaseStates.Instance.Supabase;
 
-            using SQLiteConnection connection = new($"Data Source={AppSettings.Instance.DbPath}");
+            using SQLiteConnection connection = new($"Data Source={AppSettings.Instance.DbPath};Version=3;");
             await connection.OpenAsync();
 
-            using var transaction = connection.BeginTransaction();
+            using var transaction = await connection.BeginTransactionAsync();
             {
                 try
                 {
@@ -839,7 +839,7 @@ namespace TmCGPTD.Models
 
                     Dictionary<long, DateTime?> localData = new();
 
-                    using var command = new SQLiteCommand("SELECT id, date FROM phrase ORDER BY id DESC", connection);
+                    using var command = new SQLiteCommand("SELECT id, date FROM phrase ORDER BY id DESC", connection, (SQLiteTransaction)transaction);
                     using var reader = await command.ExecuteReaderAsync();
                     while (await reader.ReadAsync())
                     {
@@ -855,7 +855,7 @@ namespace TmCGPTD.Models
                         {
                             const string updateSql = @"INSERT INTO phrase (id, name, phrase, date) VALUES (@Id, @Name, @Content, @Date) 
                                               ON CONFLICT(id) DO UPDATE SET name = excluded.name, phrase = excluded.phrase, date = excluded.date;";
-                            var updateCommand = new SQLiteCommand(updateSql, connection);
+                            var updateCommand = new SQLiteCommand(updateSql, connection, (SQLiteTransaction)transaction);
                             updateCommand.Parameters.AddWithValue("@Id", cloudData.Id);
                             updateCommand.Parameters.AddWithValue("@Name", cloudData.Name);
                             updateCommand.Parameters.AddWithValue("@Content", cloudData.Content);
@@ -871,7 +871,7 @@ namespace TmCGPTD.Models
                         if (!cloudIds.Contains(localId))
                         {
                             const string deleteSql = "DELETE FROM phrase WHERE id = @Id;";
-                            var deleteCommand = new SQLiteCommand(deleteSql, connection);
+                            var deleteCommand = new SQLiteCommand(deleteSql, connection, (SQLiteTransaction)transaction);
                             deleteCommand.Parameters.AddWithValue("@Id", localId);
                             await deleteCommand.ExecuteNonQueryAsync();
                         }
@@ -886,7 +886,7 @@ namespace TmCGPTD.Models
                 }
             }
 
-            using var transaction2 = connection.BeginTransaction();
+            using var transaction2 = await connection.BeginTransactionAsync();
             {
                 try
                 {
@@ -898,7 +898,7 @@ namespace TmCGPTD.Models
                     Dictionary<long, DateTime?> localData = new();
 
                     const string sql = "SELECT id, date FROM template ORDER BY id DESC";
-                    using var command2 = new SQLiteCommand(sql, connection);
+                    using var command2 = new SQLiteCommand(sql, connection, (SQLiteTransaction)transaction2);
                     using var reader = await command2.ExecuteReaderAsync();
                     while (await reader.ReadAsync())
                     {
@@ -914,7 +914,7 @@ namespace TmCGPTD.Models
                         {
                             const string updateSql = @"INSERT INTO template (id, title, text, date) VALUES (@Id, @Name, @Content, @Date) 
                                               ON CONFLICT(id) DO UPDATE SET title = excluded.title, text = excluded.text, date = excluded.date;";
-                            var command = new SQLiteCommand(updateSql, connection);
+                            var command = new SQLiteCommand(updateSql, connection, (SQLiteTransaction)transaction2);
                             command.Parameters.AddWithValue("@Id", cloudData.Id);
                             command.Parameters.AddWithValue("@Name", cloudData.Title);
                             command.Parameters.AddWithValue("@Content", cloudData.Content);
@@ -930,7 +930,7 @@ namespace TmCGPTD.Models
                         if (!cloudIds.Contains(localId))
                         {
                             const string deleteSql = "DELETE FROM template WHERE id = @Id;";
-                            var deleteCommand = new SQLiteCommand(deleteSql, connection);
+                            var deleteCommand = new SQLiteCommand(deleteSql, connection, (SQLiteTransaction)transaction2);
                             deleteCommand.Parameters.AddWithValue("@Id", localId);
                             await deleteCommand.ExecuteNonQueryAsync();
                         }
@@ -945,7 +945,7 @@ namespace TmCGPTD.Models
                 }
             }
 
-            using var transaction3 = connection.BeginTransaction();
+            using var transaction3 = await connection.BeginTransactionAsync();
             {
                 try
                 {
@@ -957,7 +957,7 @@ namespace TmCGPTD.Models
                     Dictionary<long, DateTime?> localData = new();
 
                     const string sql = "SELECT id, date FROM editorlog ORDER BY id DESC";
-                    using var command3 = new SQLiteCommand(sql, connection);
+                    using var command3 = new SQLiteCommand(sql, connection, (SQLiteTransaction)transaction3);
                     using var reader = await command3.ExecuteReaderAsync();
                     while (await reader.ReadAsync())
                     {
@@ -973,7 +973,7 @@ namespace TmCGPTD.Models
                         {
                             const string updateSql = @"INSERT INTO editorlog (id, date, text) VALUES (@Id, @Date, @Content) 
                                               ON CONFLICT(id) DO UPDATE SET date = excluded.date, text = excluded.text;";
-                            var command = new SQLiteCommand(updateSql, connection);
+                            var command = new SQLiteCommand(updateSql, connection, (SQLiteTransaction)transaction3);
                             command.Parameters.AddWithValue("@Id", cloudData.Id);
                             command.Parameters.AddWithValue("@Date", cloudData.Date.ToString("s"));
                             command.Parameters.AddWithValue("@Content", cloudData.Content);
@@ -988,7 +988,7 @@ namespace TmCGPTD.Models
                         if (!cloudIds.Contains(localId))
                         {
                             const string deleteSql = "DELETE FROM editorlog WHERE id = @Id;";
-                            var deleteCommand = new SQLiteCommand(deleteSql, connection);
+                            var deleteCommand = new SQLiteCommand(deleteSql, connection, (SQLiteTransaction)transaction3);
                             deleteCommand.Parameters.AddWithValue("@Id", localId);
                             await deleteCommand.ExecuteNonQueryAsync();
                         }
@@ -1003,7 +1003,7 @@ namespace TmCGPTD.Models
                 }
             }
 
-            using var transaction4 = connection.BeginTransaction();
+            using var transaction4 = await connection.BeginTransactionAsync();
             {
                 try
                 {
@@ -1015,7 +1015,7 @@ namespace TmCGPTD.Models
                     Dictionary<long, DateTime?> localData = new();
 
                     const string sql = "SELECT * FROM chatlog ORDER BY id DESC";
-                    using var command4 = new SQLiteCommand(sql, connection);
+                    using var command4 = new SQLiteCommand(sql, connection, (SQLiteTransaction)transaction4);
                     using var reader = await command4.ExecuteReaderAsync();
                     while (await reader.ReadAsync())
                     {
@@ -1035,7 +1035,7 @@ namespace TmCGPTD.Models
 
                             const string updateSql = @"INSERT INTO chatlog (id, date, title, json, text, category, lastprompt, jsonprev) VALUES (@Id, @UpdatedOn, @Title, @Json, @Message, @Category, @LastPrompt, @JsonPrev) 
                                 ON CONFLICT(id) DO UPDATE SET date = excluded.date, title = excluded.title, json = excluded.json, text = excluded.text, category = excluded.category, lastprompt = excluded.lastprompt, jsonprev = excluded.jsonprev;";
-                            var command = new SQLiteCommand(updateSql, connection);
+                            var command = new SQLiteCommand(updateSql, connection, (SQLiteTransaction)transaction4);
                             command.Parameters.AddWithValue("@Id", cloudData.Id);
                             command.Parameters.AddWithValue("@UpdatedOn", cloudData.UpdatedOn.ToString("s"));
                             command.Parameters.AddWithValue("@Title", cloudData.Title);
@@ -1055,7 +1055,7 @@ namespace TmCGPTD.Models
                         if (!cloudIds.Contains(localId))
                         {
                             const string deleteSql = "DELETE FROM chatlog WHERE id = @Id;";
-                            var deleteCommand = new SQLiteCommand(deleteSql, connection);
+                            var deleteCommand = new SQLiteCommand(deleteSql, connection, (SQLiteTransaction)transaction4);
                             deleteCommand.Parameters.AddWithValue("@Id", localId);
                             await deleteCommand.ExecuteNonQueryAsync();
                         }
@@ -1091,7 +1091,7 @@ namespace TmCGPTD.Models
         // -------------------------------------------------------------------------------------------------------
         public async Task CopyAllLocalToCloudDbAsync()
         {
-            using SQLiteConnection connection = new($"Data Source={AppSettings.Instance.DbPath}");
+            using SQLiteConnection connection = new($"Data Source={AppSettings.Instance.DbPath};Version=3;");
             await connection.OpenAsync();
 
             var supabase = SupabaseStates.Instance.Supabase;
@@ -1333,20 +1333,20 @@ namespace TmCGPTD.Models
                 throw new Exception($"Failed to delete local logs: {ex.Message}\n{ex.StackTrace}");
             }
 
-            using SQLiteConnection connection2 = new($"Data Source={AppSettings.Instance.DbPath}");
+            using SQLiteConnection connection2 = new($"Data Source={AppSettings.Instance.DbPath};Version=3;");
             await connection2.OpenAsync();
 
             VMLocator.ProgressViewModel.ProgressText = "Fetching data from the cloud...";
 
             var resultPhrase = await supabase.From<Phrase>().Get();
 
-            using (var transaction = connection2.BeginTransaction())
+            using (var transaction = await connection2.BeginTransactionAsync())
             {
                 try
                 {
                     foreach (var phrase in resultPhrase.Models)
                     {
-                        var command = new SQLiteCommand("INSERT INTO phrase (id, name, phrase, date) VALUES (@Id, @Name, @Content, @Date)", connection2);
+                        var command = new SQLiteCommand("INSERT INTO phrase (id, name, phrase, date) VALUES (@Id, @Name, @Content, @Date)", connection2, (SQLiteTransaction)transaction);
                         command.Parameters.AddWithValue("@Id", phrase.Id);
                         command.Parameters.AddWithValue("@Name", phrase.Name);
                         command.Parameters.AddWithValue("@Content", phrase.Content);
@@ -1372,13 +1372,13 @@ namespace TmCGPTD.Models
             });
 
             var resultEditorLog = await supabase.From<EditorLog>().Get();
-            using (var transaction = connection2.BeginTransaction())
+            using (var transaction = await connection2.BeginTransactionAsync())
             {
                 try
                 {
                     foreach (var editorLog in resultEditorLog.Models)
                     {
-                        var command = new SQLiteCommand("INSERT INTO editorlog (id, date, text) VALUES (@Id, @Date, @Content )", connection2);
+                        var command = new SQLiteCommand("INSERT INTO editorlog (id, date, text) VALUES (@Id, @Date, @Content )", connection2, (SQLiteTransaction)transaction);
                         command.Parameters.AddWithValue("@Id", editorLog.Id);
                         command.Parameters.AddWithValue("@Date", editorLog.Date.ToString("s"));
                         command.Parameters.AddWithValue("@Content", editorLog.Content);
@@ -1404,13 +1404,13 @@ namespace TmCGPTD.Models
             });
 
             var resultTemplate = await supabase.From<Template>().Get();
-            using (var transaction = connection2.BeginTransaction())
+            using (var transaction = await connection2.BeginTransactionAsync())
             {
                 try
                 {
                     foreach (var template in resultTemplate.Models)
                     {
-                        var command = new SQLiteCommand("INSERT INTO template (id, title, text, date) VALUES (@Id, @Name, @Content, @Date)", connection2);
+                        var command = new SQLiteCommand("INSERT INTO template (id, title, text, date) VALUES (@Id, @Name, @Content, @Date)", connection2, (SQLiteTransaction)transaction);
                         command.Parameters.AddWithValue("@Id", template.Id);
                         command.Parameters.AddWithValue("@Name", template.Title);
                         command.Parameters.AddWithValue("@Content", template.Content);
@@ -1437,7 +1437,7 @@ namespace TmCGPTD.Models
                 VMLocator.ProgressViewModel.ProgressValue = 0.75;
             });
 
-            using (var transaction = connection2.BeginTransaction())
+            using (var transaction = await connection2.BeginTransactionAsync())
             {
 
                 try
@@ -1448,7 +1448,7 @@ namespace TmCGPTD.Models
 
                         string combinedMessage = CombineMessage(resultMessage.Models);
 
-                        var command = new SQLiteCommand("INSERT INTO chatlog (id, date, title, json, text, category, lastprompt, jsonprev) VALUES (@Id, @UpdatedOn, @Title, @Json, @Message, @Category, @LastPrompt, @JsonPrev)", connection2);
+                        var command = new SQLiteCommand("INSERT INTO chatlog (id, date, title, json, text, category, lastprompt, jsonprev) VALUES (@Id, @UpdatedOn, @Title, @Json, @Message, @Category, @LastPrompt, @JsonPrev)", connection2, (SQLiteTransaction)transaction);
                         command.Parameters.AddWithValue("@Id", chatLog.Id);
                         command.Parameters.AddWithValue("@UpdatedOn", chatLog.UpdatedOn.ToString("s"));
                         command.Parameters.AddWithValue("@Title", chatLog.Title);
@@ -1621,15 +1621,15 @@ namespace TmCGPTD.Models
         // -------------------------------------------------------------------------------------------------------
         private async Task DeleteLocalDbAsync()
         {
-            using SQLiteConnection connection = new SQLiteConnection($"Data Source={AppSettings.Instance.DbPath}");
+            using SQLiteConnection connection = new SQLiteConnection($"Data Source={AppSettings.Instance.DbPath};Version=3;");
             await connection.OpenAsync();
-            using (var transaction = connection.BeginTransaction())
+            using (var transaction = await connection.BeginTransactionAsync())
             {
                 try
                 {
                     foreach (var table in new List<string> { "phrase", "chatlog", "editorlog", "template", "management" })
                     {
-                        var command = new SQLiteCommand($"DELETE FROM {table}", connection);
+                        var command = new SQLiteCommand($"DELETE FROM {table}", connection, (SQLiteTransaction)transaction);
                         await command.ExecuteNonQueryAsync();
                     }
                     transaction.Commit();
@@ -1682,7 +1682,7 @@ namespace TmCGPTD.Models
                 var supabase = SupabaseStates.Instance.Supabase;
                 var uid = SupabaseStates.Instance.Supabase!.Auth.CurrentUser!.Id;
 
-                using SQLiteConnection connection = new($"Data Source={AppSettings.Instance.DbPath}");
+                using SQLiteConnection connection = new($"Data Source={AppSettings.Instance.DbPath};Version=3;");
                 await connection.OpenAsync();
                 var command = new SQLiteCommand("SELECT * FROM management WHERE id = 0;", connection);
                 using var reader = await command.ExecuteReaderAsync();
@@ -1739,7 +1739,7 @@ namespace TmCGPTD.Models
                                 { "template", new Dictionary<long, DateTime>() }
                             };
 
-                using SQLiteConnection connection = new($"Data Source={AppSettings.Instance.DbPath}");
+                using SQLiteConnection connection = new($"Data Source={AppSettings.Instance.DbPath};Version=3;");
                 await connection.OpenAsync();
                 var command0 = new SQLiteCommand("SELECT * FROM management WHERE id != 0;", connection);
                 using var reader0 = command0.ExecuteReader();
@@ -1813,13 +1813,13 @@ namespace TmCGPTD.Models
         // -------------------------------------------------------------------------------------------------------
         public async Task DeleteManagementTableDbAsync()
         {
-            using SQLiteConnection connection = new SQLiteConnection($"Data Source={AppSettings.Instance.DbPath}");
+            using SQLiteConnection connection = new SQLiteConnection($"Data Source={AppSettings.Instance.DbPath};Version=3;");
             await connection.OpenAsync();
-            using (var transaction = connection.BeginTransaction())
+            using (var transaction = await connection.BeginTransactionAsync())
             {
                 try
                 {
-                    var command = new SQLiteCommand("DELETE FROM management", connection);
+                    var command = new SQLiteCommand("DELETE FROM management", connection, (SQLiteTransaction)transaction);
                     await command.ExecuteNonQueryAsync();
 
                     transaction.Commit();
