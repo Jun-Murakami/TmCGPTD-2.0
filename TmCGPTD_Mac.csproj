@@ -13,6 +13,8 @@
 	  <NSHighResolutionCapable>true</NSHighResolutionCapable>
 	  <Configurations>Debug;Release;Debug64</Configurations>
 	  <Platforms>AnyCPU;x64</Platforms>
+	  <AssemblyName>TmCGPTD</AssemblyName>
+	  <RootNameSpace>TmCGPTD</RootNameSpace>
   </PropertyGroup>
 
 	<PropertyGroup Condition="'$(TargetFramework)' == 'net6.0'">
