@@ -1,7 +1,6 @@
 ﻿<Styles
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:AvalonEdit="clr-namespace:AvaloniaEdit;assembly=AvaloniaEdit"
     xmlns:dialogHost="clr-namespace:DialogHostAvalonia;assembly=DialogHost.Avalonia"
     xmlns:ui="using:FluentAvalonia.UI.Controls"
     xmlns:uip="using:FluentAvalonia.UI.Controls.Primitives">
@@ -150,12 +149,6 @@
             <Setter Property="Background" Value="{DynamicResource ButtonBackground}" />
         </Style>
 
-        <Style Selector="AvalonEdit|TextEditor">
-            <Setter Property="FontSize" Value="16" />
-            <Setter Property="Background" Value="rgb(42, 43, 55)" />
-            <Setter Property="Padding" Value="5" />
-            <Setter Property="FontFamily" Value="avares://TmCGPTD/Assets/migu-1m-regular.ttf#Migu 1M" />
-        </Style>
         <Style Selector="ListBox,ListBoxItem,ListBoxItem:selected">
             <Setter Property="Height" Value="36" />
             <Setter Property="MinHeight" Value="36" />

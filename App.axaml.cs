@@ -12,14 +12,10 @@ namespace TmCGPTD
         public override void Initialize()
         {
             AvaloniaXamlLoader.Load(this);
-            if (OperatingSystem.IsMacOS())
-            {
-                this.Styles.Add(new StyleInclude(new Uri("avares://TmCGPTD/Assets/StylesMac.axaml")));
-            }
-            else
+
+            if (!OperatingSystem.IsMacOS())
             {
                 this.Styles.Add(new StyleInclude(new Uri("avares://AvaloniaEdit/Themes/Fluent/AvaloniaEdit.xaml")));
-                this.Styles.Add(new StyleInclude(new Uri("avares://TmCGPTD/Assets/Styles.axaml")));
             }
         }
 

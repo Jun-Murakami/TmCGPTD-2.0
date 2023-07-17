@@ -1,0 +1,13 @@
+﻿<Styles
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:AvalonEdit="clr-namespace:AvaloniaEdit;assembly=AvaloniaEdit">
+    <Styles>
+        <Style Selector="AvalonEdit|TextEditor">
+            <Setter Property="FontSize" Value="16" />
+            <Setter Property="Background" Value="rgb(42, 43, 55)" />
+            <Setter Property="Padding" Value="5" />
+            <Setter Property="FontFamily" Value="avares://TmCGPTD/Assets/migu-1m-regular.ttf#Migu 1M" />
+        </Style>
+    </Styles>
+</Styles>
