@@ -31,6 +31,9 @@
     <EmbeddedResource Remove="src\Views\Editors\Windows\**" />
     <None Remove="Helper\**" />
     <None Remove="src\Views\Editors\Windows\**" />
+    <AvaloniaXaml Remove="Assets\StylesMac.axaml" />
+    <Compile Remove="src\Views\Class\DocumentTextBindingBehavior.cs" />
+    <Compile Remove="src\Views\Class\ElementGenerator.cs" />
     <AvaloniaResource Include="Assets\Styles.axaml" />
     <None Remove=".gitignore" />
     <None Remove="appsettings.json" />
@@ -60,7 +63,6 @@
 
   <ItemGroup>
     <PackageReference Include="Avalonia" Version="11.0.0" />
-    <PackageReference Include="Avalonia.AvaloniaEdit" Version="11.0.0" />
     <PackageReference Include="Avalonia.Desktop" Version="11.0.0" />
     <!--Condition below is needed to remove Avalonia.Diagnostics package from build output in Release configuration.-->
     <PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" Version="11.0.0" />
@@ -68,7 +70,6 @@
       <Version>11.0.0</Version>
     </PackageReference>
     <PackageReference Include="Avalonia.Xaml.Interactivity" Version="11.0.0.1" />
-    <PackageReference Include="AvaloniaEdit.TextMate" Version="11.0.0" />
     <PackageReference Include="CefGlue.Avalonia" Version="106.5249.7-avalonia11" />
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.1" />
     <PackageReference Include="CsvHelper" Version="30.0.1" />
