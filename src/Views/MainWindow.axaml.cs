@@ -242,6 +242,8 @@ namespace TmCGPTD.Views
                         AppSettings.Instance.SyncIsOn = true;
                         await _dbProcess.CleanUpEditorLogDatabaseAsync();
 
+                        await _supabaseProcess.SubscribeAsync();
+
                         await SupabaseStates.Instance.SemaphoreSlim.WaitAsync();
                         try
                         {
@@ -251,8 +253,6 @@ namespace TmCGPTD.Views
                         {
                             SupabaseStates.Instance.SemaphoreSlim.Release();
                         }
-
-                        await _supabaseProcess.SubscribeAsync();
                     }
                 }
                 else

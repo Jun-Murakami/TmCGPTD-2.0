@@ -330,8 +330,8 @@ namespace TmCGPTD.Models
                 await connection.CloseAsync();
                 await connection.OpenAsync();
 
-                using var transaction = connection.BeginTransaction(); //プールした削除を実行する
-                {
+                //using var transaction = connection.BeginTransaction(); //プールした削除を実行する
+                //{
                     try
                     {
                         if (phraseDeletedId.Count > 0)
@@ -367,11 +367,11 @@ namespace TmCGPTD.Models
                             isDeleted = true;
                         }
 
-                        await transaction.CommitAsync();
+                        //await transaction.CommitAsync();
                     }
                     catch (Exception ex)
                     {
-                        await transaction.RollbackAsync();
+                        //await transaction.RollbackAsync();
                         ContentDialog? cdialog = null;
                         await Dispatcher.UIThread.InvokeAsync(() =>
                         {
@@ -386,7 +386,7 @@ namespace TmCGPTD.Models
                         syncIsRunning = false;
                         return;
                     }
-                }
+                //}
 
                 if(isDeleted)
                 {

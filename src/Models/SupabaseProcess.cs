@@ -146,11 +146,33 @@ namespace TmCGPTD.Models
 
                 //SupabaseStates.Instance.Supabase!.Realtime.AddDebugHandler((sender, message, exception) => PostgresDebugHandlerAsync(message));
 
-                //channel.OnPostgresChange += async (sender, args) =>
+                //channel.OnMessage += (sender, args) =>
                 //{
-                //Debug.WriteLine("change.Event:" + args.Response!._event);
-                //Debug.WriteLine("change.Payload.Data.Type:" + args.Response.Payload!.Data!.Type);
+                //_debouncer.Debounce(async () =>
+                //{
+                //try
+                //{
+                // セマフォスリムを使用して、一度に一つのタスクだけがSyncDbAsync()メソッドを実行
+                //await SupabaseStates.Instance.SemaphoreSlim.WaitAsync();
+                //try
+                //{
                 //await _syncProcess.SyncDbAsync();
+                //}
+                //finally
+                //{
+                //SupabaseStates.Instance.SemaphoreSlim.Release();
+                //}
+                //}
+                //catch (Exception ex)
+                //{
+                //ContentDialog? cdialog = null;
+                //await Dispatcher.UIThread.InvokeAsync(() =>
+                //{
+                //cdialog = new ContentDialog() { Title = $"Error", Content = $"{ex.Message}", CloseButtonText = "OK" };
+                //});
+                //await VMLocator.MainViewModel.ContentDialogShowAsync(cdialog!);
+                //}
+                //});
                 //};
                 //var debouncer = new Debouncer(TimeSpan.FromMinutes(1));
 
