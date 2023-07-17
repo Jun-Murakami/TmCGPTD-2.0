@@ -330,6 +330,9 @@ namespace TmCGPTD.Models
                     }
                 }
 
+                await connection.CloseAsync(); //一回閉じてから再度開く
+                await connection.OpenAsync();
+
                 using var transaction = connection.BeginTransaction(); //プールした削除を実行する
                 {
                     try
