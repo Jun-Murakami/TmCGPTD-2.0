@@ -85,6 +85,12 @@
     </AvaloniaResource>
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Update="src\Views\Editors\Mac\MacEditorOneView.axaml.cs">
+      <DependentUpon>MacEditorOneView.axaml</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
 	<PropertyGroup Condition="'$(OS)' == 'Windows_NT'">
 		<DefineConstants>WINDOWS</DefineConstants>
 	</PropertyGroup>

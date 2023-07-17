@@ -55,7 +55,7 @@ namespace TmCGPTD.Views
                         _editorPane.Navigate(typeof(MacEditorThreeView));
                         break;
                     case 1:
-                        _editorPane.Navigate(typeof(EditorOneView));
+                        _editorPane.Navigate(typeof(MacEditorOneView));
                         break;
                 }
             }
