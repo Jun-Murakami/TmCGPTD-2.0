@@ -105,7 +105,6 @@ namespace TmCGPTD.Models
             int cloudRecords = 0;
             int localRecords = 0;
 
-            List<long> deletedId = new();
             bool isDeleted = false;
 
             try
@@ -119,243 +118,253 @@ namespace TmCGPTD.Models
                     .Order(x => x.Id, Ordering.Descending)
                     .Get();
 
+
                 using SQLiteConnection connection = new($"Data Source={AppSettings.Instance.DbPath}");
                 await connection.OpenAsync();
-                using var transaction = connection.BeginTransaction();
+
+                var resultPhrase = await supabase
+                                    .From<Phrase>()
+                                    .Select(x => new object[] { x.Id, x.Date })
+                                    .Order(x => x.Id, Ordering.Descending)
+                                    .Get();
+
+                cloudRecords = cloudRecords + resultPhrase.Models.Count;
+
+                List<long> phraseDeletedId = new();
+
+                string sql = "SELECT id, date FROM phrase ORDER BY id DESC";
+                using var command = new SQLiteCommand(sql, connection);
+                using var reader = await command.ExecuteReaderAsync();
+
+                while (await reader.ReadAsync())
+                {
+                    //resultに同一のIDがあるか検索する
+                    var target = resultPhrase.Models.Find(x => x.Id == (long)reader["id"]);
+                    if (target != null)
+                    {
+                        if (reader["date"] != DBNull.Value)
+                        {
+                            if (target.Date > (DateTime)reader["date"]) //クラウドが新しい
+                            {
+                                cloudIsNewer++;
+                            }
+                            else if (target.Date < (DateTime)reader["date"]) //ローカルが新しい
+                            {
+                                localIsNewer++;
+                            }
+                        }
+                        else //ローカルに日付がない
+                        {
+                            cloudIsNewer++;
+                        }
+                        localRecords++;
+                    }
+                    else //クラウドに該当IDがない
+                    {
+                        //削除フラグに含まれている場合はローカルのSQLデータベースを削除する
+                        if (resultManagement.Models.Exists(x => x.DeleteTable == "phrase" && x.DeleteId == (long)reader["id"]))
+                        {
+                            phraseDeletedId.Add((long)reader["id"]);
+                        }
+                        else
+                        {
+                            localOnly++;
+                            localRecords++;
+                        }
+                    }
+                }
+
+
+                var resultTemplate = await supabase
+                                        .From<Template>()
+                                        .Select(x => new object[] { x.Id, x.Date })
+                                        .Order(x => x.Id, Ordering.Descending)
+                                        .Get();
+
+                cloudRecords = cloudRecords + resultTemplate.Models.Count;
+
+                List<long> templeteDeletedId = new();
+
+                sql = "SELECT id, date FROM template ORDER BY id DESC";
+                using var command2 = new SQLiteCommand(sql, connection);
+                using var reader2 = await command2.ExecuteReaderAsync();
+
+                while (await reader2.ReadAsync())
+                {
+                    var target = resultTemplate.Models.Find(x => x.Id == (long)reader2["id"]);
+                    if (target != null)
+                    {
+                        if (reader2["date"] != DBNull.Value)
+                        {
+                            if (target.Date > (DateTime)reader2["date"])
+                            {
+                                cloudIsNewer++;
+                            }
+                            else if (target.Date < (DateTime)reader2["date"])
+                            {
+                                localIsNewer++;
+                            }
+                        }
+                        else
+                        {
+                            cloudIsNewer++;
+                        }
+                        localRecords++;
+                    }
+                    else
+                    {
+                        //削除フラグに含まれている場合はローカルのSQLデータベースを削除する
+                        if (resultManagement.Models.Exists(x => x.DeleteTable == "template" && x.DeleteId == (long)reader2["id"]))
+                        {
+                            templeteDeletedId.Add((long)reader2["id"]);
+                        }
+                        else
+                        {
+                            localOnly++;
+                            localRecords++;
+                        }
+                    }
+                }
+
+
+                var resultEditorLog = await supabase
+                                        .From<EditorLog>()
+                                        .Select(x => new object[] { x.Id, x.Date })
+                                        .Order(x => x.Id, Ordering.Descending)
+                                        .Get();
+
+                cloudRecords = cloudRecords + resultEditorLog.Models.Count;
+
+                List<long> editorlogDeletedId = new();
+
+                sql = "SELECT id, date FROM editorlog ORDER BY id DESC";
+                using var command3 = new SQLiteCommand(sql, connection);
+                using var reader3 = await command3.ExecuteReaderAsync();
+
+                while (await reader3.ReadAsync())
+                {
+                    var target = resultEditorLog.Models.FirstOrDefault(x => x.Id == (long)reader3["id"]);
+                    if (target != null)
+                    {
+                        if (reader3["date"] != DBNull.Value)
+                        {
+                            if (target.Date > (DateTime)reader3["date"])
+                            {
+                                cloudIsNewer++;
+                            }
+                            else if (target.Date < (DateTime)reader3["date"])
+                            {
+                                localIsNewer++;
+                            }
+                        }
+                        else
+                        {
+                            cloudIsNewer++;
+                        }
+                        localRecords++;
+                    }
+                    else
+                    {
+                        //削除フラグに含まれている場合はローカルのSQLデータベースを削除する
+                        if (resultManagement.Models.Exists(x => x.DeleteTable == "editorlog" && x.DeleteId == (long)reader3["id"]))
+                        {
+                            editorlogDeletedId.Add((long)reader3["id"]);
+                        }
+                        else
+                        {
+                            localOnly++;
+                            localRecords++;
+                        }
+                    }
+                }
+
+
+                var resultChatRoom = await supabase
+                                        .From<ChatRoom>()
+                                        .Select(x => new object[] { x.Id, x.UpdatedOn })
+                                        .Order(x => x.Id, Ordering.Descending)
+                                        .Get();
+
+                cloudRecords = cloudRecords + resultChatRoom.Models.Count;
+
+                List<long> chatlogDeletedId = new();
+
+                sql = "SELECT id, date FROM chatlog ORDER BY id DESC";
+                using var command4 = new SQLiteCommand(sql, connection);
+                using var reader4 = await command4.ExecuteReaderAsync();
+
+                while (await reader4.ReadAsync())
+                {
+                    var target = resultChatRoom.Models.Find(x => x.Id == (long)reader4["id"]);
+                    if (target != null)
+                    {
+                        if (reader4["date"] != DBNull.Value)
+                        {
+                            if (target.UpdatedOn > (DateTime)reader4["date"])
+                            {
+                                cloudIsNewer++;
+                            }
+                            else if (target.UpdatedOn < (DateTime)reader4["date"])
+                            {
+                                localIsNewer++;
+                            }
+                        }
+                        else
+                        {
+                            cloudIsNewer++;
+                        }
+                        localRecords++;
+                    }
+                    else
+                    {
+                        //削除フラグに含まれている場合はローカルのSQLデータベースを削除する
+                        if (resultManagement.Models.Exists(x => x.DeleteTable == "chatlog" && x.DeleteId == (long)reader4["id"]))
+                        {
+                            chatlogDeletedId.Add((long)reader4["id"]);
+                        }
+                        else
+                        {
+                            localOnly++;
+                            localRecords++;
+                        }
+                    }
+                }
+
+                using var transaction = connection.BeginTransaction(); //プールした削除を実行する
                 {
                     try
                     {
-                        var resultPhrase = await supabase
-                                          .From<Phrase>()
-                                          .Select(x => new object[] { x.Id, x.Date })
-                                          .Order(x => x.Id, Ordering.Descending)
-                                          .Get();
-
-                        cloudRecords = cloudRecords + resultPhrase.Models.Count;
-
-                        string sql = "SELECT id, date FROM phrase ORDER BY id DESC";
-                        using var command = new SQLiteCommand(sql, connection);
-                        using var reader = await command.ExecuteReaderAsync();
-
-                        while (await reader.ReadAsync())
+                        if (phraseDeletedId.Count > 0)
                         {
-                            //resultに同一のIDがあるか検索する
-                            var target = resultPhrase.Models.Find(x => x.Id == (long)reader["id"]);
-                            if (target != null)
-                            {
-                                if (reader["date"] != DBNull.Value)
-                                {
-                                    if (target.Date > (DateTime)reader["date"]) //クラウドが新しい
-                                    {
-                                        cloudIsNewer++;
-                                    }
-                                    else if (target.Date < (DateTime)reader["date"]) //ローカルが新しい
-                                    {
-                                        localIsNewer++;
-                                    }
-                                }
-                                else //ローカルに日付がない
-                                {
-                                    cloudIsNewer++;
-                                }
-                                localRecords++;
-                            }
-                            else //クラウドに該当IDがない
-                            {
-                                //削除フラグに含まれている場合はローカルのSQLデータベースを削除する
-                                if (resultManagement.Models.Exists(x => x.DeleteTable == "phrase" && x.DeleteId == (long)reader["id"]))
-                                {
-                                    deletedId.Add((long)reader["id"]);
-                                }
-                                else
-                                {
-                                    localOnly++;
-                                    localRecords++;
-                                }
-                            }
-                        }
-
-                        if (deletedId.Count > 0)
-                        {
-                            sql = $"DELETE FROM phrase WHERE id IN ({string.Join(",", deletedId)})";
+                            sql = $"DELETE FROM phrase WHERE id IN ({string.Join(",", phraseDeletedId)})";
                             using var commandDel = new SQLiteCommand(sql, connection);
                             await commandDel.ExecuteNonQueryAsync();
                             isDeleted = true;
-                            deletedId.Clear();
                         }
 
-                        var resultTemplate = await supabase
-                                                .From<Template>()
-                                                .Select(x => new object[] { x.Id, x.Date })
-                                                .Order(x => x.Id, Ordering.Descending)
-                                                .Get();
-
-                        cloudRecords = cloudRecords + resultTemplate.Models.Count;
-
-                        sql = "SELECT id, date FROM template ORDER BY id DESC";
-                        using var command2 = new SQLiteCommand(sql, connection);
-                        using var reader2 = await command2.ExecuteReaderAsync();
-
-                        while (await reader2.ReadAsync())
+                        if (templeteDeletedId.Count > 0)
                         {
-                            var target = resultTemplate.Models.Find(x => x.Id == (long)reader2["id"]);
-                            if (target != null)
-                            {
-                                if (reader2["date"] != DBNull.Value)
-                                {
-                                    if (target.Date > (DateTime)reader2["date"])
-                                    {
-                                        cloudIsNewer++;
-                                    }
-                                    else if (target.Date < (DateTime)reader2["date"])
-                                    {
-                                        localIsNewer++;
-                                    }
-                                }
-                                else
-                                {
-                                    cloudIsNewer++;
-                                }
-                                localRecords++;
-                            }
-                            else
-                            {
-                                //削除フラグに含まれている場合はローカルのSQLデータベースを削除する
-                                if (resultManagement.Models.Exists(x => x.DeleteTable == "template" && x.DeleteId == (long)reader2["id"]))
-                                {
-                                    deletedId.Add((long)reader2["id"]);
-                                }
-                                else
-                                {
-                                    localOnly++;
-                                    localRecords++;
-                                }
-                            }
-                        }
-
-                        if (deletedId.Count > 0)
-                        {
-                            sql = $"DELETE FROM template WHERE id IN ({string.Join(",", deletedId)})";
+                            sql = $"DELETE FROM template WHERE id IN ({string.Join(",", templeteDeletedId)})";
                             using var commandDel = new SQLiteCommand(sql, connection);
                             await commandDel.ExecuteNonQueryAsync();
                             isDeleted = true;
-                            deletedId.Clear();
                         }
 
-                        var resultEditorLog = await supabase
-                                                .From<EditorLog>()
-                                                .Select(x => new object[] { x.Id, x.Date })
-                                                .Order(x => x.Id, Ordering.Descending)
-                                                .Get();
 
-                        cloudRecords = cloudRecords + resultEditorLog.Models.Count;
-
-                        sql = "SELECT id, date FROM editorlog ORDER BY id DESC";
-                        using var command3 = new SQLiteCommand(sql, connection);
-                        using var reader3 = await command3.ExecuteReaderAsync();
-
-                        while (await reader3.ReadAsync())
+                        if (editorlogDeletedId.Count > 0)
                         {
-                            var target = resultEditorLog.Models.FirstOrDefault(x => x.Id == (long)reader3["id"]);
-                            if (target != null)
-                            {
-                                if (reader3["date"] != DBNull.Value)
-                                {
-                                    if (target.Date > (DateTime)reader3["date"])
-                                    {
-                                        cloudIsNewer++;
-                                    }
-                                    else if (target.Date < (DateTime)reader3["date"])
-                                    {
-                                        localIsNewer++;
-                                    }
-                                }
-                                else
-                                {
-                                    cloudIsNewer++;
-                                }
-                                localRecords++;
-                            }
-                            else
-                            {
-                                //削除フラグに含まれている場合はローカルのSQLデータベースを削除する
-                                if (resultManagement.Models.Exists(x => x.DeleteTable == "editorlog" && x.DeleteId == (long)reader3["id"]))
-                                {
-                                    deletedId.Add((long)reader3["id"]);
-                                }
-                                else
-                                {
-                                    localOnly++;
-                                    localRecords++;
-                                }
-                            }
-                        }
-
-                        if (deletedId.Count > 0)
-                        {
-                            sql = $"DELETE FROM editorlog WHERE id IN ({string.Join(",", deletedId)})";
+                            sql = $"DELETE FROM editorlog WHERE id IN ({string.Join(",", editorlogDeletedId)})";
                             using var commandDel = new SQLiteCommand(sql, connection);
                             await commandDel.ExecuteNonQueryAsync();
                             isDeleted = true;
-                            deletedId.Clear();
                         }
 
-                        var resultChatRoom = await supabase
-                                                .From<ChatRoom>()
-                                                .Select(x => new object[] { x.Id, x.UpdatedOn })
-                                                .Order(x => x.Id, Ordering.Descending)
-                                                .Get();
-
-                        cloudRecords = cloudRecords + resultChatRoom.Models.Count;
-
-                        sql = "SELECT id, date FROM chatlog ORDER BY id DESC";
-                        using var command4 = new SQLiteCommand(sql, connection);
-                        using var reader4 = await command4.ExecuteReaderAsync();
-
-                        while (await reader4.ReadAsync())
+                        if (chatlogDeletedId.Count > 0)
                         {
-                            var target = resultChatRoom.Models.Find(x => x.Id == (long)reader4["id"]);
-                            if (target != null)
-                            {
-                                if (reader4["date"] != DBNull.Value)
-                                {
-                                    if (target.UpdatedOn > (DateTime)reader4["date"])
-                                    {
-                                        cloudIsNewer++;
-                                    }
-                                    else if (target.UpdatedOn < (DateTime)reader4["date"])
-                                    {
-                                        localIsNewer++;
-                                    }
-                                }
-                                else
-                                {
-                                    cloudIsNewer++;
-                                }
-                                localRecords++;
-                            }
-                            else
-                            {
-                                //削除フラグに含まれている場合はローカルのSQLデータベースを削除する
-                                if (resultManagement.Models.Exists(x => x.DeleteTable == "chatlog" && x.DeleteId == (long)reader4["id"]))
-                                {
-                                    deletedId.Add((long)reader4["id"]);
-                                }
-                                else
-                                {
-                                    localOnly++;
-                                    localRecords++;
-                                }
-                            }
-                        }
-
-                        if (deletedId.Count > 0)
-                        {
-                            sql = $"DELETE FROM chatlog WHERE id IN ({string.Join(",", deletedId)})";
+                            sql = $"DELETE FROM chatlog WHERE id IN ({string.Join(",", chatlogDeletedId)})";
                             using var commandDel = new SQLiteCommand(sql, connection);
                             await commandDel.ExecuteNonQueryAsync();
                             isDeleted = true;
-                            deletedId.Clear();
                         }
 
                         await transaction.CommitAsync();
@@ -375,8 +384,7 @@ namespace TmCGPTD.Models
                         });
                         await VMLocator.MainViewModel.ContentDialogShowAsync(cdialog!);
                         syncIsRunning = false;
-                        throw;
-                        //return;
+                        return;
                     }
                 }
 
