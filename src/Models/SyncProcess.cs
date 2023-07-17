@@ -55,10 +55,10 @@ namespace TmCGPTD.Models
                         cdialog = new ContentDialog
                         {
                             Title = "Confirmation",
-                        Content = resource1,
-                        PrimaryButtonText = "Use Current Data",
-                        SecondaryButtonText = "Use Cloud Data",
-                        CloseButtonText = "Log Out"
+                            Content = resource1,
+                            PrimaryButtonText = "Use Current Data",
+                            SecondaryButtonText = "Use Cloud Data",
+                            CloseButtonText = "Log Out"
                         };
                     });
                     var result = await VMLocator.MainViewModel.ContentDialogShowAsync(cdialog!);
@@ -105,6 +105,7 @@ namespace TmCGPTD.Models
             int cloudRecords = 0;
             int localRecords = 0;
 
+            List<long> deletedId = new();
             bool isDeleted = false;
 
             try
@@ -164,10 +165,7 @@ namespace TmCGPTD.Models
                                 //削除フラグに含まれている場合はローカルのSQLデータベースを削除する
                                 if (resultManagement.Models.Exists(x => x.DeleteTable == "phrase" && x.DeleteId == (long)reader["id"]))
                                 {
-                                    sql = $"DELETE FROM phrase WHERE id = {(long)reader["id"]}";
-                                    using var commandDel = new SQLiteCommand(sql, connection);
-                                    await commandDel.ExecuteNonQueryAsync();
-                                    isDeleted = true;
+                                    deletedId.Add((long)reader["id"]);
                                 }
                                 else
                                 {
@@ -175,6 +173,15 @@ namespace TmCGPTD.Models
                                     localRecords++;
                                 }
                             }
+                        }
+
+                        if (deletedId.Count > 0)
+                        {
+                            sql = $"DELETE FROM phrase WHERE id IN ({string.Join(",", deletedId)})";
+                            using var commandDel = new SQLiteCommand(sql, connection);
+                            await commandDel.ExecuteNonQueryAsync();
+                            isDeleted = true;
+                            deletedId.Clear();
                         }
 
                         var resultTemplate = await supabase
@@ -214,12 +221,9 @@ namespace TmCGPTD.Models
                             else
                             {
                                 //削除フラグに含まれている場合はローカルのSQLデータベースを削除する
-                                if (resultManagement.Models.Exists(x => x.DeleteTable == "template" && x.DeleteId == (long)reader["id"]))
+                                if (resultManagement.Models.Exists(x => x.DeleteTable == "template" && x.DeleteId == (long)reader2["id"]))
                                 {
-                                    sql = $"DELETE FROM template WHERE id = {(long)reader["id"]}";
-                                    using var commandDel = new SQLiteCommand(sql, connection);
-                                    await commandDel.ExecuteNonQueryAsync();
-                                    isDeleted = true;
+                                    deletedId.Add((long)reader2["id"]);
                                 }
                                 else
                                 {
@@ -227,6 +231,15 @@ namespace TmCGPTD.Models
                                     localRecords++;
                                 }
                             }
+                        }
+
+                        if (deletedId.Count > 0)
+                        {
+                            sql = $"DELETE FROM template WHERE id IN ({string.Join(",", deletedId)})";
+                            using var commandDel = new SQLiteCommand(sql, connection);
+                            await commandDel.ExecuteNonQueryAsync();
+                            isDeleted = true;
+                            deletedId.Clear();
                         }
 
                         var resultEditorLog = await supabase
@@ -268,10 +281,7 @@ namespace TmCGPTD.Models
                                 //削除フラグに含まれている場合はローカルのSQLデータベースを削除する
                                 if (resultManagement.Models.Exists(x => x.DeleteTable == "editorlog" && x.DeleteId == (long)reader3["id"]))
                                 {
-                                    sql = $"DELETE FROM editorlog WHERE id = {(long)reader3["id"]}";
-                                    using var commandDel = new SQLiteCommand(sql, connection);
-                                    await commandDel.ExecuteNonQueryAsync();
-                                    isDeleted = true;
+                                    deletedId.Add((long)reader3["id"]);
                                 }
                                 else
                                 {
@@ -279,6 +289,15 @@ namespace TmCGPTD.Models
                                     localRecords++;
                                 }
                             }
+                        }
+
+                        if (deletedId.Count > 0)
+                        {
+                            sql = $"DELETE FROM editorlog WHERE id IN ({string.Join(",", deletedId)})";
+                            using var commandDel = new SQLiteCommand(sql, connection);
+                            await commandDel.ExecuteNonQueryAsync();
+                            isDeleted = true;
+                            deletedId.Clear();
                         }
 
                         var resultChatRoom = await supabase
@@ -320,10 +339,7 @@ namespace TmCGPTD.Models
                                 //削除フラグに含まれている場合はローカルのSQLデータベースを削除する
                                 if (resultManagement.Models.Exists(x => x.DeleteTable == "chatlog" && x.DeleteId == (long)reader4["id"]))
                                 {
-                                    sql = $"DELETE FROM chatlog WHERE id = {(long)reader4["id"]}";
-                                    using var commandDel = new SQLiteCommand(sql, connection);
-                                    await commandDel.ExecuteNonQueryAsync();
-                                    isDeleted = true;
+                                    deletedId.Add((long)reader4["id"]);
                                 }
                                 else
                                 {
@@ -332,6 +348,16 @@ namespace TmCGPTD.Models
                                 }
                             }
                         }
+
+                        if (deletedId.Count > 0)
+                        {
+                            sql = $"DELETE FROM chatlog WHERE id IN ({string.Join(",", deletedId)})";
+                            using var commandDel = new SQLiteCommand(sql, connection);
+                            await commandDel.ExecuteNonQueryAsync();
+                            isDeleted = true;
+                            deletedId.Clear();
+                        }
+
                         await transaction.CommitAsync();
                     }
                     catch (Exception ex)
