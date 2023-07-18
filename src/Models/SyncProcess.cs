@@ -324,65 +324,59 @@ namespace TmCGPTD.Models
                 }
 
                 using SQLiteConnection connection = new($"Data Source={AppSettings.Instance.DbPath};Version=3;");
-                await connection.CloseAsync();
                 await connection.OpenAsync();
 
-                using var transaction = await connection.BeginTransactionAsync(); //プールした削除を実行する
+                try
                 {
-                    try
+                    if (phraseDeletedId.Count > 0)
                     {
-                        if (phraseDeletedId.Count > 0)
-                        {
-                            sql = $"DELETE FROM phrase WHERE id IN ({string.Join(",", phraseDeletedId)})";
-                            using var commandDel = new SQLiteCommand(sql, connection);
-                            await commandDel.ExecuteNonQueryAsync();
-                            isDeleted = true;
-                        }
-
-                        if (templeteDeletedId.Count > 0)
-                        {
-                            sql = $"DELETE FROM template WHERE id IN ({string.Join(",", templeteDeletedId)})";
-                            using var commandDel2 = new SQLiteCommand(sql, connection);
-                            await commandDel2.ExecuteNonQueryAsync();
-                            isDeleted = true;
-                        }
-
-
-                        if (editorlogDeletedId.Count > 0)
-                        {
-                            sql = $"DELETE FROM editorlog WHERE id IN ({string.Join(",", editorlogDeletedId)})";
-                            using var commandDel3 = new SQLiteCommand(sql, connection);
-                            await commandDel3.ExecuteNonQueryAsync();
-                            isDeleted = true;
-                        }
-
-                        if (chatlogDeletedId.Count > 0)
-                        {
-                            sql = $"DELETE FROM chatlog WHERE id IN ({string.Join(",", chatlogDeletedId)})";
-                            using var commandDel4 = new SQLiteCommand(sql, connection);
-                            await commandDel4.ExecuteNonQueryAsync();
-                            isDeleted = true;
-                        }
-
-                        await transaction.CommitAsync();
+                        sql = $"DELETE FROM phrase WHERE id IN ({string.Join(",", phraseDeletedId)})";
+                        using var commandDel = new SQLiteCommand(sql, connection);
+                        await commandDel.ExecuteNonQueryAsync();
+                        isDeleted = true;
                     }
-                    catch (Exception ex)
+
+                    if (templeteDeletedId.Count > 0)
                     {
-                        await transaction.RollbackAsync();
-                        ContentDialog? cdialog = null;
-                        await Dispatcher.UIThread.InvokeAsync(() =>
-                        {
-                            cdialog = new ContentDialog
-                            {
-                                Title = "Error",
-                                Content = ex.Message + ex.StackTrace,
-                                CloseButtonText = "OK"
-                            };
-                        });
-                        await VMLocator.MainViewModel.ContentDialogShowAsync(cdialog!);
-                        syncIsRunning = false;
-                        return;
+                        sql = $"DELETE FROM template WHERE id IN ({string.Join(",", templeteDeletedId)})";
+                        using var commandDel2 = new SQLiteCommand(sql, connection);
+                        await commandDel2.ExecuteNonQueryAsync();
+                        isDeleted = true;
                     }
+
+
+                    if (editorlogDeletedId.Count > 0)
+                    {
+                        sql = $"DELETE FROM editorlog WHERE id IN ({string.Join(",", editorlogDeletedId)})";
+                        using var commandDel3 = new SQLiteCommand(sql, connection);
+                        await commandDel3.ExecuteNonQueryAsync();
+                        isDeleted = true;
+                    }
+
+                    if (chatlogDeletedId.Count > 0)
+                    {
+                        sql = $"DELETE FROM chatlog WHERE id IN ({string.Join(",", chatlogDeletedId)})";
+                        using var commandDel4 = new SQLiteCommand(sql, connection);
+                        await commandDel4.ExecuteNonQueryAsync();
+                        isDeleted = true;
+                    }
+                    await connection.CloseAsync();
+                }
+                catch (Exception ex)
+                {
+                    ContentDialog? cdialog = null;
+                    await Dispatcher.UIThread.InvokeAsync(() =>
+                    {
+                        cdialog = new ContentDialog
+                        {
+                            Title = "Error",
+                            Content = ex.Message + ex.StackTrace,
+                            CloseButtonText = "OK"
+                        };
+                    });
+                    await VMLocator.MainViewModel.ContentDialogShowAsync(cdialog!);
+                    syncIsRunning = false;
+                    return;
                 }
 
                 if(isDeleted)
