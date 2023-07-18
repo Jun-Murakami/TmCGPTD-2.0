@@ -449,7 +449,7 @@ namespace TmCGPTD.ViewModels
             _tokenizer = await TokenizerBuilder.CreateByModelNameAsync("gpt-3.5-turbo"); // トークナイザーの初期化
         }
 
-        public async Task<string> GetRecentTextAsync()
+        public string GetRecentText()
         {
             List<string> inputText = new List<string>
             {

@@ -20,7 +20,7 @@ namespace TmCGPTD.Views
         private TextBlock _inputTokenTextBlock;
         private Frame _leftPane;
         private Frame _rightPane;
-        private Type _editorViewType;
+        private Type? _editorViewType;
         public MainView()
         {
             InitializeComponent();
