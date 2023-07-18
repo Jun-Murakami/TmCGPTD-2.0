@@ -11,8 +11,11 @@ namespace TmCGPTD
     {
         private TextBox? _textBox;
 
+#if WINDOWS
         protected override Type StyleKeyOverride => typeof(NumericUpDown);
-
+#else
+        Type IStyleable.StyleKey => typeof(NumericUpDown); //avalonia V11 prev6
+#endif
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
             base.OnApplyTemplate(e);
