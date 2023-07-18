@@ -50,9 +50,7 @@ namespace TmCGPTD.ViewModels
 
             _textChanged
                 .Throttle(TimeSpan.FromMilliseconds(200)) // 200ミリ秒のデバウンス時間を設定
-                .SelectMany(async _ => await GetRecentTextAsync())
-                .Subscribe();
-
+                .Subscribe(_ => GetRecentText());
         }
 
         public ICommand PrevCommand { get; }
@@ -232,7 +230,7 @@ namespace TmCGPTD.ViewModels
                         return;
                     }
                 }
-                else if (string.IsNullOrWhiteSpace(await GetRecentTextAsync()))
+                else if (string.IsNullOrWhiteSpace(GetRecentText()))
                 {
                     return;
                 }
@@ -377,7 +375,7 @@ namespace TmCGPTD.ViewModels
 
         private async Task ExportTemplateAsync()
         {
-            if (SelectedTemplateItemIndex < 0 || string.IsNullOrWhiteSpace(await GetRecentTextAsync()))
+            if (SelectedTemplateItemIndex < 0 || string.IsNullOrWhiteSpace(GetRecentText()))
             {
                 return;
             }

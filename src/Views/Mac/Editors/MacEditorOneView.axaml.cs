@@ -12,10 +12,10 @@ namespace TmCGPTD.Views
 
             var editorOne = this.FindControl<TextBox>("OneEditor");
 
-            this.AttachedToVisualTree += async (sender, e) =>
+            this.AttachedToVisualTree += (sender, e) =>
             {
-                if (editorOne == null || VMLocator.EditorViewModel == null || await VMLocator.EditorViewModel.GetRecentTextAsync() == null) return;
-                VMLocator.EditorViewModel.Editor1Text = await VMLocator.EditorViewModel.GetRecentTextAsync();
+                if (editorOne == null || VMLocator.EditorViewModel == null || VMLocator.EditorViewModel.GetRecentText() == null) return;
+                VMLocator.EditorViewModel.Editor1Text = VMLocator.EditorViewModel.GetRecentText();
                 VMLocator.EditorViewModel.Editor2Text = string.Empty;
                 VMLocator.EditorViewModel.Editor3Text = string.Empty;
                 VMLocator.EditorViewModel.Editor4Text = string.Empty;

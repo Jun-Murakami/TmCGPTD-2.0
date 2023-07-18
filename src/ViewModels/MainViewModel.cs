@@ -270,7 +270,7 @@ namespace TmCGPTD.ViewModels
 
         private async Task PostAsync()
         {
-            if (string.IsNullOrWhiteSpace(await VMLocator.EditorViewModel.GetRecentTextAsync()) || VMLocator.ChatViewModel.ChatIsRunning)
+            if (string.IsNullOrWhiteSpace(VMLocator.EditorViewModel.GetRecentText()) || VMLocator.ChatViewModel.ChatIsRunning)
             {
                 return;
             }
@@ -739,7 +739,7 @@ namespace TmCGPTD.ViewModels
 
         private async Task CopyToClipboard()
         {
-            if (string.IsNullOrWhiteSpace(await VMLocator.EditorViewModel.GetRecentTextAsync()))
+            if (string.IsNullOrWhiteSpace(VMLocator.EditorViewModel.GetRecentText()))
             {
                 return;
             }
@@ -753,7 +753,7 @@ namespace TmCGPTD.ViewModels
             {
                 await _dbProcess.InserEditorLogDatabasetAsync();
 #if WINDOWS
-                await ApplicationExtensions.GetTopLevel(Avalonia.Application.Current!)!.Clipboard!.SetTextAsync(await VMLocator.EditorViewModel.GetRecentTextAsync());
+                await ApplicationExtensions.GetTopLevel(Avalonia.Application.Current!)!.Clipboard!.SetTextAsync(VMLocator.EditorViewModel.GetRecentText());
 #else
                 await Avalonia.Application.Current.Clipboard.SetTextAsync(VMLocator.EditorViewModel.GetRecentText());
 #endif
