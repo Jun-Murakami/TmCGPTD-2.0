@@ -76,7 +76,8 @@ namespace TmCGPTD.ViewModels
                     VMLocator.CloudLoggedinViewModel.Email = SupabaseStates.Instance.Supabase.Auth.CurrentSession.User!.Email;
                     await SupabaseStates.Instance.Supabase.Auth.RefreshSession();
                     await _databaseProcess.CleanUpEditorLogDatabaseAsync();
-                    await SupabaseProcess.Instance.DelaySyncDbAsync();
+                    await SupabaseProcess.Instance.SubscribeSyncAsync();
+                    //await SupabaseProcess.Instance.DelaySyncDbAsync();
                 }
                 else
                 {
@@ -231,7 +232,8 @@ namespace TmCGPTD.ViewModels
                         AppSettings.Instance.Provider = "You are logged in with Google.";
                         await SupabaseStates.Instance.Supabase.Auth.RefreshSession();
                         await _databaseProcess.CleanUpEditorLogDatabaseAsync();
-                        await SupabaseProcess.Instance.DelaySyncDbAsync();
+                        await SupabaseProcess.Instance.SubscribeSyncAsync();
+                        //await SupabaseProcess.Instance.DelaySyncDbAsync();
                     }
                 }
             }
@@ -277,7 +279,8 @@ namespace TmCGPTD.ViewModels
                         VMLocator.CloudLoggedinViewModel.Email = SupabaseStates.Instance.Supabase.Auth.CurrentSession.User!.Email;
                         await SupabaseStates.Instance.Supabase.Auth.RefreshSession();
                         await _databaseProcess.CleanUpEditorLogDatabaseAsync();
-                        await SupabaseProcess.Instance.DelaySyncDbAsync();
+                        await SupabaseProcess.Instance.SubscribeSyncAsync();
+                        //await SupabaseProcess.Instance.DelaySyncDbAsync();
                     }
                 }
             }

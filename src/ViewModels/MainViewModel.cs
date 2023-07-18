@@ -281,8 +281,6 @@ namespace TmCGPTD.ViewModels
 
             try
             {
-                await SupabaseProcess.Instance.DelaySyncDbAsync();//同期チェック
-
                 if (VMLocator.ChatViewModel.ReEditIsOn && SelectedLeftPane == "API Chat")
                 {
                     string? jsonCopy = System.Text.Json.JsonSerializer.Serialize(VMLocator.ChatViewModel.ConversationHistory);
@@ -343,8 +341,6 @@ namespace TmCGPTD.ViewModels
 
         private async Task ImportChatLogAsync()
         {
-            await SupabaseProcess.Instance.DelaySyncDbAsync();//同期チェック
-
             var dialog = new FilePickerOpenOptions
             {
                 AllowMultiple = false,
@@ -377,8 +373,6 @@ namespace TmCGPTD.ViewModels
 
         private async Task ExportChatLogAsync()
         {
-            await SupabaseProcess.Instance.DelaySyncDbAsync();//同期チェック
-
             var dialog = new FilePickerSaveOptions
             {
                 Title = "Export CSV file",
@@ -416,8 +410,6 @@ namespace TmCGPTD.ViewModels
 
         private async Task DeleteChatLogAsync()
         {
-            await SupabaseProcess.Instance.DelaySyncDbAsync();//同期チェック
-
             if (VMLocator.DataGridViewModel.SelectedItem == null || VMLocator.DataGridViewModel.SelectedItemIndex == -1)
             {
                 return;
@@ -453,16 +445,12 @@ namespace TmCGPTD.ViewModels
 
         private async Task LoadChatListAsync(string keyword)
         {
-            await SupabaseProcess.Instance.DelaySyncDbAsync();//同期チェック
-
             VMLocator.DataGridViewModel.ChatList = await _dbProcess.SearchChatDatabaseAsync(keyword);
         }
         // ----------------------------------------------------------------------------------------------------------------------------
 
         private async void SelectedPhraseItemChangedAsync()
         {
-            await SupabaseProcess.Instance.DelaySyncDbAsync();//同期チェック
-
             try
             {
                 var loadedPhrases = await _dbProcess.GetPhrasePresetsAsync(SelectedPhraseItem!);
@@ -484,8 +472,6 @@ namespace TmCGPTD.ViewModels
 
         private async Task SavePhrasesAsync()
         {
-            await SupabaseProcess.Instance.DelaySyncDbAsync();//同期チェック
-
             string? phrasesText;
             ContentDialog dialog;
             ContentDialogResult dialogResult;
@@ -543,8 +529,6 @@ namespace TmCGPTD.ViewModels
 
         private async Task RenamePhrasesAsync()
         {
-            await SupabaseProcess.Instance.DelaySyncDbAsync();//同期チェック
-
             if (string.IsNullOrWhiteSpace(SelectedPhraseItem))
             {
                 return;
@@ -587,8 +571,6 @@ namespace TmCGPTD.ViewModels
 
         private async Task DeletePhrasesAsync()
         {
-            await SupabaseProcess.Instance.DelaySyncDbAsync();//同期チェック
-
             if (string.IsNullOrWhiteSpace(SelectedPhraseItem))
             {
                 return;
@@ -623,8 +605,6 @@ namespace TmCGPTD.ViewModels
 
         private async Task ImportPhrasesAsync()
         {
-            await SupabaseProcess.Instance.DelaySyncDbAsync();//同期チェック
-
             var dialog = new FilePickerOpenOptions
             {
                 AllowMultiple = false,
@@ -662,8 +642,6 @@ namespace TmCGPTD.ViewModels
 
         private async Task ExportPhrasesAsync()
         {
-            await SupabaseProcess.Instance.DelaySyncDbAsync();//同期チェック
-
             if (string.IsNullOrWhiteSpace(SelectedPhraseItem))
             {
                 return;
@@ -714,8 +692,6 @@ namespace TmCGPTD.ViewModels
 
         public async Task LoadPhraseItemsAsync()
         {
-            await SupabaseProcess.Instance.DelaySyncDbAsync();//同期チェック
-
             var phrases = await _dbProcess.GetPhrasesAsync();
             PhrasePresetsItems!.Clear();
 

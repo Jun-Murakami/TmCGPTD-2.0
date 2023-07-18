@@ -19,7 +19,7 @@ namespace TmCGPTD.Models
     {
         SyncProcess _syncProcess = new();
         private SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
-        private readonly Debouncer _debouncer = new Debouncer(TimeSpan.FromMinutes(0.5));
+        private readonly Debouncer _debouncer = new Debouncer(TimeSpan.FromMinutes(0.3));
 
         private static SupabaseProcess? _instance;
         public static SupabaseProcess Instance
@@ -140,7 +140,7 @@ namespace TmCGPTD.Models
             await SupabaseStates.Instance.Supabase!.Auth.SignOut();
         }
 
-        public async Task SubscribeAsync()
+        public async Task SubscribeSyncAsync()
         {
             try
             {

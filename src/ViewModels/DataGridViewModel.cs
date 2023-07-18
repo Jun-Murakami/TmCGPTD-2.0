@@ -72,8 +72,6 @@ namespace TmCGPTD.ViewModels
         HtmlProcess _htmlProcess = new HtmlProcess();
         private async void ShowChatLogAsync(long _selectedItem)
         {
-            await SupabaseProcess.Instance.DelaySyncDbAsync();//同期チェック
-
             if (!VMLocator.ChatViewModel.ChatIsRunning)
             {
                 var result = await _dbProcess.GetChatLogDatabaseAsync(_selectedItem);

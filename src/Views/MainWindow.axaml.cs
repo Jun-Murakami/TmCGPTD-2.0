@@ -11,15 +11,9 @@ using System.Threading.Tasks;
 using TmCGPTD.Models;
 using Avalonia.Interactivity;
 using System.Globalization;
-using Avalonia.Markup.Xaml.Styling;
-using System.Linq;
 using Avalonia.Markup.Xaml;
 using System.Diagnostics;
 using Avalonia.Input;
-using Supabase.Gotrue.Interfaces;
-using Supabase.Gotrue;
-using static Supabase.Gotrue.Constants;
-using System.Reflection;
 
 namespace TmCGPTD.Views
 {
@@ -28,7 +22,6 @@ namespace TmCGPTD.Views
         public MainWindowViewModel MainWindowViewModel { get; } = new MainWindowViewModel();
         readonly DatabaseProcess _dbProcess = new();
         readonly SupabaseProcess _supabaseProcess = new();
-        readonly SyncProcess _syncProcess = new();
 
         public MainWindow()
         {
@@ -192,7 +185,7 @@ namespace TmCGPTD.Views
                 this.GetObservable(ClientSizeProperty).Subscribe(size => OnSizeChanged(size));
                 _previousWidth = ClientSize.Width;
 
-                _dbProcess.SetLogDatabase();
+                //_dbProcess.SetLogDatabase();
                 await _dbProcess.UpdateChatLogDatabaseAsync();
 
                 VMLocator.DataGridViewModel.ChatList = await _dbProcess.SearchChatDatabaseAsync();
@@ -243,6 +236,7 @@ namespace TmCGPTD.Views
                         AppSettings.Instance.SyncIsOn = true;
                         await _dbProcess.CleanUpEditorLogDatabaseAsync();
 
+                        await SupabaseProcess.Instance.SubscribeSyncAsync();
                         await SupabaseProcess.Instance.DelaySyncDbAsync();
                     }
                 }

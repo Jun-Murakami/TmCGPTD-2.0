@@ -214,8 +214,6 @@ namespace TmCGPTD.ViewModels
 
         private async Task SaveTemplateAsync()
         {
-            await SupabaseProcess.Instance.DelaySyncDbAsync();//同期チェック
-
             ContentDialog dialog;
             ContentDialogResult dialogResult;
             try
@@ -273,8 +271,6 @@ namespace TmCGPTD.ViewModels
 
         private async Task RenameTemplateAsync()
         {
-            await SupabaseProcess.Instance.DelaySyncDbAsync();//同期チェック
-
             if (SelectedTemplateItemIndex < 0)
             {
                 return;
@@ -313,8 +309,6 @@ namespace TmCGPTD.ViewModels
 
         private async Task DeleteTemplateAsync()
         {
-            await SupabaseProcess.Instance.DelaySyncDbAsync();//同期チェック
-
             if (SelectedTemplateItemIndex < 0)
             {
                 return;
@@ -348,8 +342,6 @@ namespace TmCGPTD.ViewModels
 
         private async Task ImportTemplateAsync()
         {
-            await SupabaseProcess.Instance.DelaySyncDbAsync();//同期チェック
-
             var dialog = new FilePickerOpenOptions
             {
                 AllowMultiple = false,
@@ -385,8 +377,6 @@ namespace TmCGPTD.ViewModels
 
         private async Task ExportTemplateAsync()
         {
-            await SupabaseProcess.Instance.DelaySyncDbAsync();//同期チェック
-
             if (SelectedTemplateItemIndex < 0 || string.IsNullOrWhiteSpace(await GetRecentTextAsync()))
             {
                 return;
@@ -461,8 +451,6 @@ namespace TmCGPTD.ViewModels
 
         public async Task<string> GetRecentTextAsync()
         {
-            await SupabaseProcess.Instance.DelaySyncDbAsync();//同期チェック
-
             List<string> inputText = new List<string>
             {
                 string.Join(Environment.NewLine, Editor1Text!.Trim()),
