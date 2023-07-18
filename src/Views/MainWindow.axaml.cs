@@ -192,6 +192,7 @@ namespace TmCGPTD.Views
                 this.GetObservable(ClientSizeProperty).Subscribe(size => OnSizeChanged(size));
                 _previousWidth = ClientSize.Width;
 
+                _dbProcess.SetLogDatabase();
                 await _dbProcess.UpdateChatLogDatabaseAsync();
 
                 VMLocator.DataGridViewModel.ChatList = await _dbProcess.SearchChatDatabaseAsync();
@@ -242,17 +243,7 @@ namespace TmCGPTD.Views
                         AppSettings.Instance.SyncIsOn = true;
                         await _dbProcess.CleanUpEditorLogDatabaseAsync();
 
-                        await _supabaseProcess.SubscribeAsync();
-
-                        await SupabaseStates.Instance.SemaphoreSlim.WaitAsync();
-                        try
-                        {
-                            await _syncProcess.SyncDbAsync();
-                        }
-                        finally
-                        {
-                            SupabaseStates.Instance.SemaphoreSlim.Release();
-                        }
+                        await SupabaseProcess.Instance.DelaySyncDbAsync();
                     }
                 }
                 else

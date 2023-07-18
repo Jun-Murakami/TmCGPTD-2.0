@@ -20,7 +20,5 @@ namespace TmCGPTD
         public AesSettings? AesSettings { get; set; }
         public Supabase.Client? Supabase { get; set; }
         public ProviderAuthState? AuthState { get; set; }
-
-        public readonly SemaphoreSlim SemaphoreSlim = new SemaphoreSlim(1, 1);
     }
 }

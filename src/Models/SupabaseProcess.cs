@@ -9,11 +9,6 @@ using System.Threading.Tasks;
 using static TmCGPTD.Views.WebLogInView;
 using Supabase;
 using System.Collections.Generic;
-using static Supabase.Realtime.Constants;
-using Supabase.Realtime.Interfaces;
-using Supabase.Realtime.PostgresChanges;
-using Supabase.Realtime;
-using Supabase.Realtime.Socket;
 using Avalonia.Threading;
 using System.Threading;
 
@@ -22,11 +17,18 @@ namespace TmCGPTD.Models
     public class SupabaseProcess
     {
         SyncProcess _syncProcess = new();
-        private readonly Debouncer _debouncer;
+        private SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
+        private readonly Debouncer _debouncer = new Debouncer(TimeSpan.FromMinutes(0.5));
 
-        public SupabaseProcess()
+        private static SupabaseProcess? _instance;
+        public static SupabaseProcess Instance
         {
-            _debouncer = new Debouncer(TimeSpan.FromMinutes(0.5));
+            get
+            {
+                _instance ??= new SupabaseProcess();
+
+                return _instance;
+            }
         }
 
         public async Task InitializeSupabaseAsync()
@@ -137,86 +139,35 @@ namespace TmCGPTD.Models
             await SupabaseStates.Instance.Supabase!.Auth.SignOut();
         }
 
-        public async Task SubscribeAsync()
+        public async Task DelaySyncDbAsync()
         {
+            if (SupabaseStates.Instance.Supabase == null || SupabaseStates.Instance.Supabase.Auth.CurrentUser == null || !AppSettings.Instance.SyncIsOn) return;
+
             try
-            { 
-                await SupabaseStates.Instance.Supabase!.Realtime.ConnectAsync();
-                var channel = SupabaseStates.Instance.Supabase!.Realtime.Channel("realtime", "public", "*");
-
-                //SupabaseStates.Instance.Supabase!.Realtime.AddDebugHandler((sender, message, exception) => PostgresDebugHandlerAsync(message));
-
-                //channel.OnMessage += (sender, args) =>
-                //{
-                //_debouncer.Debounce(async () =>
-                //{
-                //try
-                //{
-                // セマフォスリムを使用して、一度に一つのタスクだけがSyncDbAsync()メソッドを実行
-                //await SupabaseStates.Instance.SemaphoreSlim.WaitAsync();
-                //try
-                //{
-                //await _syncProcess.SyncDbAsync();
-                //}
-                //finally
-                //{
-                //SupabaseStates.Instance.SemaphoreSlim.Release();
-                //}
-                //}
-                //catch (Exception ex)
-                //{
-                //ContentDialog? cdialog = null;
-                //await Dispatcher.UIThread.InvokeAsync(() =>
-                //{
-                //cdialog = new ContentDialog() { Title = $"Error", Content = $"{ex.Message}", CloseButtonText = "OK" };
-                //});
-                //await VMLocator.MainViewModel.ContentDialogShowAsync(cdialog!);
-                //}
-                //});
-                //};
-                //var debouncer = new Debouncer(TimeSpan.FromMinutes(1));
-
-                channel.AddPostgresChangeHandler(PostgresChangesOptions.ListenType.All, (_, change) =>
+            {
+                // 5分間の間に複数の呼び出しを1つにまとめる
+                _debouncer.Debounce(async () =>
                 {
-                    _debouncer.Debounce(async () =>
+                    if(VMLocator.ChatViewModel.ChatIsRunning)
                     {
-                        if(VMLocator.ChatViewModel.ChatIsRunning)
+                        while(VMLocator.ChatViewModel.ChatIsRunning)
                         {
-                            while(VMLocator.ChatViewModel.ChatIsRunning)
-                            {
-                                await Task.Delay(1000);
-                            }
+                            await Task.Delay(1000);
                         }
+                    }
 
-                        try
-                        {
-                            Debug.WriteLine("change.Event:" + change.Event);
-                            Debug.WriteLine("change.Payload:" + change.Payload);
+                    // セマフォスリムを使用して、一度に一つのタスクだけがSyncDbAsync()メソッドを実行
+                    await _semaphore.WaitAsync();
+                    try
+                    {
+                        await _syncProcess.SyncDbAsync();
+                    }
+                    finally
+                    {
+                        _semaphore.Release();
+                    }
 
-                            // セマフォスリムを使用して、一度に一つのタスクだけがSyncDbAsync()メソッドを実行
-                            await SupabaseStates.Instance.SemaphoreSlim.WaitAsync();
-                            try
-                            {
-                                await _syncProcess.SyncDbAsync();
-                            }
-                            finally
-                            {
-                                SupabaseStates.Instance.SemaphoreSlim.Release();
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            ContentDialog? cdialog = null;
-                            await Dispatcher.UIThread.InvokeAsync(() =>
-                            {
-                                cdialog = new ContentDialog() { Title = $"Error", Content = $"{ex.Message}", CloseButtonText = "OK" };
-                            });
-                            await VMLocator.MainViewModel.ContentDialogShowAsync(cdialog!);
-                        }
-                    });
                 });
-
-                await channel.Subscribe();
             }
             catch (Exception ex)
             {
@@ -229,25 +180,40 @@ namespace TmCGPTD.Models
             }   
         }
 
-        private void PostgresDebugHandlerAsync(string message)
+        public async Task SingleSyncDbAsync()
         {
-            if (message.Contains("\"event\":\"postgres_changes\""))
+            if (SupabaseStates.Instance.Supabase == null || SupabaseStates.Instance.Supabase.Auth.CurrentUser == null || !AppSettings.Instance.SyncIsOn) return;
+
+            try
             {
-                _debouncer.Debounce(async () =>
+                if (VMLocator.ChatViewModel.ChatIsRunning)
                 {
-                    try
+                    while (VMLocator.ChatViewModel.ChatIsRunning)
                     {
-                        Debug.WriteLine("message:" + message);
-                        await _syncProcess.SyncDbAsync();
+                        await Task.Delay(1000);
                     }
-                    catch (Exception ex)
-                    {
-                        var cdialog = new ContentDialog() { Title = $"Error", Content = $"{ex.Message}", CloseButtonText = "OK" };
-                        await VMLocator.MainViewModel.ContentDialogShowAsync(cdialog);
-                    }
-                });
+                }
+
+                // セマフォスリムを使用して、一度に一つのタスクだけがSyncDbAsync()メソッドを実行
+                await _semaphore.WaitAsync();
+                try
+                {
+                    await _syncProcess.SyncDbAsync();
+                }
+                finally
+                {
+                    _semaphore.Release();
+                }
             }
-            
+            catch (Exception ex)
+            {
+                ContentDialog? cdialog = null;
+                await Dispatcher.UIThread.InvokeAsync(() =>
+                {
+                    cdialog = new ContentDialog() { Title = $"Error", Content = $"{ex.Message}", CloseButtonText = "OK" };
+                });
+                await VMLocator.MainViewModel.ContentDialogShowAsync(cdialog!);
+            }
         }
     }
 }

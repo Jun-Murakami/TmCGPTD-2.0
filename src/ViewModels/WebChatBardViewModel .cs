@@ -29,7 +29,7 @@ namespace TmCGPTD.ViewModels
         {
             try
             {
-                string escapedString = JsonSerializer.Serialize(VMLocator.EditorViewModel.GetRecentText());
+                string escapedString = JsonSerializer.Serialize(await VMLocator.EditorViewModel.GetRecentTextAsync());
 
                 string script = @"const mainTag = document.querySelector('main');
                         const textarea = mainTag.querySelector('textarea');" +

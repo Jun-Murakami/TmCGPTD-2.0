@@ -61,7 +61,7 @@ namespace TmCGPTD.ViewModels
             if (LastId < 0) //チャット表示無ければ新規と判断
             {
                 await InitializeChatAsync();
-                await Task.Delay(500);
+                await Task.Delay(200);
             }
 
             try
@@ -82,7 +82,7 @@ namespace TmCGPTD.ViewModels
                 }
 
                 // ユーザー入力を取得
-                string postText = VMLocator.EditorViewModel.GetRecentText();
+                string postText = await VMLocator.EditorViewModel.GetRecentTextAsync();
                 postText = postText.Trim().Trim('\r', '\n');
 
                 // ロゴを削除

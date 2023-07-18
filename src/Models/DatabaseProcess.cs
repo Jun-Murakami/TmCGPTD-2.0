@@ -39,6 +39,14 @@ namespace TmCGPTD.Models
         private static string? Uid => SupabaseStates.Instance.Supabase?.Auth.CurrentSession?.User?.Id;
         public static SQLiteConnection? memoryConnection; // メモリ上のSQLコネクション
 
+        public void SetLogDatabase()
+        {
+            SQLiteConnection.Changed += (sender, eventArgs) =>
+            {
+                Debug.WriteLine($"{eventArgs.EventType}: {eventArgs.Text}");
+            };
+        }
+
         // SQL db初期化--------------------------------------------------------------
         public static void CreateDatabase()
         {
