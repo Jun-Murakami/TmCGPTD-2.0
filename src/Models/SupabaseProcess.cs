@@ -11,6 +11,7 @@ using Supabase;
 using System.Collections.Generic;
 using Avalonia.Threading;
 using System.Threading;
+using Supabase.Realtime.PostgresChanges;
 
 namespace TmCGPTD.Models
 {
@@ -137,6 +138,66 @@ namespace TmCGPTD.Models
         public async Task LogOutAsync()
         {
             await SupabaseStates.Instance.Supabase!.Auth.SignOut();
+        }
+
+        public async Task SubscribeAsync()
+        {
+            try
+            {
+                await SupabaseStates.Instance.Supabase!.Realtime.ConnectAsync();
+                var channel = SupabaseStates.Instance.Supabase!.Realtime.Channel("realtime", "public", "*");
+
+                channel.AddPostgresChangeHandler(PostgresChangesOptions.ListenType.All, (_, change) =>
+                {
+                    _debouncer.Debounce(async () =>
+                    {
+                        if (VMLocator.ChatViewModel.ChatIsRunning)
+                        {
+                            while (VMLocator.ChatViewModel.ChatIsRunning)
+                            {
+                                await Task.Delay(1000);
+                            }
+                        }
+
+                        try
+                        {
+                            Debug.WriteLine("change.Event:" + change.Event);
+                            Debug.WriteLine("change.Payload:" + change.Payload);
+
+                            // セマフォスリムを使用して、一度に一つのタスクだけがSyncDbAsync()メソッドを実行
+                            await _semaphore.WaitAsync();
+                            try
+                            {
+                                await _syncProcess.SyncDbAsync();
+                            }
+                            finally
+                            {
+                                _semaphore.Release();
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            ContentDialog? cdialog = null;
+                            await Dispatcher.UIThread.InvokeAsync(() =>
+                            {
+                                cdialog = new ContentDialog() { Title = $"Error", Content = $"{ex.Message}", CloseButtonText = "OK" };
+                            });
+                            await VMLocator.MainViewModel.ContentDialogShowAsync(cdialog!);
+                        }
+                    });
+                });
+
+                await channel.Subscribe();
+            }
+            catch (Exception ex)
+            {
+                ContentDialog? cdialog = null;
+                await Dispatcher.UIThread.InvokeAsync(() =>
+                {
+                    cdialog = new ContentDialog() { Title = $"Error", Content = $"{ex.Message}", CloseButtonText = "OK" };
+                });
+                await VMLocator.MainViewModel.ContentDialogShowAsync(cdialog!);
+            }
         }
 
         public async Task DelaySyncDbAsync()
