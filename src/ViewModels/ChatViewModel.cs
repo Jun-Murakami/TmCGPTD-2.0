@@ -82,7 +82,7 @@ namespace TmCGPTD.ViewModels
                 }
 
                 // ユーザー入力を取得
-                string postText = await VMLocator.EditorViewModel.GetRecentTextAsync();
+                string postText = VMLocator.EditorViewModel.GetRecentText();
                 postText = postText.Trim().Trim('\r', '\n');
 
                 // ロゴを削除
