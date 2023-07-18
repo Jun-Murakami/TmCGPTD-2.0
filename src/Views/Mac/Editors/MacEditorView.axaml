@@ -36,7 +36,7 @@
                           VerticalAlignment="Center"
                           HorizontalAlignment="Stretch"
                           Margin="5,5,2,5"
-                          ItemsSource="{Binding TemplateItems}"
+                          Items="{Binding TemplateItems}"
                           SelectedIndex="{Binding SelectedTemplateItemIndex}"
                           SelectedItem="{Binding SelectedTemplateItem}">
                     <ComboBox.ItemTemplate>
@@ -65,7 +65,7 @@
                           VerticalAlignment="Center"
                           Margin="5,0,2,0"
                           HorizontalAlignment="Stretch"
-                          ItemsSource="{Binding EditorLogLists}"
+                          Items="{Binding EditorLogLists}"
                           SelectedIndex="{Binding SelectedEditorLogIndex}"
                           SelectedItem="{Binding SelectedEditorLog}">
                     <ComboBox.ItemTemplate>
