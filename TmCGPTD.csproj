@@ -33,25 +33,13 @@
         <Compile Remove="Helper\**" />
         <EmbeddedResource Remove="Helper\**" />
         <None Remove="Helper\**" />
-        <AvaloniaResource Include="Assets\Styles.axaml" />
         <None Remove=".gitignore" />
-        <None Remove="appsettings.json" />
-        <None Remove="Assets\License.txt" />
-        <None Remove="Assets\TmCGPTD.ico" />
-        <AvaloniaResource Include="Assets\Lato-Regular.ttf" />
-        <AvaloniaResource Include="Assets\TmCGPTD.ico" />
-        <AvaloniaResource Include="Assets\TmCGPTD2.png" />
-        <AvaloniaResource Include="Assets\iconClip.png" />
-        <AvaloniaResource Include="Assets\iconWrite.png" />
-        <AvaloniaResource Include="Assets\migu-1m-regular.ttf" />
         <AvaloniaResource Include="supabaseConfig.json" />
+		<AvaloniaResource Include="appsettings.json" />
     </ItemGroup>
     <ItemGroup>
         <Content Include="Assets\TmCGPTD.ico" />
         <Content Include="TmCGPTD.ico" />
-    </ItemGroup>
-    <ItemGroup>
-        <AvaloniaResource Include="appsettings.json" />
     </ItemGroup>
     <ItemGroup>
         <TrimmerRootDescriptor Include="Roots.xml" />
