@@ -80,8 +80,12 @@ namespace TmCGPTD.Views
                 if (textBox.Text == null ) return;
 
                 // Get the currently focused control
+#if WINDOWS
                 var focusManager = TopLevel.GetTopLevel(this)!.FocusManager;
                 var focusedControl = focusManager?.GetFocusedElement();
+#else
+                var focusedControl = FocusManager.Instance!.Current;
+#endif
                 if (focusedControl == null) return;
 
                 if (focusedControl is TextBox focusedTextBox)
