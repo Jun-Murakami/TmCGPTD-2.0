@@ -14,6 +14,7 @@ using HarfBuzzSharp;
 using System.Reflection;
 using System.Diagnostics;
 using Avalonia.Platform;
+using Avalonia;
 
 namespace TmCGPTD.Views
 {

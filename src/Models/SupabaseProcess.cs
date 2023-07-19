@@ -1,4 +1,5 @@
 ﻿using Avalonia.Platform;
+using Avalonia;
 using FluentAvalonia.UI.Controls;
 using Supabase.Gotrue;
 using System;

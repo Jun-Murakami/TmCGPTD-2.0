@@ -1,4 +1,5 @@
-﻿using Avalonia.Platform;
+﻿using Avalonia;
+using Avalonia.Platform;
 using HtmlAgilityPack;
 using System;
 using System.Net;
