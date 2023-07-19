@@ -211,7 +211,7 @@ namespace TmCGPTD.Models
 
             try
             {
-                // 5分間の間に複数の呼び出しを1つにまとめる
+                // デバウンサーで5分間の間に複数の呼び出しを1つにまとめる
                 _debouncer.Debounce(async () =>
                 {
                     if(VMLocator.ChatViewModel.ChatIsRunning)
