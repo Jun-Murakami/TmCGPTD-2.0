@@ -40,7 +40,7 @@ namespace TmCGPTD.Models
 #if WINDOWS
                 using var streamReader = new StreamReader(AssetLoader.Open(new Uri("avares://TmCGPTD/supabaseConfig.json")));
 #else
-                using var streamReader = new StreamReader(AvaloniaLocator.Current.GetService<IAssetLoader>()!.Open(new Uri("avares://TmCGPTD/Assets/supabaseConfig.json")));
+                using var streamReader = new StreamReader(AvaloniaLocator.Current.GetService<IAssetLoader>()!.Open(new Uri("avares://TmCGPTD/supabaseConfig.json")));
 #endif
                 string jsonString = await streamReader.ReadToEndAsync();
 
