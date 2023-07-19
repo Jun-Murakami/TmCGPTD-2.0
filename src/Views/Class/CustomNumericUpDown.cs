@@ -7,15 +7,16 @@ using Avalonia;
 
 namespace TmCGPTD
 {
+#if WINDOWS
     public class CustomNumericUpDown : NumericUpDown
     {
-        private TextBox? _textBox;
-
-#if WINDOWS
         protected override Type StyleKeyOverride => typeof(NumericUpDown);
 #else
+    public class CustomNumericUpDown : NumericUpDown, IStyleable
+    {
         Type IStyleable.StyleKey => typeof(NumericUpDown); //avalonia V11 prev6
 #endif
+        private TextBox? _textBox;
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
             base.OnApplyTemplate(e);
