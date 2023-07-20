@@ -868,7 +868,7 @@ namespace TmCGPTD.Models
                     if (!cloudIds.Contains(localId))
                     {
                         const string deleteSql = "DELETE FROM phrase WHERE id = @Id;";
-                        var deleteCommand = new SQLiteCommand(deleteSql, connection;
+                        var deleteCommand = new SQLiteCommand(deleteSql, connection);
                         deleteCommand.Parameters.AddWithValue("@Id", localId);
                         await deleteCommand.ExecuteNonQueryAsync();
                     }
