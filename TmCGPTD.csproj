@@ -62,8 +62,7 @@
 		<PackageReference Include="Avalonia.Desktop" Version="11.0.0" />
 		<!-- Condition below is needed to remove Avalonia.Diagnostics package from build output in Release configuration. -->
 		<PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" Version="11.0.0" />
-		<PackageReference Include="Avalonia.Diagnostics" Condition="'$(Configuration)'=='Debug64'">
-			<Version>11.0.0</Version>
+		<PackageReference Include="Avalonia.Diagnostics" Condition="'$(Configuration)'=='Debug64'" Version="11.0.0">
 		</PackageReference>
 		<PackageReference Include="Avalonia.Xaml.Interactivity" Version="11.0.0.1" />
 		<PackageReference Include="AvaloniaEdit.TextMate" Version="11.0.0" />
@@ -87,10 +86,40 @@
         <PackageReference Include="Avalonia.Xaml.Interactivity" Version="11.0.0-preview6" />
         <PackageReference Include="DialogHost.Avalonia" Version="0.7.3" />
         <PackageReference Include="FluentAvaloniaUI" Version="2.0.0-preview6fork2" />
-		<AvaloniaXaml Remove="src\Views\Windows\**" />
-		<EmbeddedResource Remove="src\Views\Windows\**" />
-		<None Remove="src\Views\Windows\**" />
-		<Compile Remove="src\Views\Windows\*.cs" />
+		<Compile Remove="src\Views\Windows\Options\HotKeyDisplayView.axaml.cs" />
+		<Compile Remove="src\Views\Windows\Options\ApiSettingsView.axaml.cs" />
+		<Compile Remove="src\Views\Windows\Options\AppSettingsView.axaml.cs" />
+		<Compile Remove="src\Views\Windows\Options\LicenseView.axaml.cs" />
+		<Compile Remove="src\Views\Windows\Editors\Editor4AvalonEditView.axaml.cs" />
+		<Compile Remove="src\Views\Windows\Editors\EditorView.axaml.cs" />
+		<Compile Remove="src\Views\Windows\Editors\Editor2AvalonEditView.axaml.cs" />
+		<Compile Remove="src\Views\Windows\Editors\EditorFiveView.axaml.cs" />
+		<Compile Remove="src\Views\Windows\Editors\Editor3_2AvalonEditView.axaml.cs" />
+		<Compile Remove="src\Views\Windows\Editors\EditorThreeView.axaml.cs" />
+		<Compile Remove="src\Views\Windows\Editors\Editor4TextBoxView.axaml.cs" />
+		<Compile Remove="src\Views\Windows\Editors\EditorOneView.axaml.cs" />
+		<Compile Remove="src\Views\Windows\Editors\Editor3_2TextBoxView.axaml.cs" />
+		<Compile Remove="src\Views\Windows\Editors\Editor2TextBoxView.axaml.cs" />
+		<AvaloniaXaml Remove="src\Views\Windows\DataGridView.axaml" />
+		<AvaloniaXaml Remove="src\Views\Windows\OptionSettingsView.axaml" />
+		<AvaloniaXaml Remove="src\Views\Windows\MainView.axaml" />
+		<AvaloniaXaml Remove="src\Views\Windows\Options\LicenseView.axaml" />
+		<AvaloniaXaml Remove="src\Views\Windows\Options\AppSettingsView.axaml" />
+		<AvaloniaXaml Remove="src\Views\Windows\Options\ApiSettingsView.axaml" />
+		<AvaloniaXaml Remove="src\Views\Windows\Options\HotKeyDisplayView.axaml" />
+		<AvaloniaXaml Remove="src\Views\Windows\Editors\EditorView.axaml" />
+		<AvaloniaXaml Remove="src\Views\Windows\Editors\Editor4TextBoxView.axaml" />
+		<AvaloniaXaml Remove="src\Views\Windows\Editors\EditorOneView.axaml" />
+		<AvaloniaXaml Remove="src\Views\Windows\Editors\EditorThreeView.axaml" />
+		<AvaloniaXaml Remove="src\Views\Windows\Editors\Editor2AvalonEditView.axaml" />
+		<AvaloniaXaml Remove="src\Views\Windows\Editors\Editor3_2AvalonEditView.axaml" />
+		<AvaloniaXaml Remove="src\Views\Windows\Editors\EditorFiveView.axaml" />
+		<AvaloniaXaml Remove="src\Views\Windows\Editors\Editor4AvalonEditView.axaml" />
+		<AvaloniaXaml Remove="src\Views\Windows\Editors\Editor2TextBoxView.axaml" />
+		<AvaloniaXaml Remove="src\Views\Windows\Editors\Editor3_2TextBoxView.axaml" />
+		<Compile Remove="src\Views\Windows\DataGridView.axaml.cs" />
+		<Compile Remove="src\Views\Windows\MainView.axaml.cs" />
+		<Compile Remove="src\Views\Windows\OptionSettingsView.axaml.cs" />
 		<AvaloniaXaml Remove="src\AppWindows.axaml" />
 		<Compile Remove="src\AppWindows.axaml.cs" />
 		<AvaloniaResource Remove="Assets\StylesWindows.axaml" />
