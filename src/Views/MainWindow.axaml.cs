@@ -237,7 +237,7 @@ namespace TmCGPTD.Views
                         await _dbProcess.CleanUpEditorLogDatabaseAsync();
 
                         await SupabaseProcess.Instance.SubscribeSyncAsync();
-                        await SupabaseProcess.Instance.DelaySyncDbAsync();
+                        await SupabaseProcess.Instance.SingleSyncDbAsync();
                     }
                 }
                 else
