@@ -84,8 +84,8 @@ namespace TmCGPTD.Models
                     cdialog = new ContentDialog
                     {
                         Title = "Error",
-                    Content = ex.Message + ex.StackTrace,
-                    CloseButtonText = "OK"
+                        Content = ex.Message + ex.StackTrace,
+                        CloseButtonText = "OK"
                     };
                 });
                 await VMLocator.MainViewModel.ContentDialogShowAsync(cdialog!);
@@ -326,6 +326,7 @@ namespace TmCGPTD.Models
                 using SQLiteConnection connection = new($"Data Source={AppSettings.Instance.DbPath};Version=3;");
                 await connection.OpenAsync();
 
+                //保存した削除IDを削除する
                 try
                 {
                     if (phraseDeletedId.Count > 0)
@@ -343,7 +344,6 @@ namespace TmCGPTD.Models
                         await commandDel2.ExecuteNonQueryAsync();
                         isDeleted = true;
                     }
-
 
                     if (editorlogDeletedId.Count > 0)
                     {
@@ -379,15 +379,15 @@ namespace TmCGPTD.Models
                     return;
                 }
 
-                if(isDeleted)
+                if (isDeleted)
                 {
                     // インメモリをいったん閉じてまた開く
                     await DatabaseProcess.memoryConnection!.CloseAsync();
                     await DatabaseProcess.Instance.DbLoadToMemoryAsync();
-                    ChatList? selectedItem = null;
+                    ChatList? selectedChatListItem = null;
                     if (VMLocator.DataGridViewModel.SelectedItem != null)
-                    { 
-                        selectedItem = VMLocator.DataGridViewModel.SelectedItem;
+                    {
+                        selectedChatListItem = VMLocator.DataGridViewModel.SelectedItem;
                     }
                     VMLocator.DataGridViewModel.SelectedItemIndex = -1;
                     VMLocator.DataGridViewModel.ChatList = await DatabaseProcess.Instance.SearchChatDatabaseAsync();
@@ -397,9 +397,9 @@ namespace TmCGPTD.Models
                     await VMLocator.MainViewModel.LoadPhraseItemsAsync();
                     await Dispatcher.UIThread.InvokeAsync(() =>
                     {
-                        if (selectedItem != null)
+                        if (selectedChatListItem != null)
                         {
-                            VMLocator.DataGridViewModel.SelectedItem = selectedItem;
+                            VMLocator.DataGridViewModel.SelectedItem = selectedChatListItem;
                         }
                         VMLocator.MainViewModel.SelectedPhraseItem = selectedPhraseItem;
                         VMLocator.EditorViewModel.SelectedEditorLogIndex = -1;
@@ -827,272 +827,249 @@ namespace TmCGPTD.Models
             using SQLiteConnection connection = new($"Data Source={AppSettings.Instance.DbPath};Version=3;");
             await connection.OpenAsync();
 
-            using var transaction = await connection.BeginTransactionAsync();
+            try
             {
-                try
+                var resultPhrase = await supabase!
+                        .From<Phrase>()
+                        .Order(x => x.Id, Ordering.Descending)
+                        .Get();
+
+                Dictionary<long, DateTime?> localData = new();
+
+                using var command = new SQLiteCommand("SELECT id, date FROM phrase ORDER BY id DESC", connection);
+                using var reader = await command.ExecuteReaderAsync();
+                while (await reader.ReadAsync())
                 {
-                    var resultPhrase = await supabase!
-                          .From<Phrase>()
-                          .Order(x => x.Id, Ordering.Descending)
-                          .Get();
-
-                    Dictionary<long, DateTime?> localData = new();
-
-                    using var command = new SQLiteCommand("SELECT id, date FROM phrase ORDER BY id DESC", connection, (SQLiteTransaction)transaction);
-                    using var reader = await command.ExecuteReaderAsync();
-                    while (await reader.ReadAsync())
-                    {
-                        long id = (long)reader["id"];
-                        DateTime? date = reader["date"] == DBNull.Value ? null : (DateTime)reader["date"];
-                        localData[id] = date;
-                    }
-
-                    foreach (var cloudData in resultPhrase.Models)
-                    {
-                        // クラウドと日付が異なるか、ローカルの日付がNull、またはローカルにデータが存在しない場合
-                        if (!localData.TryGetValue(cloudData.Id, out DateTime? localDate) || localDate == null || cloudData.Date != localDate)
-                        {
-                            const string updateSql = @"INSERT INTO phrase (id, name, phrase, date) VALUES (@Id, @Name, @Content, @Date) 
-                                              ON CONFLICT(id) DO UPDATE SET name = excluded.name, phrase = excluded.phrase, date = excluded.date;";
-                            var updateCommand = new SQLiteCommand(updateSql, connection, (SQLiteTransaction)transaction);
-                            updateCommand.Parameters.AddWithValue("@Id", cloudData.Id);
-                            updateCommand.Parameters.AddWithValue("@Name", cloudData.Name);
-                            updateCommand.Parameters.AddWithValue("@Content", cloudData.Content);
-                            updateCommand.Parameters.AddWithValue("@Date", cloudData.Date.ToString("s"));
-
-                            await updateCommand.ExecuteNonQueryAsync();
-                        }
-                    }
-                    //ローカルデータを反復して、クラウドデータに存在しない場合は削除
-                    var cloudIds = resultPhrase.Models.ConvertAll(x => x.Id);
-                    foreach (var localId in localData.Keys)
-                    {
-                        if (!cloudIds.Contains(localId))
-                        {
-                            const string deleteSql = "DELETE FROM phrase WHERE id = @Id;";
-                            var deleteCommand = new SQLiteCommand(deleteSql, connection, (SQLiteTransaction)transaction);
-                            deleteCommand.Parameters.AddWithValue("@Id", localId);
-                            await deleteCommand.ExecuteNonQueryAsync();
-                        }
-                    }
-
-                    await transaction.CommitAsync();
+                    long id = (long)reader["id"];
+                    DateTime? date = reader["date"] == DBNull.Value ? null : (DateTime)reader["date"];
+                    localData[id] = date;
                 }
-                catch (Exception ex)
+
+                foreach (var cloudData in resultPhrase.Models)
                 {
-                    await transaction.RollbackAsync();
-                    throw new Exception($"Failed to download phrase presets: {ex.Message}\n{ex.StackTrace}");
+                    // クラウドと日付が異なるか、ローカルの日付がNull、またはローカルにデータが存在しない場合
+                    if (!localData.TryGetValue(cloudData.Id, out DateTime? localDate) || localDate == null || cloudData.Date != localDate)
+                    {
+                        const string updateSql = @"INSERT INTO phrase (id, name, phrase, date) VALUES (@Id, @Name, @Content, @Date) 
+                                            ON CONFLICT(id) DO UPDATE SET name = excluded.name, phrase = excluded.phrase, date = excluded.date;";
+                        var updateCommand = new SQLiteCommand(updateSql, connection);
+                        updateCommand.Parameters.AddWithValue("@Id", cloudData.Id);
+                        updateCommand.Parameters.AddWithValue("@Name", cloudData.Name);
+                        updateCommand.Parameters.AddWithValue("@Content", cloudData.Content);
+                        updateCommand.Parameters.AddWithValue("@Date", cloudData.Date.ToString("s"));
+
+                        await updateCommand.ExecuteNonQueryAsync();
+                    }
                 }
+                //ローカルデータを反復して、クラウドデータに存在しない場合は削除
+                var cloudIds = resultPhrase.Models.ConvertAll(x => x.Id);
+                foreach (var localId in localData.Keys)
+                {
+                    if (!cloudIds.Contains(localId))
+                    {
+                        const string deleteSql = "DELETE FROM phrase WHERE id = @Id;";
+                        var deleteCommand = new SQLiteCommand(deleteSql, connection;
+                        deleteCommand.Parameters.AddWithValue("@Id", localId);
+                        await deleteCommand.ExecuteNonQueryAsync();
+                    }
+                }
+
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Failed to download phrase presets: {ex.Message}\n{ex.StackTrace}");
             }
 
-            using var transaction2 = await connection.BeginTransactionAsync();
+            try
             {
-                try
+                var resultTemplate = await supabase
+                                .From<Template>()
+                                .Order(x => x.Id, Ordering.Descending)
+                                .Get();
+
+                Dictionary<long, DateTime?> localData = new();
+
+                const string sql = "SELECT id, date FROM template ORDER BY id DESC";
+                using var command2 = new SQLiteCommand(sql, connection);
+                using var reader = await command2.ExecuteReaderAsync();
+                while (await reader.ReadAsync())
                 {
-                    var resultTemplate = await supabase
-                                    .From<Template>()
-                                    .Order(x => x.Id, Ordering.Descending)
-                                    .Get();
-
-                    Dictionary<long, DateTime?> localData = new();
-
-                    const string sql = "SELECT id, date FROM template ORDER BY id DESC";
-                    using var command2 = new SQLiteCommand(sql, connection, (SQLiteTransaction)transaction2);
-                    using var reader = await command2.ExecuteReaderAsync();
-                    while (await reader.ReadAsync())
-                    {
-                        long id = (long)reader["id"];
-                        DateTime? date = reader["date"] == DBNull.Value ? null : (DateTime)reader["date"];
-                        localData[id] = date;
-                    }
-
-                    foreach (var cloudData in resultTemplate.Models)
-                    {
-                        // クラウドと日付が異なるか、ローカルの日付がNull、またはローカルにデータが存在しない場合
-                        if (!localData.TryGetValue(cloudData.Id, out DateTime? localDate) || localDate == null || cloudData.Date != localDate)
-                        {
-                            const string updateSql = @"INSERT INTO template (id, title, text, date) VALUES (@Id, @Name, @Content, @Date) 
-                                              ON CONFLICT(id) DO UPDATE SET title = excluded.title, text = excluded.text, date = excluded.date;";
-                            var command = new SQLiteCommand(updateSql, connection, (SQLiteTransaction)transaction2);
-                            command.Parameters.AddWithValue("@Id", cloudData.Id);
-                            command.Parameters.AddWithValue("@Name", cloudData.Title);
-                            command.Parameters.AddWithValue("@Content", cloudData.Content);
-                            command.Parameters.AddWithValue("@Date", cloudData.Date.ToString("s"));
-
-                            await command.ExecuteNonQueryAsync();
-                        }
-                    }
-                    //ローカルデータを反復して、クラウドデータに存在しない場合は削除
-                    var cloudIds = resultTemplate.Models.ConvertAll(x => x.Id);
-                    foreach (var localId in localData.Keys)
-                    {
-                        if (!cloudIds.Contains(localId))
-                        {
-                            const string deleteSql = "DELETE FROM template WHERE id = @Id;";
-                            var deleteCommand = new SQLiteCommand(deleteSql, connection, (SQLiteTransaction)transaction2);
-                            deleteCommand.Parameters.AddWithValue("@Id", localId);
-                            await deleteCommand.ExecuteNonQueryAsync();
-                        }
-                    }
-
-                    await transaction2.CommitAsync();
+                    long id = (long)reader["id"];
+                    DateTime? date = reader["date"] == DBNull.Value ? null : (DateTime)reader["date"];
+                    localData[id] = date;
                 }
-                catch (Exception ex)
+
+                foreach (var cloudData in resultTemplate.Models)
                 {
-                    await transaction2.RollbackAsync();
-                    throw new Exception($"Failed to download template presets: {ex.Message}\n{ex.StackTrace}");
+                    // クラウドと日付が異なるか、ローカルの日付がNull、またはローカルにデータが存在しない場合
+                    if (!localData.TryGetValue(cloudData.Id, out DateTime? localDate) || localDate == null || cloudData.Date != localDate)
+                    {
+                        const string updateSql = @"INSERT INTO template (id, title, text, date) VALUES (@Id, @Name, @Content, @Date) 
+                                            ON CONFLICT(id) DO UPDATE SET title = excluded.title, text = excluded.text, date = excluded.date;";
+                        var command = new SQLiteCommand(updateSql, connection);
+                        command.Parameters.AddWithValue("@Id", cloudData.Id);
+                        command.Parameters.AddWithValue("@Name", cloudData.Title);
+                        command.Parameters.AddWithValue("@Content", cloudData.Content);
+                        command.Parameters.AddWithValue("@Date", cloudData.Date.ToString("s"));
+
+                        await command.ExecuteNonQueryAsync();
+                    }
+                }
+                //ローカルデータを反復して、クラウドデータに存在しない場合は削除
+                var cloudIds = resultTemplate.Models.ConvertAll(x => x.Id);
+                foreach (var localId in localData.Keys)
+                {
+                    if (!cloudIds.Contains(localId))
+                    {
+                        const string deleteSql = "DELETE FROM template WHERE id = @Id;";
+                        var deleteCommand = new SQLiteCommand(deleteSql, connection);
+                        deleteCommand.Parameters.AddWithValue("@Id", localId);
+                        await deleteCommand.ExecuteNonQueryAsync();
+                    }
                 }
             }
-
-            using var transaction3 = await connection.BeginTransactionAsync();
+            catch (Exception ex)
             {
-                try
-                {
-                    var resultEditorLog = await supabase
-                                    .From<EditorLog>()
-                                    .Order(x => x.Id, Ordering.Descending)
-                                    .Get();
-
-                    Dictionary<long, DateTime?> localData = new();
-
-                    const string sql = "SELECT id, date FROM editorlog ORDER BY id DESC";
-                    using var command3 = new SQLiteCommand(sql, connection, (SQLiteTransaction)transaction3);
-                    using var reader = await command3.ExecuteReaderAsync();
-                    while (await reader.ReadAsync())
-                    {
-                        long id = (long)reader["id"];
-                        DateTime? date = reader["date"] == DBNull.Value ? null : (DateTime)reader["date"];
-                        localData[id] = date;
-                    }
-
-                    foreach (var cloudData in resultEditorLog.Models)
-                    {
-                        // クラウドと日付が異なるか、ローカルの日付がNull、またはローカルにデータが存在しない場合
-                        if (!localData.TryGetValue(cloudData.Id, out DateTime? localDate) || localDate == null || cloudData.Date != localDate)
-                        {
-                            const string updateSql = @"INSERT INTO editorlog (id, date, text) VALUES (@Id, @Date, @Content) 
-                                              ON CONFLICT(id) DO UPDATE SET date = excluded.date, text = excluded.text;";
-                            var command = new SQLiteCommand(updateSql, connection, (SQLiteTransaction)transaction3);
-                            command.Parameters.AddWithValue("@Id", cloudData.Id);
-                            command.Parameters.AddWithValue("@Date", cloudData.Date.ToString("s"));
-                            command.Parameters.AddWithValue("@Content", cloudData.Content);
-
-                            await command.ExecuteNonQueryAsync();
-                        }
-                    }
-                    //ローカルデータを反復して、クラウドデータに存在しない場合は削除
-                    var cloudIds = resultEditorLog.Models.ConvertAll(x => x.Id);
-                    foreach (var localId in localData.Keys)
-                    {
-                        if (!cloudIds.Contains(localId))
-                        {
-                            const string deleteSql = "DELETE FROM editorlog WHERE id = @Id;";
-                            var deleteCommand = new SQLiteCommand(deleteSql, connection, (SQLiteTransaction)transaction3);
-                            deleteCommand.Parameters.AddWithValue("@Id", localId);
-                            await deleteCommand.ExecuteNonQueryAsync();
-                        }
-                    }
-
-                    await transaction3.CommitAsync();
-                }
-                catch (Exception ex)
-                {
-                    await transaction3.RollbackAsync();
-                    throw new Exception($"Failed to download editor logs: {ex.Message}\n{ex.StackTrace}");
-                }
+                throw new Exception($"Failed to download template presets: {ex.Message}\n{ex.StackTrace}");
             }
 
-            using var transaction4 = await connection.BeginTransactionAsync();
+            try
             {
-                try
+                var resultEditorLog = await supabase
+                                .From<EditorLog>()
+                                .Order(x => x.Id, Ordering.Descending)
+                                .Get();
+
+                Dictionary<long, DateTime?> localData = new();
+
+                const string sql = "SELECT id, date FROM editorlog ORDER BY id DESC";
+                using var command3 = new SQLiteCommand(sql, connection);
+                using var reader = await command3.ExecuteReaderAsync();
+                while (await reader.ReadAsync())
                 {
-                    var resultChatRoom = await supabase
-                                    .From<ChatRoom>()
-                                    .Order(x => x.Id, Ordering.Descending)
-                                    .Get();
-
-                    Dictionary<long, DateTime?> localData = new();
-
-                    const string sql = "SELECT * FROM chatlog ORDER BY id DESC";
-                    using var command4 = new SQLiteCommand(sql, connection, (SQLiteTransaction)transaction4);
-                    using var reader = await command4.ExecuteReaderAsync();
-                    while (await reader.ReadAsync())
-                    {
-                        long id = (long)reader["id"];
-                        DateTime? date = reader["date"] == DBNull.Value ? null : (DateTime)reader["date"];
-                        localData[id] = date;
-                    }
-
-                    foreach (var cloudData in resultChatRoom.Models)
-                    {
-                        // クラウドと日付が異なるか、ローカルの日付がNull、またはローカルにデータが存在しない場合
-                        if (!localData.TryGetValue(cloudData.Id, out DateTime? localDate) || localDate == null || cloudData.UpdatedOn != localDate)
-                        {
-                            var resultMessage = await supabase.From<Message>().Where(x => x.RoomId == cloudData.Id).Order(x => x.Id, Ordering.Ascending).Get();
-
-                            string combinedMessage = CombineMessage(resultMessage.Models);
-
-                            const string updateSql = @"INSERT INTO chatlog (id, date, title, json, text, category, lastprompt, jsonprev) VALUES (@Id, @UpdatedOn, @Title, @Json, @Message, @Category, @LastPrompt, @JsonPrev) 
-                                ON CONFLICT(id) DO UPDATE SET date = excluded.date, title = excluded.title, json = excluded.json, text = excluded.text, category = excluded.category, lastprompt = excluded.lastprompt, jsonprev = excluded.jsonprev;";
-                            var command = new SQLiteCommand(updateSql, connection, (SQLiteTransaction)transaction4);
-                            command.Parameters.AddWithValue("@Id", cloudData.Id);
-                            command.Parameters.AddWithValue("@UpdatedOn", cloudData.UpdatedOn.ToString("s"));
-                            command.Parameters.AddWithValue("@Title", cloudData.Title);
-                            command.Parameters.AddWithValue("@Json", cloudData.Json);
-                            command.Parameters.AddWithValue("@Message", combinedMessage);
-                            command.Parameters.AddWithValue("@Category", cloudData.Category);
-                            command.Parameters.AddWithValue("@LastPrompt", cloudData.LastPrompt);
-                            command.Parameters.AddWithValue("@JsonPrev", cloudData.JsonPrev);
-
-                            await command.ExecuteNonQueryAsync();
-                        }
-                    }
-                    //ローカルデータを反復して、クラウドデータに存在しない場合は削除
-                    var cloudIds = resultChatRoom.Models.ConvertAll(x => x.Id);
-                    foreach (var localId in localData.Keys)
-                    {
-                        if (!cloudIds.Contains(localId))
-                        {
-                            const string deleteSql = "DELETE FROM chatlog WHERE id = @Id;";
-                            var deleteCommand = new SQLiteCommand(deleteSql, connection, (SQLiteTransaction)transaction4);
-                            deleteCommand.Parameters.AddWithValue("@Id", localId);
-                            await deleteCommand.ExecuteNonQueryAsync();
-                        }
-                    }
-
-                    await transaction4.CommitAsync();
-                }
-                catch (Exception ex)
-                {
-                    await transaction4.RollbackAsync();
-                    throw new Exception($"Failed to download chat logs: {ex.Message}\n{ex.StackTrace}");
+                    long id = (long)reader["id"];
+                    DateTime? date = reader["date"] == DBNull.Value ? null : (DateTime)reader["date"];
+                    localData[id] = date;
                 }
 
-                // インメモリをいったん閉じてまた開く
-                await DatabaseProcess.memoryConnection!.CloseAsync();
-                await DatabaseProcess.Instance.DbLoadToMemoryAsync();
-                ChatList? selectedItem = null;
-                if (VMLocator.DataGridViewModel.SelectedItem != null)
+                foreach (var cloudData in resultEditorLog.Models)
                 {
-                    selectedItem = VMLocator.DataGridViewModel.SelectedItem;
-                }
-                VMLocator.DataGridViewModel.SelectedItemIndex = -1;
-                VMLocator.DataGridViewModel.ChatList = await DatabaseProcess.Instance.SearchChatDatabaseAsync();
-                await DatabaseProcess.Instance.GetEditorLogDatabaseAsync();
-                await DatabaseProcess.Instance.GetTemplateItemsAsync();
-                string selectedPhraseItem = VMLocator.MainViewModel.SelectedPhraseItem!;
-                await VMLocator.MainViewModel.LoadPhraseItemsAsync();
-                await Dispatcher.UIThread.InvokeAsync(() =>
-                {
-                    if (selectedItem != null)
+                    // クラウドと日付が異なるか、ローカルの日付がNull、またはローカルにデータが存在しない場合
+                    if (!localData.TryGetValue(cloudData.Id, out DateTime? localDate) || localDate == null || cloudData.Date != localDate)
                     {
-                        VMLocator.DataGridViewModel.SelectedItem = selectedItem;
+                        const string updateSql = @"INSERT INTO editorlog (id, date, text) VALUES (@Id, @Date, @Content) 
+                                            ON CONFLICT(id) DO UPDATE SET date = excluded.date, text = excluded.text;";
+                        var command = new SQLiteCommand(updateSql, connection);
+                        command.Parameters.AddWithValue("@Id", cloudData.Id);
+                        command.Parameters.AddWithValue("@Date", cloudData.Date.ToString("s"));
+                        command.Parameters.AddWithValue("@Content", cloudData.Content);
+
+                        await command.ExecuteNonQueryAsync();
                     }
-                    VMLocator.MainViewModel.SelectedPhraseItem = selectedPhraseItem;
-                    VMLocator.EditorViewModel.SelectedEditorLogIndex = -1;
-                    VMLocator.EditorViewModel.SelectedTemplateItemIndex = -1;
-                });
+                }
+                //ローカルデータを反復して、クラウドデータに存在しない場合は削除
+                var cloudIds = resultEditorLog.Models.ConvertAll(x => x.Id);
+                foreach (var localId in localData.Keys)
+                {
+                    if (!cloudIds.Contains(localId))
+                    {
+                        const string deleteSql = "DELETE FROM editorlog WHERE id = @Id;";
+                        var deleteCommand = new SQLiteCommand(deleteSql, connection);
+                        deleteCommand.Parameters.AddWithValue("@Id", localId);
+                        await deleteCommand.ExecuteNonQueryAsync();
+                    }
+                }
             }
+            catch (Exception ex)
+            {
+                throw new Exception($"Failed to download editor logs: {ex.Message}\n{ex.StackTrace}");
+            }
+
+            try
+            {
+                var resultChatRoom = await supabase
+                                .From<ChatRoom>()
+                                .Order(x => x.Id, Ordering.Descending)
+                                .Get();
+
+                Dictionary<long, DateTime?> localData = new();
+
+                const string sql = "SELECT * FROM chatlog ORDER BY id DESC";
+                using var command4 = new SQLiteCommand(sql, connection);
+                using var reader = await command4.ExecuteReaderAsync();
+                while (await reader.ReadAsync())
+                {
+                    long id = (long)reader["id"];
+                    DateTime? date = reader["date"] == DBNull.Value ? null : (DateTime)reader["date"];
+                    localData[id] = date;
+                }
+
+                foreach (var cloudData in resultChatRoom.Models)
+                {
+                    // クラウドと日付が異なるか、ローカルの日付がNull、またはローカルにデータが存在しない場合
+                    if (!localData.TryGetValue(cloudData.Id, out DateTime? localDate) || localDate == null || cloudData.UpdatedOn != localDate)
+                    {
+                        var resultMessage = await supabase.From<Message>().Where(x => x.RoomId == cloudData.Id).Order(x => x.Id, Ordering.Ascending).Get();
+
+                        string combinedMessage = CombineMessage(resultMessage.Models);
+
+                        const string updateSql = @"INSERT INTO chatlog (id, date, title, json, text, category, lastprompt, jsonprev) VALUES (@Id, @UpdatedOn, @Title, @Json, @Message, @Category, @LastPrompt, @JsonPrev) 
+                            ON CONFLICT(id) DO UPDATE SET date = excluded.date, title = excluded.title, json = excluded.json, text = excluded.text, category = excluded.category, lastprompt = excluded.lastprompt, jsonprev = excluded.jsonprev;";
+                        var command = new SQLiteCommand(updateSql, connection);
+                        command.Parameters.AddWithValue("@Id", cloudData.Id);
+                        command.Parameters.AddWithValue("@UpdatedOn", cloudData.UpdatedOn.ToString("s"));
+                        command.Parameters.AddWithValue("@Title", cloudData.Title);
+                        command.Parameters.AddWithValue("@Json", cloudData.Json);
+                        command.Parameters.AddWithValue("@Message", combinedMessage);
+                        command.Parameters.AddWithValue("@Category", cloudData.Category);
+                        command.Parameters.AddWithValue("@LastPrompt", cloudData.LastPrompt);
+                        command.Parameters.AddWithValue("@JsonPrev", cloudData.JsonPrev);
+
+                        await command.ExecuteNonQueryAsync();
+                    }
+                }
+                //ローカルデータを反復して、クラウドデータに存在しない場合は削除
+                var cloudIds = resultChatRoom.Models.ConvertAll(x => x.Id);
+                foreach (var localId in localData.Keys)
+                {
+                    if (!cloudIds.Contains(localId))
+                    {
+                        const string deleteSql = "DELETE FROM chatlog WHERE id = @Id;";
+                        var deleteCommand = new SQLiteCommand(deleteSql, connection);
+                        deleteCommand.Parameters.AddWithValue("@Id", localId);
+                        await deleteCommand.ExecuteNonQueryAsync();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Failed to download chat logs: {ex.Message}\n{ex.StackTrace}");
+            }
+
+            // インメモリをいったん閉じてまた開く
+            await DatabaseProcess.memoryConnection!.CloseAsync();
+            await DatabaseProcess.Instance.DbLoadToMemoryAsync();
+            ChatList? selectedChatListItem = null;
+            if (VMLocator.DataGridViewModel.SelectedItem != null)
+            {
+                selectedChatListItem = VMLocator.DataGridViewModel.SelectedItem;
+            }
+            VMLocator.DataGridViewModel.SelectedItemIndex = -1;
+            VMLocator.DataGridViewModel.ChatList = await DatabaseProcess.Instance.SearchChatDatabaseAsync();
+            await DatabaseProcess.Instance.GetEditorLogDatabaseAsync();
+            await DatabaseProcess.Instance.GetTemplateItemsAsync();
+            string selectedPhraseItem = VMLocator.MainViewModel.SelectedPhraseItem!;
+            await VMLocator.MainViewModel.LoadPhraseItemsAsync();
+            await Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                if (selectedChatListItem != null)
+                {
+                    VMLocator.DataGridViewModel.SelectedItem = selectedChatListItem;
+                }
+                VMLocator.MainViewModel.SelectedPhraseItem = selectedPhraseItem;
+                VMLocator.EditorViewModel.SelectedEditorLogIndex = -1;
+                VMLocator.EditorViewModel.SelectedTemplateItemIndex = -1;
+            });
         }
 
         // -------------------------------------------------------------------------------------------------------
@@ -1347,62 +1324,54 @@ namespace TmCGPTD.Models
 
             var resultPhrase = await supabase.From<Phrase>().Get();
 
-            using (var transaction = await connection2.BeginTransactionAsync())
+            try
             {
-                try
+                foreach (var phrase in resultPhrase.Models)
                 {
-                    foreach (var phrase in resultPhrase.Models)
-                    {
-                        var command = new SQLiteCommand("INSERT INTO phrase (id, name, phrase, date) VALUES (@Id, @Name, @Content, @Date)", connection2, (SQLiteTransaction)transaction);
-                        command.Parameters.AddWithValue("@Id", phrase.Id);
-                        command.Parameters.AddWithValue("@Name", phrase.Name);
-                        command.Parameters.AddWithValue("@Content", phrase.Content);
-                        command.Parameters.AddWithValue("@Date", phrase.Date.ToString("s"));
+                    var command = new SQLiteCommand("INSERT INTO phrase (id, name, phrase, date) VALUES (@Id, @Name, @Content, @Date)", connection2);
+                    command.Parameters.AddWithValue("@Id", phrase.Id);
+                    command.Parameters.AddWithValue("@Name", phrase.Name);
+                    command.Parameters.AddWithValue("@Content", phrase.Content);
+                    command.Parameters.AddWithValue("@Date", phrase.Date.ToString("s"));
 
-                        await command.ExecuteNonQueryAsync();
-                    }
-                    await transaction.CommitAsync();
-                }
-                catch (Exception ex)
-                {
-                    transaction.Rollback();
-                    await Dispatcher.UIThread.InvokeAsync(() =>
-                    {
-                        VMLocator.ProgressViewModel.Hide();
-                    });
-                    throw new Exception($"Failed to download phrases: {ex.Message}\n{ex.StackTrace}");
+                    await command.ExecuteNonQueryAsync();
                 }
             }
+            catch (Exception ex)
+            {
+                await Dispatcher.UIThread.InvokeAsync(() =>
+                {
+                    VMLocator.ProgressViewModel.Hide();
+                });
+                throw new Exception($"Failed to download phrases: {ex.Message}\n{ex.StackTrace}");
+            }
+
             await Dispatcher.UIThread.InvokeAsync(() =>
             {
                 VMLocator.ProgressViewModel.ProgressValue = 0.25;
             });
 
             var resultEditorLog = await supabase.From<EditorLog>().Get();
-            using (var transaction = await connection2.BeginTransactionAsync())
-            {
-                try
-                {
-                    foreach (var editorLog in resultEditorLog.Models)
-                    {
-                        var command = new SQLiteCommand("INSERT INTO editorlog (id, date, text) VALUES (@Id, @Date, @Content )", connection2, (SQLiteTransaction)transaction);
-                        command.Parameters.AddWithValue("@Id", editorLog.Id);
-                        command.Parameters.AddWithValue("@Date", editorLog.Date.ToString("s"));
-                        command.Parameters.AddWithValue("@Content", editorLog.Content);
 
-                        await command.ExecuteNonQueryAsync();
-                    }
-                    await transaction.CommitAsync();
-                }
-                catch (Exception ex)
+            try
+            {
+                foreach (var editorLog in resultEditorLog.Models)
                 {
-                    transaction.Rollback();
-                    await Dispatcher.UIThread.InvokeAsync(() =>
-                    {
-                        VMLocator.ProgressViewModel.Hide();
-                    });
-                    throw new Exception($"Failed to download editor logs: {ex.Message}\n{ex.StackTrace}");
+                    var command = new SQLiteCommand("INSERT INTO editorlog (id, date, text) VALUES (@Id, @Date, @Content )", connection2);
+                    command.Parameters.AddWithValue("@Id", editorLog.Id);
+                    command.Parameters.AddWithValue("@Date", editorLog.Date.ToString("s"));
+                    command.Parameters.AddWithValue("@Content", editorLog.Content);
+
+                    await command.ExecuteNonQueryAsync();
                 }
+            }
+            catch (Exception ex)
+            {
+                await Dispatcher.UIThread.InvokeAsync(() =>
+                {
+                    VMLocator.ProgressViewModel.Hide();
+                });
+                throw new Exception($"Failed to download editor logs: {ex.Message}\n{ex.StackTrace}");
             }
 
             await Dispatcher.UIThread.InvokeAsync(() =>
@@ -1411,31 +1380,26 @@ namespace TmCGPTD.Models
             });
 
             var resultTemplate = await supabase.From<Template>().Get();
-            using (var transaction = await connection2.BeginTransactionAsync())
+            try
             {
-                try
+                foreach (var template in resultTemplate.Models)
                 {
-                    foreach (var template in resultTemplate.Models)
-                    {
-                        var command = new SQLiteCommand("INSERT INTO template (id, title, text, date) VALUES (@Id, @Name, @Content, @Date)", connection2, (SQLiteTransaction)transaction);
-                        command.Parameters.AddWithValue("@Id", template.Id);
-                        command.Parameters.AddWithValue("@Name", template.Title);
-                        command.Parameters.AddWithValue("@Content", template.Content);
-                        command.Parameters.AddWithValue("@Date", template.Date.ToString("s"));
+                    var command = new SQLiteCommand("INSERT INTO template (id, title, text, date) VALUES (@Id, @Name, @Content, @Date)", connection2);
+                    command.Parameters.AddWithValue("@Id", template.Id);
+                    command.Parameters.AddWithValue("@Name", template.Title);
+                    command.Parameters.AddWithValue("@Content", template.Content);
+                    command.Parameters.AddWithValue("@Date", template.Date.ToString("s"));
 
-                        await command.ExecuteNonQueryAsync();
-                    }
-                    await transaction.CommitAsync();
+                    await command.ExecuteNonQueryAsync();
                 }
-                catch (Exception ex)
+            }
+            catch (Exception ex)
+            {
+                await Dispatcher.UIThread.InvokeAsync(() =>
                 {
-                    transaction.Rollback();
-                    await Dispatcher.UIThread.InvokeAsync(() =>
-                    {
-                        VMLocator.ProgressViewModel.Hide();
-                    });
-                    throw new Exception($"Failed to download templates: {ex.Message}\n{ex.StackTrace}");
-                }
+                    VMLocator.ProgressViewModel.Hide();
+                });
+                throw new Exception($"Failed to download templates: {ex.Message}\n{ex.StackTrace}");
             }
 
             var resultChatLog = await supabase.From<ChatRoom>().Get();
@@ -1444,42 +1408,36 @@ namespace TmCGPTD.Models
                 VMLocator.ProgressViewModel.ProgressValue = 0.75;
             });
 
-            using (var transaction = await connection2.BeginTransactionAsync())
+
+            try
             {
-
-                try
+                foreach (var chatLog in resultChatLog.Models)
                 {
-                    foreach (var chatLog in resultChatLog.Models)
-                    {
-                        var resultMessage = await supabase.From<Message>().Where(x => x.RoomId == chatLog.Id).Order(x => x.Id, Ordering.Ascending).Get();
+                    var resultMessage = await supabase.From<Message>().Where(x => x.RoomId == chatLog.Id).Order(x => x.Id, Ordering.Ascending).Get();
 
-                        string combinedMessage = CombineMessage(resultMessage.Models);
+                    string combinedMessage = CombineMessage(resultMessage.Models);
 
-                        var command = new SQLiteCommand("INSERT INTO chatlog (id, date, title, json, text, category, lastprompt, jsonprev) VALUES (@Id, @UpdatedOn, @Title, @Json, @Message, @Category, @LastPrompt, @JsonPrev)", connection2, (SQLiteTransaction)transaction);
-                        command.Parameters.AddWithValue("@Id", chatLog.Id);
-                        command.Parameters.AddWithValue("@UpdatedOn", chatLog.UpdatedOn.ToString("s"));
-                        command.Parameters.AddWithValue("@Title", chatLog.Title);
-                        command.Parameters.AddWithValue("@Json", chatLog.Json);
-                        command.Parameters.AddWithValue("@Message", combinedMessage);
-                        command.Parameters.AddWithValue("@Category", chatLog.Category);
-                        command.Parameters.AddWithValue("@LastPrompt", chatLog.LastPrompt);
-                        command.Parameters.AddWithValue("@JsonPrev", chatLog.JsonPrev);
+                    var command = new SQLiteCommand("INSERT INTO chatlog (id, date, title, json, text, category, lastprompt, jsonprev) VALUES (@Id, @UpdatedOn, @Title, @Json, @Message, @Category, @LastPrompt, @JsonPrev)", connection2);
+                    command.Parameters.AddWithValue("@Id", chatLog.Id);
+                    command.Parameters.AddWithValue("@UpdatedOn", chatLog.UpdatedOn.ToString("s"));
+                    command.Parameters.AddWithValue("@Title", chatLog.Title);
+                    command.Parameters.AddWithValue("@Json", chatLog.Json);
+                    command.Parameters.AddWithValue("@Message", combinedMessage);
+                    command.Parameters.AddWithValue("@Category", chatLog.Category);
+                    command.Parameters.AddWithValue("@LastPrompt", chatLog.LastPrompt);
+                    command.Parameters.AddWithValue("@JsonPrev", chatLog.JsonPrev);
 
-                        await command.ExecuteNonQueryAsync();
-                    }
-                    await transaction.CommitAsync();
-                }
-                catch (Exception ex)
-                {
-                    await transaction.RollbackAsync();
-                    await Dispatcher.UIThread.InvokeAsync(() =>
-                    {
-                        VMLocator.ProgressViewModel.Hide();
-                    });
-                    throw new Exception($"Failed to download chat logs: {ex.Message} {ex.StackTrace}");
+                    await command.ExecuteNonQueryAsync();
                 }
             }
-
+            catch (Exception ex)
+            {
+                await Dispatcher.UIThread.InvokeAsync(() =>
+                {
+                    VMLocator.ProgressViewModel.Hide();
+                });
+                throw new Exception($"Failed to download chat logs: {ex.Message} {ex.StackTrace}");
+            }
 
             try
             {
@@ -1494,10 +1452,10 @@ namespace TmCGPTD.Models
                 // インメモリをいったん閉じてまた開く
                 await DatabaseProcess.memoryConnection!.CloseAsync();
                 await DatabaseProcess.Instance.DbLoadToMemoryAsync();
-                ChatList? selectedItem = null;
+                ChatList? selectedChatListItem = null;
                 if (VMLocator.DataGridViewModel.SelectedItem != null)
                 {
-                    selectedItem = VMLocator.DataGridViewModel.SelectedItem;
+                    selectedChatListItem = VMLocator.DataGridViewModel.SelectedItem;
                 }
                 VMLocator.DataGridViewModel.SelectedItemIndex = -1;
                 VMLocator.DataGridViewModel.ChatList = await DatabaseProcess.Instance.SearchChatDatabaseAsync();
@@ -1507,9 +1465,9 @@ namespace TmCGPTD.Models
                 await VMLocator.MainViewModel.LoadPhraseItemsAsync();
                 await Dispatcher.UIThread.InvokeAsync(() =>
                 {
-                    if (selectedItem != null)
+                    if (selectedChatListItem != null)
                     {
-                        VMLocator.DataGridViewModel.SelectedItem = selectedItem;
+                        VMLocator.DataGridViewModel.SelectedItem = selectedChatListItem;
                     }
                     VMLocator.MainViewModel.SelectedPhraseItem = selectedPhraseItem;
                     VMLocator.EditorViewModel.SelectedEditorLogIndex = -1;
