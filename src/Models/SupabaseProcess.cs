@@ -159,8 +159,8 @@ namespace TmCGPTD.Models
 
                         //try
                         //{
-                            //Debug.WriteLine("change.Event:" + change.Event);
-                            //Debug.WriteLine("change.Payload:" + change.Payload);
+                            Debug.WriteLine("change.Event:" + change.Event);
+                            Debug.WriteLine("change.Payload:" + change.Payload);
 
                             // セマフォスリムを使用して、一度に一つのタスクだけがSyncDbAsync()メソッドを実行
                             //await _semaphore.WaitAsync();
