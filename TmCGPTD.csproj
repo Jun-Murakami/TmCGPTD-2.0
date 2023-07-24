@@ -54,6 +54,17 @@
         <PackageReference Include="ReverseMarkdown" Version="3.25.0" />
         <PackageReference Include="supabase-csharp" Version="0.12.1" />
         <PackageReference Include="System.Data.SQLite" Version="1.0.118" />
+		<PackageReference Include="Avalonia" Version="11.0.0" />
+		<PackageReference Include="Avalonia.AvaloniaEdit" Version="11.0.0" />
+		<PackageReference Include="Avalonia.Desktop" Version="11.0.0" />
+		<!-- Condition below is needed to remove Avalonia.Diagnostics package from build output in Release configuration. -->
+		<PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" Version="11.0.0" />
+		<PackageReference Include="Avalonia.Diagnostics" Condition="'$(Configuration)'=='Debug64'" Version="11.0.0">
+		</PackageReference>
+		<PackageReference Include="Avalonia.Xaml.Interactivity" Version="11.0.0.1" />
+		<PackageReference Include="AvaloniaEdit.TextMate" Version="11.0.0" />
+		<PackageReference Include="DialogHost.Avalonia" Version="0.7.5" />
+		<PackageReference Include="FluentAvaloniaUI" Version="2.0.0" />
     </ItemGroup>
 
 	<ItemGroup Condition="'$(OS)' == 'Windows_NT'">
@@ -75,65 +86,5 @@
 		<AvaloniaXaml Remove="src\AppMac.axaml" />
         <Compile Remove="src\AppMac.axaml.cs" />
 	</ItemGroup>
-
-	<ItemGroup Condition="'$(OS)' != 'Windows_NT'">
-        <PackageReference Include="Avalonia" Version="11.0.0-preview6" />
-        <PackageReference Include="Avalonia.Desktop" Version="11.0.0-preview6" />
-        <!--Condition below is needed to remove Avalonia.Diagnostics package from build output in Release configuration.-->
-        <PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" Version="11.0.0-preview6" />
-        <PackageReference Include="Avalonia.Diagnostics" Condition="'$(Configuration)'=='Debug64'" Version="11.0.0-preview6">
-        </PackageReference>
-        <PackageReference Include="Avalonia.Xaml.Interactivity" Version="11.0.0-preview6" />
-        <PackageReference Include="DialogHost.Avalonia" Version="0.7.3" />
-        <PackageReference Include="FluentAvaloniaUI" Version="2.0.0-preview6fork2" />
-		<Compile Remove="src\Views\Windows\Options\HotKeyDisplayView.axaml.cs" />
-		<Compile Remove="src\Views\Windows\Options\ApiSettingsView.axaml.cs" />
-		<Compile Remove="src\Views\Windows\Options\AppSettingsView.axaml.cs" />
-		<Compile Remove="src\Views\Windows\Options\LicenseView.axaml.cs" />
-		<Compile Remove="src\Views\Windows\Editors\Editor4AvalonEditView.axaml.cs" />
-		<Compile Remove="src\Views\Windows\Editors\EditorView.axaml.cs" />
-		<Compile Remove="src\Views\Windows\Editors\Editor2AvalonEditView.axaml.cs" />
-		<Compile Remove="src\Views\Windows\Editors\EditorFiveView.axaml.cs" />
-		<Compile Remove="src\Views\Windows\Editors\Editor3_2AvalonEditView.axaml.cs" />
-		<Compile Remove="src\Views\Windows\Editors\EditorThreeView.axaml.cs" />
-		<Compile Remove="src\Views\Windows\Editors\Editor4TextBoxView.axaml.cs" />
-		<Compile Remove="src\Views\Windows\Editors\EditorOneView.axaml.cs" />
-		<Compile Remove="src\Views\Windows\Editors\Editor3_2TextBoxView.axaml.cs" />
-		<Compile Remove="src\Views\Windows\Editors\Editor2TextBoxView.axaml.cs" />
-		<AvaloniaXaml Remove="src\Views\Windows\DataGridView.axaml" />
-		<AvaloniaXaml Remove="src\Views\Windows\OptionSettingsView.axaml" />
-		<AvaloniaXaml Remove="src\Views\Windows\MainView.axaml" />
-		<AvaloniaXaml Remove="src\Views\Windows\Options\LicenseView.axaml" />
-		<AvaloniaXaml Remove="src\Views\Windows\Options\AppSettingsView.axaml" />
-		<AvaloniaXaml Remove="src\Views\Windows\Options\ApiSettingsView.axaml" />
-		<AvaloniaXaml Remove="src\Views\Windows\Options\HotKeyDisplayView.axaml" />
-		<AvaloniaXaml Remove="src\Views\Windows\Editors\EditorView.axaml" />
-		<AvaloniaXaml Remove="src\Views\Windows\Editors\Editor4TextBoxView.axaml" />
-		<AvaloniaXaml Remove="src\Views\Windows\Editors\EditorOneView.axaml" />
-		<AvaloniaXaml Remove="src\Views\Windows\Editors\EditorThreeView.axaml" />
-		<AvaloniaXaml Remove="src\Views\Windows\Editors\Editor2AvalonEditView.axaml" />
-		<AvaloniaXaml Remove="src\Views\Windows\Editors\Editor3_2AvalonEditView.axaml" />
-		<AvaloniaXaml Remove="src\Views\Windows\Editors\EditorFiveView.axaml" />
-		<AvaloniaXaml Remove="src\Views\Windows\Editors\Editor4AvalonEditView.axaml" />
-		<AvaloniaXaml Remove="src\Views\Windows\Editors\Editor2TextBoxView.axaml" />
-		<AvaloniaXaml Remove="src\Views\Windows\Editors\Editor3_2TextBoxView.axaml" />
-		<Compile Remove="src\Views\Windows\DataGridView.axaml.cs" />
-		<Compile Remove="src\Views\Windows\MainView.axaml.cs" />
-		<Compile Remove="src\Views\Windows\OptionSettingsView.axaml.cs" />
-		<AvaloniaXaml Remove="src\AppWindows.axaml" />
-		<Compile Remove="src\AppWindows.axaml.cs" />
-		<AvaloniaResource Remove="Assets\StylesWindows.axaml" />
-		<AvaloniaXaml Remove="Assets\StylesWindows.axaml" />
-		<Compile Remove="src\Views\Class\DocumentTextBindingBehavior.cs" />
-		<Compile Remove="src\Views\Class\ElementGenerator.cs" />
-	</ItemGroup>
 	
-    <PropertyGroup Condition="'$(OS)' == 'Windows_NT'">
-        <DefineConstants>WINDOWS</DefineConstants>
-    </PropertyGroup>
-	
-    <PropertyGroup Condition="'$(OS)' != 'Windows_NT'">
-        <DefineConstants>MAC</DefineConstants>
-    </PropertyGroup>
-
 </Project>

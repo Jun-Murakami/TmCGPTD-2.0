@@ -19,16 +19,9 @@ namespace TmCGPTD.Models
         // 表示用HTML初期化--------------------------------------------------------------
         public async Task<string> InitializeChatLogToHtml()
         {
-#if WINDOWS
             using var streamReader = new StreamReader(AssetLoader.Open(new Uri("avares://TmCGPTD/Assets/ChatTempleteLogo.html")));
             using var chatCssStreamReader = new StreamReader(AssetLoader.Open(new Uri("avares://TmCGPTD/Assets/ChatStyles.css")));
             using var cssStreamReader = new StreamReader(AssetLoader.Open(new Uri("avares://TmCGPTD/Assets/vs2015.min.css")));
-#else
-            using var streamReader = new StreamReader(AvaloniaLocator.Current.GetService<IAssetLoader>()!.Open(new Uri("avares://TmCGPTD/Assets/ChatTempleteLogo.html")));
-            using var chatCssStreamReader = new StreamReader(AvaloniaLocator.Current.GetService<IAssetLoader>()!.Open(new Uri("avares://TmCGPTD/Assets/ChatStyles.css")));
-            using var cssStreamReader = new StreamReader(AvaloniaLocator.Current.GetService<IAssetLoader>()!.Open(new Uri("avares://TmCGPTD/Assets/vs2015.min.css")));
-#endif
-
 
             string chatCssContent = await chatCssStreamReader.ReadToEndAsync();
             string cssContent = await cssStreamReader.ReadToEndAsync();
@@ -50,13 +43,8 @@ namespace TmCGPTD.Models
         // ログインページHTML初期化--------------------------------------------------------------
         public async Task<string> InitializeLogInToHtml()
         {
-#if WINDOWS
             using var streamReader = new StreamReader(AssetLoader.Open(new Uri("avares://TmCGPTD/Assets/LogInTemplete.html")));
             using var chatCssStreamReader = new StreamReader(AssetLoader.Open(new Uri("avares://TmCGPTD/Assets/ChatStyles.css")));
-#else
-            using var streamReader = new StreamReader(AvaloniaLocator.Current.GetService<IAssetLoader>()!.Open(new Uri("avares://TmCGPTD/Assets/LogInTemplete.html")));
-            using var chatCssStreamReader = new StreamReader(AvaloniaLocator.Current.GetService<IAssetLoader>()!.Open(new Uri("avares://TmCGPTD/Assets/ChatStyles.css")));
-#endif
 
             string chatCssContent = await chatCssStreamReader.ReadToEndAsync();
             string templateHtml = await streamReader.ReadToEndAsync();
@@ -75,15 +63,10 @@ namespace TmCGPTD.Models
         public async Task<string> ConvertChatLogToHtml(string plainTextChatLog)
         {
             plainTextChatLog = Regex.Replace(plainTextChatLog, @"\r\n|\r|\n", Environment.NewLine);
-#if WINDOWS
+
             using var streamReader = new StreamReader(AssetLoader.Open(new Uri("avares://TmCGPTD/Assets/ChatTemplete.html")));
             using var chatCssStreamReader = new StreamReader(AssetLoader.Open(new Uri("avares://TmCGPTD/Assets/ChatStyles.css")));
             using var cssStreamReader = new StreamReader(AssetLoader.Open(new Uri("avares://TmCGPTD/Assets/vs2015.min.css")));
-#else
-            using var streamReader = new StreamReader(AvaloniaLocator.Current.GetService<IAssetLoader>()!.Open(new Uri("avares://TmCGPTD/Assets/ChatTemplete.html")));
-            using var chatCssStreamReader = new StreamReader(AvaloniaLocator.Current.GetService<IAssetLoader>()!.Open(new Uri("avares://TmCGPTD/Assets/ChatStyles.css")));
-            using var cssStreamReader = new StreamReader(AvaloniaLocator.Current.GetService<IAssetLoader>()!.Open(new Uri("avares://TmCGPTD/Assets/vs2015.min.css")));
-#endif
 
             string chatCssContent = await chatCssStreamReader.ReadToEndAsync();
             string cssContent = await cssStreamReader.ReadToEndAsync();

@@ -20,7 +20,6 @@ namespace TmCGPTD.Views
         private TextBlock _inputTokenTextBlock;
         private Frame _leftPane;
         private Frame _rightPane;
-        private Type? _editorViewType;
         public MainView()
         {
             InitializeComponent();
@@ -35,18 +34,8 @@ namespace TmCGPTD.Views
             if (OperatingSystem.IsMacOS())
             {
                 _stackPanel.HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center;
-#if MAC
-    _editorViewType = typeof(MacEditorView);
-#endif
                 _inputTokenTextBlock.Margin = new Avalonia.Thickness(0, 0, 5, 5);
             }
-            else
-            {
-#if WINDOWS
-    _editorViewType = typeof(EditorView);
-#endif
-            }
-
 
             _syncLogBlock = this.FindControl<TextBlock>("SyncLogText")!;
 
@@ -73,7 +62,7 @@ namespace TmCGPTD.Views
             switch (listBox.SelectedIndex)
             {
                 case 0:
-                    _rightPane.Navigate(_editorViewType);
+                    _rightPane.Navigate(typeof(EditorView));
                     break;
                 case 1:
                     _rightPane.Navigate(typeof(PreviewView));
