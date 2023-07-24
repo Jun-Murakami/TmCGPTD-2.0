@@ -86,5 +86,11 @@
 		<AvaloniaXaml Remove="src\AppMac.axaml" />
         <Compile Remove="src\AppMac.axaml.cs" />
 	</ItemGroup>
+
+	<ItemGroup>
+	  <Compile Update="src\App.axaml.cs">
+	    <DependentUpon>App.axaml</DependentUpon>
+	  </Compile>
+	</ItemGroup>
 	
 </Project>
