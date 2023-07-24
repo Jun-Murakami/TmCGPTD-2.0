@@ -5,9 +5,12 @@
              xmlns:vm="clr-namespace:TmCGPTD.ViewModels"
              mc:Ignorable="d"
              d:DesignWidth="650"
+             d:DesignHeight="450"
              x:Class="TmCGPTD.Views.HotKeyDisplayView">
-    <StackPanel Width="650" Height="639">
-		<Image Source="/Assets/TmcGPTD_SC.png"
-               HorizontalAlignment="Stretch"/>
+    <StackPanel MinWidth="650">
+        <Image Source="/Assets/TmcGPTD_SC.png"
+               VerticalAlignment="Stretch"
+               HorizontalAlignment="Stretch"
+               Width="650" />
     </StackPanel>
 </UserControl>

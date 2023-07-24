@@ -23,7 +23,7 @@
                 BorderThickness="1"
                 Padding="15">
             <ui:Frame Name="DialogFrame"
-                      HorizontalAlignment="Center"/>
+                      HorizontalAlignment="Center" />
         </Border>
         <Button Content="Close"
                 HorizontalAlignment="Center"
