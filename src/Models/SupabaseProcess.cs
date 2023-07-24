@@ -152,10 +152,10 @@ namespace TmCGPTD.Models
                 await SupabaseStates.Instance.Supabase!.Realtime.ConnectAsync();
                 var channel = SupabaseStates.Instance.Supabase!.Realtime.Channel("realtime", "public", "*");
 
-                channel.AddPostgresChangeHandler(PostgresChangesOptions.ListenType.All, (_, change) =>
+                channel.AddPostgresChangeHandler(PostgresChangesOptions.ListenType.All, async(_, change) =>
                 {
-                    _debouncer.Debounce(async () =>
-                    {
+                    //_debouncer.Debounce(async () =>
+                    //{
                         if (VMLocator.ChatViewModel.ChatIsRunning)
                         {
                             while (VMLocator.ChatViewModel.ChatIsRunning)
@@ -189,7 +189,7 @@ namespace TmCGPTD.Models
                             });
                             await VMLocator.MainViewModel.ContentDialogShowAsync(cdialog!);
                         }
-                    });
+                    //});
                 });
 
                 await channel.Subscribe();
