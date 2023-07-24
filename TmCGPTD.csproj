@@ -46,7 +46,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="CefGlue.Avalonia" Version="106.5249.19-avalonia11" />
         <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.1" />
         <PackageReference Include="CsvHelper" Version="30.0.1" />
         <PackageReference Include="HtmlAgilityPack" Version="1.11.49" />
@@ -65,6 +64,7 @@
 		<PackageReference Include="Avalonia.Diagnostics" Condition="'$(Configuration)'=='Debug64'" Version="11.0.0">
 		</PackageReference>
 		<PackageReference Include="Avalonia.Xaml.Interactivity" Version="11.0.0.1" />
+		<PackageReference Include="CefGlue.Avalonia" Version="106.5249.19-avalonia11" />
 		<PackageReference Include="AvaloniaEdit.TextMate" Version="11.0.0" />
 		<PackageReference Include="DialogHost.Avalonia" Version="0.7.5" />
 		<PackageReference Include="FluentAvaloniaUI" Version="2.0.0" />
@@ -84,6 +84,7 @@
         <PackageReference Include="Avalonia.Diagnostics" Condition="'$(Configuration)'=='Debug64'" Version="11.0.0-preview6">
         </PackageReference>
         <PackageReference Include="Avalonia.Xaml.Interactivity" Version="11.0.0-preview6" />
+		<PackageReference Include="CefGlue.Avalonia" Version="106.5249.7-avalonia11" />
         <PackageReference Include="DialogHost.Avalonia" Version="0.7.3" />
         <PackageReference Include="FluentAvaloniaUI" Version="2.0.0-preview6fork2" />
 		<Compile Remove="src\Views\Windows\Options\HotKeyDisplayView.axaml.cs" />
