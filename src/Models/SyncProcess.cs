@@ -435,17 +435,31 @@ namespace TmCGPTD.Models
                     await DatabaseProcess.memoryConnection!.CloseAsync();
                     await DatabaseProcess.Instance.DbLoadToMemoryAsync();
                     ChatList? selectedChatListItem = null;
-                    if (VMLocator.DataGridViewModel.SelectedItem != null)
+                    if (Dispatcher.UIThread.CheckAccess())
                     {
-                        selectedChatListItem = VMLocator.DataGridViewModel.SelectedItem;
+                        if (VMLocator.DataGridViewModel.SelectedItem != null)
+                        {
+                            selectedChatListItem = VMLocator.DataGridViewModel.SelectedItem;
+                        }
+                        VMLocator.DataGridViewModel.SelectedItemIndex = -1;
                     }
-                    VMLocator.DataGridViewModel.SelectedItemIndex = -1;
+                    else
+                    {
+                        await Dispatcher.UIThread.InvokeAsync(() =>
+                        {
+                            if (VMLocator.DataGridViewModel.SelectedItem != null)
+                            {
+                                selectedChatListItem = VMLocator.DataGridViewModel.SelectedItem;
+                            }
+                            VMLocator.DataGridViewModel.SelectedItemIndex = -1;
+                        });
+                    }
                     VMLocator.DataGridViewModel.ChatList = await DatabaseProcess.Instance.SearchChatDatabaseAsync();
                     await DatabaseProcess.Instance.GetEditorLogDatabaseAsync();
                     await DatabaseProcess.Instance.GetTemplateItemsAsync();
                     string selectedPhraseItem = VMLocator.MainViewModel.SelectedPhraseItem!;
                     await VMLocator.MainViewModel.LoadPhraseItemsAsync();
-                    await Dispatcher.UIThread.InvokeAsync(() =>
+                    if (Dispatcher.UIThread.CheckAccess())
                     {
                         if (selectedChatListItem != null)
                         {
@@ -454,7 +468,20 @@ namespace TmCGPTD.Models
                         VMLocator.MainViewModel.SelectedPhraseItem = selectedPhraseItem;
                         VMLocator.EditorViewModel.SelectedEditorLogIndex = -1;
                         VMLocator.EditorViewModel.SelectedTemplateItemIndex = -1;
-                    });
+                    }
+                    else
+                    {
+                        await Dispatcher.UIThread.InvokeAsync(() =>
+                        {
+                            if (selectedChatListItem != null)
+                            {
+                                VMLocator.DataGridViewModel.SelectedItem = selectedChatListItem;
+                            }
+                            VMLocator.MainViewModel.SelectedPhraseItem = selectedPhraseItem;
+                            VMLocator.EditorViewModel.SelectedEditorLogIndex = -1;
+                            VMLocator.EditorViewModel.SelectedTemplateItemIndex = -1;
+                        });
+                    }
                 }
 
                 //検証結果判定処理
