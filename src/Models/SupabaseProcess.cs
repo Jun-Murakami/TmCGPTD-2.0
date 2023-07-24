@@ -177,7 +177,7 @@ namespace TmCGPTD.Models
                             //}
                             //finally
                             //{
-                                _semaphore.Release();
+                                //_semaphore.Release();
                             //}
                         }
                         catch (Exception ex)

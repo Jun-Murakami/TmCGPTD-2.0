@@ -21,7 +21,6 @@ namespace TmCGPTD.ViewModels
     {
         readonly SupabaseProcess _supabaseProcess = new();
         readonly DatabaseProcess _dbProcess = new();
-        readonly SyncProcess _syncProcess = new();
 
         public MainViewModel()
         {

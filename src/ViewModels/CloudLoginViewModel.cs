@@ -12,7 +12,6 @@ namespace TmCGPTD.ViewModels
     {
         readonly SupabaseProcess _supabaseProcess = new();
         readonly DatabaseProcess _databaseProcess = new();
-        readonly SyncProcess _syncProcess = new();
         public CloudLoginViewModel()
         {
             _email = AppSettings.Instance.Email;
