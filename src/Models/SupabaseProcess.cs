@@ -152,23 +152,23 @@ namespace TmCGPTD.Models
                 await SupabaseStates.Instance.Supabase!.Realtime.ConnectAsync();
                 var channel = SupabaseStates.Instance.Supabase!.Realtime.Channel("realtime", "public", "*");
 
-                SupabaseStates.Instance.Supabase!.Realtime.AddDebugHandler((sender, message, exception) => Debug.WriteLine(message));
+                //SupabaseStates.Instance.Supabase!.Realtime.AddDebugHandler((sender, message, exception) => Debug.WriteLine(message));
 
                 channel.AddPostgresChangeHandler(PostgresChangesOptions.ListenType.All, (_, change) =>
                 {
-                    _debouncer.Debounce(async() =>
+                    _debouncer.Debounce(() =>
                     {
 
                         //try
                         //{
-                            Debug.WriteLine("change.Event:" + change.Event);
-                            Debug.WriteLine("change.Payload:" + change.Payload);
+                            //Debug.WriteLine("change.Event:" + change.Event);
+                            //Debug.WriteLine("change.Payload:" + change.Payload);
 
                             // セマフォスリムを使用して、一度に一つのタスクだけがSyncDbAsync()メソッドを実行
                             //await _semaphore.WaitAsync();
                             //try
                             //{
-                                await _syncProcess.SyncDbAsync();
+                                _ = (Supabase.Realtime.Interfaces.IRealtimeChannel)_syncProcess.SyncDbAsync();
                             //}
                             //finally
                             //{
