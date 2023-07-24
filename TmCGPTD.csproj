@@ -128,6 +128,12 @@
 		<Compile Remove="src\Views\Class\DocumentTextBindingBehavior.cs" />
 		<Compile Remove="src\Views\Class\ElementGenerator.cs" />
 	</ItemGroup>
+
+	<ItemGroup>
+	  <Compile Update="src\Views\Windows\Options\WebAppView.axaml.cs">
+	    <DependentUpon>WebAppView.axaml</DependentUpon>
+	  </Compile>
+	</ItemGroup>
 	
     <PropertyGroup Condition="'$(OS)' == 'Windows_NT'">
         <DefineConstants>WINDOWS</DefineConstants>

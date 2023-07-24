@@ -94,6 +94,7 @@ namespace TmCGPTD.ViewModels
             "API Parameters",
             "Options",
             "Hot Keys",
+            "Web App",
             "License"
         };
 

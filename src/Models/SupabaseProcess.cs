@@ -154,13 +154,13 @@ namespace TmCGPTD.Models
 
                 channel.AddPostgresChangeHandler(PostgresChangesOptions.ListenType.All, (_, change) =>
                 {
-                    //_debouncer.Debounce(async () =>
-                    //{
+                    _debouncer.Debounce(() =>
+                    {
 
-                        try
-                        {
-                            Debug.WriteLine("change.Event:" + change.Event);
-                            Debug.WriteLine("change.Payload:" + change.Payload);
+                        //try
+                        //{
+                            //Debug.WriteLine("change.Event:" + change.Event);
+                            //Debug.WriteLine("change.Payload:" + change.Payload);
 
                             // セマフォスリムを使用して、一度に一つのタスクだけがSyncDbAsync()メソッドを実行
                             //await _semaphore.WaitAsync();
@@ -172,14 +172,14 @@ namespace TmCGPTD.Models
                             //{
                                 //_semaphore.Release();
                             //}
-                        }
-                        catch (Exception ex)
-                        {
-                            ContentDialog? cdialog = null;
-                            cdialog = new ContentDialog() { Title = $"Error", Content = $"{ex.Message}", CloseButtonText = "OK" };
-                            _ = (Supabase.Realtime.Interfaces.IRealtimeChannel)VMLocator.MainViewModel.ContentDialogShowAsync(cdialog!);
-                        }
-                    //});
+                        //}
+                        //catch (Exception ex)
+                        //{
+                            //ContentDialog? cdialog = null;
+                            //cdialog = new ContentDialog() { Title = $"Error", Content = $"{ex.Message}", CloseButtonText = "OK" };
+                            //_ = (Supabase.Realtime.Interfaces.IRealtimeChannel)VMLocator.MainViewModel.ContentDialogShowAsync(cdialog!);
+                        //}
+                    });
                 });
 
                 await channel.Subscribe();

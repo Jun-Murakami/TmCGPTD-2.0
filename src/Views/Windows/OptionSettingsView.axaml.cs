@@ -3,8 +3,6 @@ using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using FluentAvalonia.UI.Controls;
 using FluentAvalonia.UI.Media.Animation;
-using System;
-using TmCGPTD.ViewModels;
 
 namespace TmCGPTD.Views
 {
@@ -16,7 +14,6 @@ namespace TmCGPTD.Views
         public OptionSettingsView()
         {
             InitializeComponent();
-            //DataContext = new OptionSettingsViewModel();
 
             _dialogFrame = this.FindControl<Frame>("DialogFrame")!;
             _dialogFrame.IsNavigationStackEnabled = false;
@@ -51,6 +48,9 @@ namespace TmCGPTD.Views
                     _dialogFrame.Navigate(typeof(HotKeyDisplayView), null, new SlideNavigationTransitionInfo());
                     break;
                 case 3:
+                    _dialogFrame.Navigate(typeof(WebAppView), null, new SlideNavigationTransitionInfo());
+                    break;
+                case 4:
                     _dialogFrame.Navigate(typeof(LicenseView), null, new SlideNavigationTransitionInfo());
                     break;
             }
