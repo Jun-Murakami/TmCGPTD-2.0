@@ -1432,7 +1432,7 @@ namespace TmCGPTD.Models
                     command.Parameters.AddWithValue("@text", finalText);
                     await command.ExecuteNonQueryAsync();
 
-                    using var command2 = new SQLiteCommand("INSERT INTO editorlog(id, date, text) VALUES (@id, @date, @text)", memoryConnection, (SQLiteTransaction)transaction);
+                    using var command2 = new SQLiteCommand("INSERT INTO editorlog(id, date, text) VALUES (@id, @date, @text)", memoryConnection);
                     command2.Parameters.AddWithValue("@id", resultId);
                     command2.Parameters.AddWithValue("@date", date.ToString("s"));
                     command2.Parameters.AddWithValue("@text", finalText);
@@ -1445,7 +1445,7 @@ namespace TmCGPTD.Models
                     command.Parameters.AddWithValue("@text", finalText);
                     await command.ExecuteNonQueryAsync();
 
-                    using var command2 = new SQLiteCommand("INSERT INTO editorlog(date, text) VALUES (@date, @text)", memoryConnection, (SQLiteTransaction)transaction);
+                    using var command2 = new SQLiteCommand("INSERT INTO editorlog(date, text) VALUES (@date, @text)", memoryConnection);
                     command2.Parameters.AddWithValue("@date", date.ToString("s"));
                     command2.Parameters.AddWithValue("@text", finalText);
                     await command2.ExecuteNonQueryAsync();
