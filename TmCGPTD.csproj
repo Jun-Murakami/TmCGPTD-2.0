@@ -91,6 +91,7 @@
 		<Compile Remove="src\Views\Windows\Options\ApiSettingsView.axaml.cs" />
 		<Compile Remove="src\Views\Windows\Options\AppSettingsView.axaml.cs" />
 		<Compile Remove="src\Views\Windows\Options\LicenseView.axaml.cs" />
+		<Compile Remove="src\Views\Windows\Options\WebAppView.axaml.cs" />
 		<Compile Remove="src\Views\Windows\Editors\Editor4AvalonEditView.axaml.cs" />
 		<Compile Remove="src\Views\Windows\Editors\EditorView.axaml.cs" />
 		<Compile Remove="src\Views\Windows\Editors\Editor2AvalonEditView.axaml.cs" />
@@ -108,6 +109,7 @@
 		<AvaloniaXaml Remove="src\Views\Windows\Options\AppSettingsView.axaml" />
 		<AvaloniaXaml Remove="src\Views\Windows\Options\ApiSettingsView.axaml" />
 		<AvaloniaXaml Remove="src\Views\Windows\Options\HotKeyDisplayView.axaml" />
+		<AvaloniaXaml Remove="src\Views\Windows\Options\WebAppView.axaml" />
 		<AvaloniaXaml Remove="src\Views\Windows\Editors\EditorView.axaml" />
 		<AvaloniaXaml Remove="src\Views\Windows\Editors\Editor4TextBoxView.axaml" />
 		<AvaloniaXaml Remove="src\Views\Windows\Editors\EditorOneView.axaml" />
@@ -129,12 +131,6 @@
 		<Compile Remove="src\Views\Class\ElementGenerator.cs" />
 	</ItemGroup>
 
-	<ItemGroup>
-	  <Compile Update="src\Views\Windows\Options\WebAppView.axaml.cs">
-	    <DependentUpon>WebAppView.axaml</DependentUpon>
-	  </Compile>
-	</ItemGroup>
-	
     <PropertyGroup Condition="'$(OS)' == 'Windows_NT'">
         <DefineConstants>WINDOWS</DefineConstants>
     </PropertyGroup>
