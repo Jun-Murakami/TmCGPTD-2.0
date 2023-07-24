@@ -14,6 +14,7 @@ using FluentAvalonia.UI.Controls;
 using Avalonia;
 using Avalonia.Platform.Storage;
 using System.Threading;
+using Avalonia.Threading;
 
 namespace TmCGPTD.ViewModels
 {
@@ -826,13 +827,33 @@ namespace TmCGPTD.ViewModels
 
         public async Task<ContentDialogResult> ContentDialogShowAsync(ContentDialog dialog)
         {
-            VMLocator.ChatViewModel.ChatViewIsVisible = false;
-            VMLocator.WebChatViewModel.WebChatViewIsVisible = false;
-            VMLocator.WebChatBardViewModel.WebChatBardViewIsVisible = false;
-            var dialogResult = await dialog.ShowAsync();
-            VMLocator.ChatViewModel.ChatViewIsVisible = true;
-            VMLocator.WebChatViewModel.WebChatViewIsVisible = true;
-            VMLocator.WebChatBardViewModel.WebChatBardViewIsVisible = true;
+            ContentDialogResult dialogResult;
+            if (Dispatcher.UIThread.CheckAccess())
+            {
+                VMLocator.ChatViewModel.ChatViewIsVisible = false;
+                VMLocator.WebChatViewModel.WebChatViewIsVisible = false;
+                VMLocator.WebChatBardViewModel.WebChatBardViewIsVisible = false;
+                dialogResult = await dialog.ShowAsync();
+                VMLocator.ChatViewModel.ChatViewIsVisible = true;
+                VMLocator.WebChatViewModel.WebChatViewIsVisible = true;
+                VMLocator.WebChatBardViewModel.WebChatBardViewIsVisible = true;
+            }
+            else
+            {
+                // Not on the UI thread, need to dispatch.
+                await Dispatcher.UIThread.InvokeAsync(() =>
+                {
+                    VMLocator.ChatViewModel.ChatViewIsVisible = false;
+                    VMLocator.WebChatViewModel.WebChatViewIsVisible = false;
+                    VMLocator.WebChatBardViewModel.WebChatBardViewIsVisible = false;
+                    
+                    VMLocator.ChatViewModel.ChatViewIsVisible = true;
+                    VMLocator.WebChatViewModel.WebChatViewIsVisible = true;
+                    VMLocator.WebChatBardViewModel.WebChatBardViewIsVisible = true;
+                });
+                dialogResult = await dialog.ShowAsync();
+            }
+
             return dialogResult;
         }
     }

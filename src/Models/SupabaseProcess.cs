@@ -187,10 +187,17 @@ namespace TmCGPTD.Models
             catch (Exception ex)
             {
                 ContentDialog? cdialog = null;
-                await Dispatcher.UIThread.InvokeAsync(() =>
+                if (Dispatcher.UIThread.CheckAccess())
                 {
                     cdialog = new ContentDialog() { Title = $"Error", Content = $"{ex.Message}", CloseButtonText = "OK" };
-                });
+                }
+                else
+                { 
+                    await Dispatcher.UIThread.InvokeAsync(() =>
+                    {
+                        cdialog = new ContentDialog() { Title = $"Error", Content = $"{ex.Message}", CloseButtonText = "OK" };
+                    });
+                }
                 await VMLocator.MainViewModel.ContentDialogShowAsync(cdialog!);
             }
         }

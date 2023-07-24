@@ -55,7 +55,7 @@ namespace TmCGPTD.Models
                 {
                     Application.Current!.TryFindResource("My.Strings.NewAccountDetected", out object? resource1);
                     ContentDialog? cdialog = null;
-                    await Dispatcher.UIThread.InvokeAsync(() =>
+                    if (Dispatcher.UIThread.CheckAccess())
                     {
                         cdialog = new ContentDialog
                         {
@@ -65,7 +65,22 @@ namespace TmCGPTD.Models
                             SecondaryButtonText = "Use Cloud Data",
                             CloseButtonText = "Log Out"
                         };
-                    });
+                    }
+                    else
+                    {
+                        await Dispatcher.UIThread.InvokeAsync(() =>
+                        {
+                            cdialog = new ContentDialog
+                            {
+                                Title = "Confirmation",
+                                Content = resource1,
+                                PrimaryButtonText = "Use Current Data",
+                                SecondaryButtonText = "Use Cloud Data",
+                                CloseButtonText = "Log Out"
+                            };
+                        });
+                    }
+
                     var result = await VMLocator.MainViewModel.ContentDialogShowAsync(cdialog!);
                     if (result == ContentDialogResult.Primary)
                     {
@@ -87,7 +102,7 @@ namespace TmCGPTD.Models
             catch (Exception ex)
             {
                 ContentDialog? cdialog = null;
-                await Dispatcher.UIThread.InvokeAsync(() =>
+                if (Dispatcher.UIThread.CheckAccess())
                 {
                     cdialog = new ContentDialog
                     {
@@ -95,7 +110,20 @@ namespace TmCGPTD.Models
                         Content = ex.Message + ex.StackTrace,
                         CloseButtonText = "OK"
                     };
-                });
+                }
+                else
+                {
+                    await Dispatcher.UIThread.InvokeAsync(() =>
+                    {
+                        cdialog = new ContentDialog
+                        {
+                            Title = "Error",
+                            Content = ex.Message + ex.StackTrace,
+                            CloseButtonText = "OK"
+                        };
+                    });
+                }
+
                 await VMLocator.MainViewModel.ContentDialogShowAsync(cdialog!);
                 syncIsRunning = false;
                 return;
@@ -373,7 +401,7 @@ namespace TmCGPTD.Models
                 catch (Exception ex)
                 {
                     ContentDialog? cdialog = null;
-                    await Dispatcher.UIThread.InvokeAsync(() =>
+                    if (Dispatcher.UIThread.CheckAccess())
                     {
                         cdialog = new ContentDialog
                         {
@@ -381,7 +409,20 @@ namespace TmCGPTD.Models
                             Content = ex.Message + ex.StackTrace,
                             CloseButtonText = "OK"
                         };
-                    });
+                    }
+                    else
+                    {
+                        await Dispatcher.UIThread.InvokeAsync(() =>
+                        {
+                            cdialog = new ContentDialog
+                            {
+                                Title = "Error",
+                                Content = ex.Message + ex.StackTrace,
+                                CloseButtonText = "OK"
+                            };
+                        });
+                    }
+
                     await VMLocator.MainViewModel.ContentDialogShowAsync(cdialog!);
                     syncIsRunning = false;
                     return;
@@ -444,7 +485,7 @@ namespace TmCGPTD.Models
                 else
                 {
                     ContentDialog? cdialog = null;
-                    await Dispatcher.UIThread.InvokeAsync(() =>
+                    if (Dispatcher.UIThread.CheckAccess())
                     {
                         if (accountCheck == "new")
                         {
@@ -472,7 +513,40 @@ namespace TmCGPTD.Models
                                 CloseButtonText = "Local"
                             };
                         }
-                    });
+                    }
+                    else
+                    {
+                        await Dispatcher.UIThread.InvokeAsync(() =>
+                        {
+                            if (accountCheck == "new")
+                            {
+                                Application.Current!.TryFindResource("My.Strings.NewAccountConflicts", out object? resource1);
+                                //初回同期
+                                cdialog = new ContentDialog
+                                {
+                                    Title = "Data conflicts.",
+                                    Content = $"{resource1}\nCloud records: {cloudRecords}, Local records: {localRecords}\nCloud is newer: {cloudIsNewer},  Local is newer: {localIsNewer},  Local only: {localOnly}",
+                                    PrimaryButtonText = "Merge",
+                                    SecondaryButtonText = "Cloud",
+                                    CloseButtonText = "Local"
+                                };
+                            }
+                            else
+                            {
+                                Application.Current!.TryFindResource("My.Strings.DataConflicts", out object? resource2);
+                                //競合が発生
+                                cdialog = new ContentDialog
+                                {
+                                    Title = "Data conflicts.",
+                                    Content = $"{resource2}\nCloud records: {cloudRecords}, Local records: {localRecords}\nCloud is newer: {cloudIsNewer},  Local is newer: {localIsNewer},  Local only: {localOnly}",
+                                    PrimaryButtonText = "Merge",
+                                    SecondaryButtonText = "Cloud",
+                                    CloseButtonText = "Local"
+                                };
+                            }
+                        });
+                    }
+
 
                     var result = await VMLocator.MainViewModel.ContentDialogShowAsync(cdialog!);
                     if (result == ContentDialogResult.Primary) //マージ
@@ -502,7 +576,7 @@ namespace TmCGPTD.Models
             catch (Exception ex)
             {
                 ContentDialog? cdialog = null;
-                await Dispatcher.UIThread.InvokeAsync(() =>
+                if (Dispatcher.UIThread.CheckAccess())
                 {
                     cdialog = new ContentDialog
                     {
@@ -510,7 +584,20 @@ namespace TmCGPTD.Models
                         Content = ex.Message + ex.StackTrace,
                         CloseButtonText = "OK"
                     };
-                });
+                }
+                else
+                {
+                    await Dispatcher.UIThread.InvokeAsync(() =>
+                    {
+                        cdialog = new ContentDialog
+                        {
+                            Title = "Error",
+                            Content = ex.Message + ex.StackTrace,
+                            CloseButtonText = "OK"
+                        };
+                    });
+                }
+
                 await VMLocator.MainViewModel.ContentDialogShowAsync(cdialog!);
                 syncIsRunning = false;
                 return;
