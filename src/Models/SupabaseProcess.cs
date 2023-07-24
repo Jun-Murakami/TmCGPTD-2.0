@@ -152,9 +152,11 @@ namespace TmCGPTD.Models
                 await SupabaseStates.Instance.Supabase!.Realtime.ConnectAsync();
                 var channel = SupabaseStates.Instance.Supabase!.Realtime.Channel("realtime", "public", "*");
 
+                SupabaseStates.Instance.Supabase!.Realtime.AddDebugHandler((sender, message, exception) => Debug.WriteLine(message));
+
                 channel.AddPostgresChangeHandler(PostgresChangesOptions.ListenType.All, (_, change) =>
                 {
-                    _debouncer.Debounce(() =>
+                    _debouncer.Debounce(async() =>
                     {
 
                         //try
@@ -166,7 +168,7 @@ namespace TmCGPTD.Models
                             //await _semaphore.WaitAsync();
                             //try
                             //{
-                                _ = (Supabase.Realtime.Interfaces.IRealtimeChannel)_syncProcess.SyncDbAsync();
+                                await _syncProcess.SyncDbAsync();
                             //}
                             //finally
                             //{
