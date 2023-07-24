@@ -1,0 +1,34 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             d:DesignWidth="700"
+             d:DesignHeight="990"
+             xmlns:ui="using:FluentAvalonia.UI.Controls"
+             xmlns:uip="using:FluentAvalonia.UI.Controls.Primitives"
+             xmlns:local="using:TmCGPTD"
+             x:Class="TmCGPTD.Views.OptionSettingsView">
+    <StackPanel Orientation="Vertical">
+        <ListBox Name="DialogListBox"
+                 ItemsSource="{Binding DialogList}"
+                 SelectedItem="{Binding SelectedDialogList}">
+            <ListBox.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <WrapPanel />
+                </ItemsPanelTemplate>
+            </ListBox.ItemsPanel>
+        </ListBox>
+        <Border BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
+                BorderThickness="1"
+                Padding="15">
+            <ui:Frame Name="DialogFrame"
+                      HorizontalAlignment="Center" />
+        </Border>
+        <Button Content="Close"
+                HorizontalAlignment="Center"
+                Margin="0,15,0,2"
+                Width="200"
+                Command="{Binding ClosingOptionSettingsCommand}" />
+    </StackPanel>
+</UserControl>

@@ -1,0 +1,37 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.6.33829.357
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TmCGPTD", "TmCGPTD.csproj", "{AA1AD7E5-67DB-458E-9190-FF5D49579264}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Debug|x64 = Debug|x64
+		Debug64|Any CPU = Debug64|Any CPU
+		Debug64|x64 = Debug64|x64
+		Release|Any CPU = Release|Any CPU
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{AA1AD7E5-67DB-458E-9190-FF5D49579264}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AA1AD7E5-67DB-458E-9190-FF5D49579264}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AA1AD7E5-67DB-458E-9190-FF5D49579264}.Debug|x64.ActiveCfg = Debug|x64
+		{AA1AD7E5-67DB-458E-9190-FF5D49579264}.Debug|x64.Build.0 = Debug|x64
+		{AA1AD7E5-67DB-458E-9190-FF5D49579264}.Debug64|Any CPU.ActiveCfg = Debug64|Any CPU
+		{AA1AD7E5-67DB-458E-9190-FF5D49579264}.Debug64|Any CPU.Build.0 = Debug64|Any CPU
+		{AA1AD7E5-67DB-458E-9190-FF5D49579264}.Debug64|x64.ActiveCfg = Debug64|x64
+		{AA1AD7E5-67DB-458E-9190-FF5D49579264}.Debug64|x64.Build.0 = Debug64|x64
+		{AA1AD7E5-67DB-458E-9190-FF5D49579264}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AA1AD7E5-67DB-458E-9190-FF5D49579264}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AA1AD7E5-67DB-458E-9190-FF5D49579264}.Release|x64.ActiveCfg = Release|x64
+		{AA1AD7E5-67DB-458E-9190-FF5D49579264}.Release|x64.Build.0 = Release|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {80D843E7-3D9E-4D7A-B3E9-F1C52B52986D}
+	EndGlobalSection
+EndGlobal

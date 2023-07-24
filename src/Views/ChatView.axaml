@@ -2,17 +2,21 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             mc:Ignorable="d"
+             d:DesignWidth="800"
+             d:DesignHeight="450"
              xmlns:views="clr-namespace:TmCGPTD.Views"
              xmlns:behaviors="clr-namespace:TmCGPTD.Behaviors;assembly=TmCGPTD"
              x:Class="TmCGPTD.Views.ChatView">
-    <Grid VerticalAlignment="Stretch" >
+    <Grid VerticalAlignment="Stretch">
         <Grid.RowDefinitions>
             <RowDefinition Height="50" />
             <RowDefinition Height="*" />
-            <RowDefinition Height="50"/>
+            <RowDefinition Height="50" />
         </Grid.RowDefinitions>
-        <Border Grid.Row="0" BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}" BorderThickness="1,1,1,0">
+        <Border Grid.Row="0"
+                BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
+                BorderThickness="1,1,1,0">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
@@ -22,7 +26,9 @@
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
-                <Grid Grid.Column="0" VerticalAlignment="Center" Margin="5,0,0,0">
+                <Grid Grid.Column="0"
+                      VerticalAlignment="Center"
+                      Margin="5,0,0,0">
                     <ToggleButton Classes="ImageButton"
                                   ToolTip.Tip="Open / Close chat list"
                                   VerticalAlignment="Center"
@@ -33,7 +39,7 @@
                                VerticalAlignment="Center"
                                Height="24"
                                Width="24"
-                               Margin="0,0,0,4"/>
+                               Margin="0,0,0,4" />
                     </ToggleButton>
                     <Image Source="/Assets/iconChat.png"
                            VerticalAlignment="Center"
@@ -45,8 +51,8 @@
                 <TextBox Grid.Column="1"
                          Classes="NormalInput"
                          Classes.clearButton="True"
-                         Text="{Binding	ChatTitle, Mode=TwoWay}"
-                         Watermark="Chat Title"/>
+                         Text="{Binding ChatTitle, Mode=TwoWay}"
+                         Watermark="Chat Title" />
                 <Button Grid.Column="2"
                         Name="ButtonWrite"
                         Classes="ImageButton"
@@ -60,21 +66,21 @@
                                VerticalAlignment="Center"
                                IsHitTestVisible="False"
                                Height="18"
-                               Width="18"/>
+                               Width="18" />
                         <Image Name="ButtonAnime1"
                                Source="/Assets/iconLoading.png"
                                VerticalAlignment="Center"
                                IsHitTestVisible="False"
                                Height="18"
                                Width="18"
-                               Opacity="0"/>
+                               Opacity="0" />
                         <Image Name="ButtonAnime2"
                                Source="/Assets/iconOk.png"
                                VerticalAlignment="Center"
                                IsHitTestVisible="False"
                                Height="18"
                                Width="18"
-                               Opacity="0"/>
+                               Opacity="0" />
                     </Grid>
                 </Button>
                 <Grid Grid.Column="3">
@@ -83,17 +89,17 @@
                              Width="170"
                              Classes.clearButton="True"
                              Padding="30,7,0,7"
-                             Text="{Binding Source={StaticResource VMLocator}, Path=MainViewModel.SearchKeyword, Mode=TwoWay}"/>
+                             Text="{Binding Source={StaticResource VMLocator}, Path=MainViewModel.SearchKeyword, Mode=TwoWay}" />
                     <Image Source="/Assets/iconSearch.png"
                            HorizontalAlignment="Left"
                            VerticalAlignment="Center"
                            Height="18"
                            Width="18"
                            Margin="10,0"
-                           Opacity="0.7"/>
+                           Opacity="0.7" />
                     <Button IsVisible="False"
                             Click="FocusSearchBox"
-                            HotKey="Ctrl+F"/>
+                            HotKey="Ctrl+F" />
                 </Grid>
                 <Button Grid.Column="4"
                         Classes="ImageButton"
@@ -117,10 +123,17 @@
                 </Button>
             </Grid>
         </Border>
-        <Border Name="ChatBorder" Grid.Row="1" BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}" BorderThickness="1,1,1,0">
-            <Decorator x:Name="ChatBrowserWrapper" IsVisible="{Binding ChatViewIsVisible}" Focusable="False"/>
+        <Border Name="ChatBorder"
+                Grid.Row="1"
+                BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
+                BorderThickness="1,1,1,0">
+            <Decorator x:Name="ChatBrowserWrapper"
+                       IsVisible="{Binding ChatViewIsVisible}"
+                       Focusable="False" />
         </Border>
-        <Border Grid.Row="2" BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}" BorderThickness="1">
+        <Border Grid.Row="2"
+                BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
+                BorderThickness="1">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
@@ -136,9 +149,9 @@
                                VerticalAlignment="Center" />
                     <TextBox Classes="NormalInput"
                              Classes.clearButton="True"
-                             Text="{Binding	ChatCategory, Mode=TwoWay}"
+                             Text="{Binding ChatCategory, Mode=TwoWay}"
                              Width="170"
-                             Margin="-5,0,0,0"/>
+                             Margin="-5,0,0,0" />
                     <Button Name="ButtonWrite2"
                             Classes="ImageButton"
                             VerticalAlignment="Center"
@@ -151,42 +164,42 @@
                                    VerticalAlignment="Center"
                                    IsHitTestVisible="False"
                                    Height="18"
-                                   Width="18"/>
+                                   Width="18" />
                             <Image Name="ButtonAnime1b"
                                    Source="/Assets/iconLoading.png"
                                    VerticalAlignment="Center"
                                    IsHitTestVisible="False"
                                    Height="18"
                                    Width="18"
-                                   Opacity="0"/>
+                                   Opacity="0" />
                             <Image Name="ButtonAnime2b"
                                    Source="/Assets/iconOk.png"
                                    VerticalAlignment="Center"
                                    IsHitTestVisible="False"
                                    Height="18"
                                    Width="18"
-                                   Opacity="0"/>
+                                   Opacity="0" />
                         </Grid>
                     </Button>
                     <Button Classes="ImageButton"
                             VerticalAlignment="Center"
                             Padding="4,0"
                             Margin="-8,0,0,0"
-						    Command="{Binding ShowSystemMessageInfoCommand}">
+                            Command="{Binding ShowSystemMessageInfoCommand}">
                         <Image Classes="ButtonIcon"
                                Source="/Assets/iconSystemInfo.png"
                                VerticalAlignment="Center" />
                     </Button>
                 </StackPanel>
-                <Grid Grid.Column="1"/>
-                <Grid Grid.Column="2" >
+                <Grid Grid.Column="1" />
+                <Grid Grid.Column="2">
                     <Button Content="New Chat"
                             Height="38"
                             Width="136"
                             Margin="0,0,10,0"
                             VerticalAlignment="Center"
                             HorizontalAlignment="Center"
-                            Command="{Binding InitializeChatCommand}"/>
+                            Command="{Binding InitializeChatCommand}" />
                     <Image Source="/Assets/iconChat.png"
                            VerticalAlignment="Center"
                            HorizontalAlignment="Left"

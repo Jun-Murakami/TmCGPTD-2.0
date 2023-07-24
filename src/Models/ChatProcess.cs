@@ -8,7 +8,7 @@ using System.Net;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
-using TiktokenSharp;
+using Microsoft.DeepDev;
 using System.Threading;
 
 namespace TmCGPTD.Models
@@ -53,19 +53,19 @@ namespace TmCGPTD.Models
         }
 
         // トークン数制限の事前処理--------------------------------------------------------------
-        private async Task<ChatParameters> ProcessSendMessageAsync(ChatParameters chatParameters,CancellationToken token)
+        private async Task<ChatParameters> ProcessSendMessageAsync(ChatParameters chatParameters, CancellationToken token)
         {
             string? chatTextPost = chatParameters.UserInput; // ユーザー入力全文
             string currentTitle = chatParameters.ChatTitle!; // チャットタイトル
 
             List<Dictionary<string, object>>? conversationHistory = chatParameters.ConversationHistory; // 会話履歴
 
-            TikToken tokenizer = TikToken.EncodingForModel("gpt-3.5-turbo"); // トークナイザーの初期化
+            var tokenizer = await TokenizerBuilder.CreateByModelNameAsync("gpt-3.5-turbo"); // トークナイザーの初期化 // トークナイザーの初期化
 
-            int inputTokenCount = tokenizer.Encode(chatTextPost!).Count; // 入力文字列のトークン数を取得
+            int inputTokenCount = tokenizer.Encode(chatTextPost!, Array.Empty<string>()).Count; // 入力文字列のトークン数を取得
 
             // 過去の会話履歴と現在の入力を結合する前に、過去の会話履歴に含まれるcontent文字列のトークン数を取得
-            int historyContentTokenCount = conversationHistory!.Sum(d => tokenizer.Encode(d["content"].ToString()!).Count);
+            int historyContentTokenCount = conversationHistory!.Sum(d => tokenizer.Encode(d["content"].ToString()!, Array.Empty<string>()).Count);
 
             chatParameters.PreSummarizedHistoryTokenCount = historyContentTokenCount; // 要約前のトークン数を記録
 
@@ -74,7 +74,7 @@ namespace TmCGPTD.Models
             if (!AppSettings.Instance.ApiMaxTokensIsEnable) { maxTokens = 0; }
 
             int maxContentLength = AppSettings.Instance.MaxContentLength;
-            if (!AppSettings.Instance.MaxContentLengthIsEnable) { maxContentLength = 2048; }
+            if (!AppSettings.Instance.MaxContentLengthIsEnable) { maxContentLength = 3072; }
 
             // 制限文字数の計算
             int limitLength = AppSettings.Instance.ApiMaxTokensIsEnable ? inputTokenCount + maxTokens + 400 : maxContentLength;
@@ -109,7 +109,7 @@ namespace TmCGPTD.Models
                 for (int i = 0; i < reversedHistoryList.Count; i += 1)
                 {
                     string? mes = reversedHistoryList[i]["content"].ToString();
-                    int messageTokenCount = tokenizer.Encode(mes!).Count;
+                    int messageTokenCount = tokenizer.Encode(mes!, Array.Empty<string>()).Count;
                     historyTokenCount += messageTokenCount;
 
                     if (i <= 4 && historyTokenCount < limitLength / 5) //直近の会話が短ければそのまま生かす
@@ -231,76 +231,80 @@ namespace TmCGPTD.Models
         // オプションパラメータをセット--------------------------------------------------------------
         private async Task<ChatParameters> SetOptionParametersAsync(ChatParameters chatParameters)
         {
-            string? chatTextPost = chatParameters.UserInput; // ユーザー入力全文
-            List<Dictionary<string, object>>? conversationHistory = chatParameters.ConversationHistory; // 会話履歴
-
-            // システムメッセージの処理
-            if (!string.IsNullOrWhiteSpace(chatParameters.NewSystemMessageStr))
+            await Task.Run(() =>
             {
-                var systemInput = new Dictionary<string, object>() { { "role", "system" }, { "content", chatParameters.NewSystemMessageStr } };
+                string? chatTextPost = chatParameters.UserInput; // ユーザー入力全文
+                List<Dictionary<string, object>>? conversationHistory = chatParameters.ConversationHistory; // 会話履歴
 
-                // 既存のシステムメッセージがあれば削除
-                var itemToRemove = GetSystemMessageItem(conversationHistory);
-                if (itemToRemove != null)
+                // システムメッセージの処理
+                if (!string.IsNullOrWhiteSpace(chatParameters.NewSystemMessageStr))
                 {
-                    conversationHistory!.Remove(itemToRemove);
+                    var systemInput = new Dictionary<string, object>() { { "role", "system" }, { "content", chatParameters.NewSystemMessageStr } };
+
+                    // 既存のシステムメッセージがあれば削除
+                    var itemToRemove = GetSystemMessageItem(conversationHistory);
+                    if (itemToRemove != null)
+                    {
+                        conversationHistory!.Remove(itemToRemove);
+                    }
+
+                    // 会話履歴の先頭にシステムメッセージを追加
+                    conversationHistory!.Insert(0, systemInput);
                 }
 
-                // 会話履歴の先頭にシステムメッセージを追加
-                conversationHistory!.Insert(0, systemInput);
-            }
+                if (!string.IsNullOrWhiteSpace(chatParameters.UserInputBody)) //システムメッセージがある場合、ユーザー入力は本文のみ
+                {
+                    chatTextPost = chatParameters.UserInputBody;
+                }
 
-            if(!string.IsNullOrWhiteSpace(chatParameters.UserInputBody)) //システムメッセージがある場合、ユーザー入力は本文のみ
-            {
-                chatTextPost = chatParameters.UserInputBody;
-            }
+                // 現在のユーザーの入力を表すディクショナリ
+                var userInput = new Dictionary<string, object>() { { "role", "user" }, { "content", chatTextPost! } };
 
-            // 現在のユーザーの入力を表すディクショナリ
-            var userInput = new Dictionary<string, object>() { { "role", "user" }, { "content", chatTextPost! } };
+                // 送信直前の会話履歴をpostedConversationHistoryにディープコピー
+                string jsonCopy = JsonSerializer.Serialize(conversationHistory);
+                chatParameters.PostedConversationHistory = JsonSerializer.Deserialize<List<Dictionary<string, object>>>(jsonCopy);
 
-            // 送信直前の会話履歴をpostedConversationHistoryにディープコピー
-            string jsonCopy = JsonSerializer.Serialize(conversationHistory);
-            chatParameters.PostedConversationHistory = JsonSerializer.Deserialize<List<Dictionary<string, object>>>(jsonCopy);
+                conversationHistory!.Add(userInput); // 会話履歴と現在の入力を結合
 
-            conversationHistory!.Add(userInput); // 会話履歴と現在の入力を結合
+                // オプションパラメータを追加
+                var settings = AppSettings.Instance;
+                var options = new Dictionary<string, object>() { { "model", settings.ApiModel }, { "messages", conversationHistory } };
+                if (settings.ApiMaxTokensIsEnable)
+                    options.Add("max_tokens", settings.ApiMaxTokens);
+                if (settings.ApiTemperatureIsEnable)
+                    options.Add("temperature", settings.ApiTemperature);
+                if (settings.ApiTopPIsEnable)
+                    options.Add("top_p", settings.ApiTopP);
+                if (settings.ApiNIsEnable)
+                    options.Add("n", settings.ApiN);
+                if (settings.ApiLogprobIsEnable)
+                    options.Add("logprobs", settings.ApiLogprobs);
+                if (settings.ApiPresencePenaltyIsEnable)
+                    options.Add("presence_penalty", settings.ApiPresencePenalty);
+                if (settings.ApiFrequencyPenaltyIsEnable)
+                    options.Add("frequency_penalty", settings.ApiFrequencyPenalty);
+                if (settings.ApiBestOfIsEnable)
+                    options.Add("best_of", settings.ApiBestOf);
 
-            // オプションパラメータを追加
-            var settings = AppSettings.Instance;
-            var options = new Dictionary<string, object>() { { "model", settings.ApiModel }, { "messages", conversationHistory } };
-            if (settings.ApiMaxTokensIsEnable)
-                options.Add("max_tokens", settings.ApiMaxTokens);
-            if (settings.ApiTemperatureIsEnable)
-                options.Add("temperature", settings.ApiTemperature);
-            if (settings.ApiTopPIsEnable)
-                options.Add("top_p", settings.ApiTopP);
-            if (settings.ApiNIsEnable)
-                options.Add("n", settings.ApiN);
-            if (settings.ApiLogprobIsEnable)
-                options.Add("logprobs", settings.ApiLogprobs);
-            if (settings.ApiPresencePenaltyIsEnable)
-                options.Add("presence_penalty", settings.ApiPresencePenalty);
-            if (settings.ApiFrequencyPenaltyIsEnable)
-                options.Add("frequency_penalty", settings.ApiFrequencyPenalty);
-            if (settings.ApiBestOfIsEnable)
-                options.Add("best_of", settings.ApiBestOf);
+                if (settings.ApiStopIsEnable) // api_stop パラメータの処理
+                {
+                    string[] stopSequence = settings.ApiStop.Split(',');
+                    options.Add("stop", stopSequence);
+                }
 
-            if (settings.ApiStopIsEnable) // api_stop パラメータの処理
-            {
-                string[] stopSequence = settings.ApiStop.Split(',');
-                options.Add("stop", stopSequence);
-            }
+                if (settings.ApiLogitBiasIsEnable) // api_logit_bias パラメータの処理
+                {
+                    var logitBias = JsonSerializer.Deserialize<Dictionary<string, double>>(settings.ApiLogitBias);
+                    options.Add("logit_bias", logitBias!);
+                }
 
-            if (settings.ApiLogitBiasIsEnable) // api_logit_bias パラメータの処理
-            {
-                var logitBias = JsonSerializer.Deserialize<Dictionary<string, double>>(settings.ApiLogitBias);
-                options.Add("logit_bias", logitBias!);
-            }
+                options["stream"] = true; // stream 有効化
 
-            options["stream"] = true; // stream 有効化
+                chatParameters.Options = options;
+                chatParameters.ConversationHistory = conversationHistory;
 
-            chatParameters.Options = options;
-            chatParameters.ConversationHistory = conversationHistory;
 
+            });
             return chatParameters;
         }
 
@@ -388,11 +392,11 @@ namespace TmCGPTD.Models
                         }
 
                         // 入力トークン数を計算
-                        TikToken tokenizer = TikToken.EncodingForModel("gpt-3.5-turbo");
-                        var inputConversationTokenCount = tokenizer.Encode(conversationHistory!.Select(d => d["content"].ToString()).Aggregate((a, b) => a + b)!).Count;
+                        var tokenizer = await TokenizerBuilder.CreateByModelNameAsync("gpt-3.5-turbo");
+                        var inputConversationTokenCount = tokenizer.Encode(conversationHistory!.Select(d => d["content"].ToString()).Aggregate((a, b) => a + b)!, Array.Empty<string>()).Count;
 
                         // レスポンスのトークン数を計算
-                        var responseTokenCount = tokenizer.Encode(chatTextRes).Count;
+                        var responseTokenCount = tokenizer.Encode(chatTextRes, Array.Empty<string>()).Count;
 
                         // レス本文
                         chatTextRes = Environment.NewLine + chatTextRes + Environment.NewLine + Environment.NewLine;
@@ -407,17 +411,20 @@ namespace TmCGPTD.Models
                         VMLocator.ChatViewModel.ConversationHistory = conversationHistory;
 
                         // usageを計算
-                        chatTextRes += $"usage={{\"prompt_tokens\":{inputConversationTokenCount},\"completion_tokens\":{responseTokenCount},\"total_tokens\":{inputConversationTokenCount + responseTokenCount}}}" + Environment.NewLine;
+                        //旧型
+                        //chatTextRes += $"usage={{\"prompt_tokens\":{inputConversationTokenCount},\"completion_tokens\":{responseTokenCount},\"total_tokens\":{inputConversationTokenCount + responseTokenCount}}}" + Environment.NewLine;
+                        //新型
+                        chatTextRes += $"[tokens] prompt:{inputConversationTokenCount}, completion:{responseTokenCount}, total:{inputConversationTokenCount + responseTokenCount}" + Environment.NewLine;
 
                         // 要約が実行された場合、メソッドの戻り値の最後に要約前のトークン数と要約後のトークン数をメッセージとして付け加える
                         string? postConversation = conversationHistory.Select(d => d["content"].ToString()).Aggregate((a, b) => a + b);
-                        if (chatParameters.PreSummarizedHistoryTokenCount > tokenizer.Encode(postConversation!).Count)
+                        if (chatParameters.PreSummarizedHistoryTokenCount > tokenizer.Encode(postConversation!, Array.Empty<string>()).Count)
                         {
-                            chatTextRes += $"-Conversation history has been summarized. before: {chatParameters.PreSummarizedHistoryTokenCount}, after: {tokenizer.Encode(postConversation!).Count}.{Environment.NewLine}";
+                            chatTextRes += $"-Conversation has been summarized. before: {chatParameters.PreSummarizedHistoryTokenCount}, after: {tokenizer.Encode(postConversation!, Array.Empty<string>()).Count}.{Environment.NewLine}";
                         }
                         else if (chatParameters.IsDeleteHistory) // 会話履歴が全て削除された場合
                         {
-                            chatTextRes += $"-Conversation history has been removed. before: {chatParameters.PreSummarizedHistoryTokenCount}, after: {tokenizer.Encode(postConversation!).Count}.{Environment.NewLine}";
+                            chatTextRes += $"-Conversation history has been removed. before: {chatParameters.PreSummarizedHistoryTokenCount}, after: {tokenizer.Encode(postConversation!, Array.Empty<string>()).Count}.{Environment.NewLine}";
                         }
 
                         await VMLocator.ChatViewModel.UpdateUIWithReceivedMessage("[DONE]", chatTextRes.Trim()); // Stream終了処理

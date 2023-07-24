@@ -1,0 +1,64 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             d:DesignWidth="800"
+             d:DesignHeight="450"
+             xmlns:ui="using:FluentAvalonia.UI.Controls"
+             xmlns:uip="using:FluentAvalonia.UI.Controls.Primitives"
+             x:Class="TmCGPTD.Views.CloudLoginView">
+    <Border BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
+            BorderThickness="1">
+        <StackPanel Orientation="Vertical"
+                    Spacing="10"
+                    VerticalAlignment="Center">
+            <Image Source="/Assets/iconCloud.png"
+                   VerticalAlignment="Center"
+                   Width="50"
+                   Height="50" />
+            <TextBlock Text="Email address"
+                       HorizontalAlignment="Center" />
+            <TextBox Text="{Binding Email,Mode=TwoWay}"
+                     Width="300"
+                     AcceptsReturn="False"
+                     Classes.clearButton="True" />
+            <TextBlock Text="Password"
+                       HorizontalAlignment="Center"
+                       Classes.clearButton="True" />
+            <TextBox Text="{Binding Password,Mode=TwoWay}"
+                     Width="300"
+                     AcceptsReturn="False"
+                     PasswordChar="*"
+                     RevealPassword="False"
+                     Classes="revealPasswordButton" />
+            <StackPanel Orientation="Horizontal"
+                        Spacing="10"
+                        HorizontalAlignment="Center"
+                        Margin="10">
+                <Button Content="Log in - Continue"
+                        Command="{Binding EmailLoginCommand}" />
+                <Button Content="Sign up - New user"
+                        Command="{Binding EmailSignupCommand}" />
+            </StackPanel>
+            <TextBlock Text="- OR -"
+                       HorizontalAlignment="Center"
+                       Margin="10" />
+            <Button Content="Log in with Google"
+                    HorizontalAlignment="Center"
+                    Width="200"
+                    Command="{Binding GoogleLoginCommand}" />
+            <Button Content="Log in with Microsoft"
+                    HorizontalAlignment="Center"
+                    Width="200"
+                    Command="{Binding MicrosoftLoginCommand}" />
+            <StackPanel Orientation="Horizontal"
+                        Spacing="2"
+                        HorizontalAlignment="Center"
+                        Margin="5">
+                <ui:HyperlinkButton Content="Forgot password?"
+                                    Command="{Binding PasswordResetCommand}" />
+            </StackPanel>
+        </StackPanel>
+    </Border>
+</UserControl>

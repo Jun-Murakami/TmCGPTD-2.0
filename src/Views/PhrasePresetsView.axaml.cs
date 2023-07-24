@@ -78,13 +78,16 @@ namespace TmCGPTD.Views
                 int buttonNumber = int.Parse(button.Name!.Substring(6))!;
                 TextBox textBox = this.FindControl<TextBox>($"TextBox{buttonNumber}")!;
 
-                if (textBox.Text == null )
-                {
-                    return;
-                }
+                if (textBox.Text == null ) return;
 
                 // Get the currently focused control
+#if WINDOWS
+                var focusManager = TopLevel.GetTopLevel(this)!.FocusManager;
+                var focusedControl = focusManager?.GetFocusedElement();
+#else
                 var focusedControl = FocusManager.Instance!.Current;
+#endif
+                if (focusedControl == null) return;
 
                 if (focusedControl is TextBox focusedTextBox)
                 {
@@ -112,10 +115,12 @@ namespace TmCGPTD.Views
                     focusedTextBox.Text = focusedTextBox.Text.Insert(start, textBox.Text);
                     focusedTextBox.CaretIndex = start + textBox.Text.Length;
                 }
+#if WINDOWS
                 else if (focusedControl is AvaloniaEdit.Editing.TextArea focusedTextArea)
                 {
                         focusedTextArea.Selection.ReplaceSelectionWithText(textBox.Text);
                 }
+#endif
             }
         }
     }

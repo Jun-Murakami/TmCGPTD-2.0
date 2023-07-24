@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Supabase Sign-in</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+
+<body>
+
+    <button id="floatingCopyButton">Copy to clipboard</button>
+
+<script>
+
+
+            function setupButtons() {
+                const copyButton = document.querySelectorAll('#copyButton');
+                copyButton.forEach(button => button.addEventListener('click', copyCode));
+            }
+
+        // ボタンハンドラ設定
+        document.addEventListener('DOMContentLoaded', setupButtons);
+
+
+        // テキストコピー-----------------------------------
+        const floatingButton = document.getElementById("floatingCopyButton");
+        const scrollableWrapper = document.getElementById("scrollableWrapper");
+
+        let savedSelection = null;
+
+        document.body.addEventListener("mousedown", (event) => {
+            // Check if right-click or Ctrl + click (Mac)
+            if (event.button === 2 || (event.ctrlKey && event.button === 0)) {
+                // Save the current selection
+                savedSelection = window.getSelection().getRangeAt(0);
+
+                floatingButton.style.display = "block";
+                floatingButton.style.left = event.clientX + "px";
+                floatingButton.style.top = event.pageY + "px";
+            } else if (event.button === 0 && event.target === floatingButton) {
+                // Left click on floatingButton
+                copySelectedText();
+                floatingButton.style.display = "none";
+            } else {
+                floatingButton.style.display = "none";
+            }
+        });
+
+        document.body.addEventListener("mouseup", (event) => {
+            if (savedSelection) {
+                // Restore the saved selection
+                const selection = window.getSelection();
+                selection.removeAllRanges();
+                selection.addRange(savedSelection);
+
+                // Clear the saved selection
+                savedSelection = null;
+            }
+        });
+
+        document.addEventListener("keydown", (event) => {
+            // Check if Cmd + C (Mac)
+            if (event.metaKey && event.key === "c") {
+                copySelectedText();
+            }
+        });
+
+        function copySelectedText() {
+            const selectedText = window.getSelection().toString();
+
+            if (selectedText) {
+                const textarea = document.createElement('textarea');
+                textarea.value = selectedText;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+            }
+        }
+
+    </script>
+</body>
+</html>

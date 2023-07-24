@@ -1,19 +1,49 @@
-﻿
-<ResourceDictionary
+﻿<ResourceDictionary
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:system="clr-namespace:System;assembly=System.Runtime">
     <system:String x:Key="My.Strings.PhrasePresets">定型句プリセット :</system:String>
     <system:String x:Key="My.Strings.ConversationHitoryInfo">"conversation history limit"はクライアントオプションであり、APIパラメーターではありません。
-        制限トークンに達すると、送信される過去の会話履歴が自動的に圧縮されます。(表示ログには影響しません)
-    </system:String>
-    <system:String x:Key="My.Strings.DatabaseInfo">※データベースファイルの保存先をクラウドフォルダ（DropBoxなど）に設定して他のコンピュータから読み込むことで、チャットログと定型句プリセットを同期できます。</system:String>
+制限トークンに達すると、送信される過去の会話履歴が自動的に圧縮されます。(表示ログには影響しません)</system:String>
+    <system:String x:Key="My.Strings.DatabaseSettingsInfo">※データベースファイルの保存先をクラウドフォルダ（DropBoxなど）に設定して
+他のコンピュータから読み込むことで、チャットログや定型句プリセットを同期できます。
+
+クラウド同期を有効にしている場合も、ローカルデータベースをDropBoxなどに置くことで
+他のコンピュータとの同期が早くなります。</system:String>
     <system:String x:Key="My.Strings.ChatScreenInfo">チャット画面を表示した状態で実行してください。</system:String>
     <system:String x:Key="My.Strings.DatabaseUpdate">データベースファイルがアップデートされました。この操作は一度だけ実行されます。データはバックアップされています。</system:String>
     <system:String x:Key="My.Strings.SystemMessage">あなたはOpenAIによってトレーニングされた大規模言語モデルのChatGPTです。
 ユーザーの指示をStep by Stepで注意深く思考し、Markdownで回答して下さい。</system:String>
 <system:String x:Key="My.Strings.SystemMessageInfo">システムメッセージは設定されていません。
 - 設定するには一番上のプロンプトエリアに'#System'と入力し、続けてメッセージを入力してください。
-- 削除するには'#System'だけを送信します。
-</system:String>
+- 削除するには'#System'だけを送信します。</system:String>
+    <system:String x:Key="My.Strings.NewAccountDetected">新規ユーザーのログインが検出されました。
+ローカルデータは現在、別のアカウントと同期されています。
+現在のローカルデータを新しいアカウントで使用しますか？
+
+*新しいアカウントにクラウドデータが存在している場合、データの競合が発生する可能性があります。
+(この操作は他のアカウントの同期データには影響しません。)</system:String>
+    <system:String x:Key="My.Strings.NewAccountConflicts">新規ユーザーのログインが検出されましたが、クラウドに既に同期済みのデータが存在しているため、ローカルデータと競合が発生しています。
+データをマージするか、優先するデータを選択してください。
+*クラウドかローカルのどちらかを選択すると、データが失われる可能性があります。
+
+実行前にローカルデータベースはバックアップされます。</system:String>
+    <system:String x:Key="My.Strings.DataConflicts">データが競合しています。データをマージするか、優先するデータを選択してください。
+*クラウドかローカルのどちらかを選択すると、データが失われる可能性があります。
+
+実行前にローカルデータベースはバックアップされます。</system:String>
+    <system:String x:Key="My.Strings.DeleteAccount">クラウドからすべてのログデータと認証情報が削除されます。
+この操作は元に戻せません。実行しますか?</system:String>
+    <system:String x:Key="My.Strings.DeletedAccount">アカウントが削除されました。</system:String>
+    <system:String x:Key="My.Strings.EmailAddressChange">新しいメールアドレスに確認メールを送信しました。
+メールを開き、確認リンクをクリックして有効化してください。</system:String>
+    <system:String x:Key="My.Strings.NewEmailInfo">新しいメールアドレスを入力してください。</system:String>
+    <system:String x:Key="My.Strings.NewPasswordInfo">新しいパスワードを入力してください。</system:String>
+    <system:String x:Key="My.Strings.NewAccountInfo">新規登録ユーザーの場合、確認メールが送信されています。
+メールに記載されているリンクをクリックすると、アカウントが有効化されログイン可能になります。</system:String>
+    <system:String x:Key="My.Strings.PasswordChange">パスワードリセットのメールが送信されました。
+メール記載のリンクをクリックしてブラウザでログインし、メニューから新しいパスワードに変更してください。</system:String>
+    <system:String x:Key="My.Strings.PasswordChanged">パスワードが変更されました。</system:String>
+    <system:String x:Key="My.Strings.EmailLoginFailed">ログインに失敗しました。メールアドレスとパスワードを確認してもう一度お試しください。</system:String>
+    <system:String x:Key="My.Strings.OverWriteLog">同名のチャットログが存在します。上書きしますか？</system:String>
 </ResourceDictionary>

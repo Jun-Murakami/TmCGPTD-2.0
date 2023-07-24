@@ -13,8 +13,8 @@ namespace TmCGPTD.ViewModels
             AltKeyIsDown = false;
         }
 
-        private ObservableCollection<string> _phrases;
-        public ObservableCollection<string> Phrases
+        private ObservableCollection<string>? _phrases;
+        public ObservableCollection<string>? Phrases
         {
             get => _phrases;
             set => SetProperty(ref _phrases, value);

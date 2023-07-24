@@ -457,4 +457,6 @@ $RECYCLE.BIN/
 /TmCGPTD.ico
 /Helper/LocalizationHelper.xlsm
 /supabaseConfig.json
+/Assets/supabaseConfig.json
+/supabaseConfig.json
 /appsettings.json

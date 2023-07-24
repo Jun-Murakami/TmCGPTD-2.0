@@ -4,7 +4,6 @@ using System;
 using System.IO;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using TextMateSharp.Grammars;
 using TmCGPTD.Views;
 using TmCGPTD.Models;
 using System.Windows.Input;
@@ -16,14 +15,18 @@ using Avalonia.Platform.Storage;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Reactive;
-using TiktokenSharp;
+using Microsoft.DeepDev;
+#if WINDOWS
+using TextMateSharp.Grammars;
+#endif
 
 namespace TmCGPTD.ViewModels
 {
     public class EditorViewModel : ViewModelBase
     {
-        DatabaseProcess _dbProcess = new DatabaseProcess();
-        private readonly Subject<Unit> _textChanged = new Subject<Unit>();
+        readonly DatabaseProcess _dbProcess = new();
+        private readonly Subject<Unit> _textChanged = new();
+        private ITokenizer? _tokenizer;
 
         public EditorViewModel()
         {
@@ -31,12 +34,13 @@ namespace TmCGPTD.ViewModels
             EditorModeIsChecked = true;
             EditorSeparateMode = 5;
 
+            InitializeTokenizer();
             TextClear();
 
             _editorLogLists = new ObservableCollection<EditorLogs>();
 
             PrevCommand = new RelayCommand(OnPrevCommand, () => SelectedEditorLogIndex > 0);
-            NextCommand = new RelayCommand(OnNextCommand, () => SelectedEditorLogIndex < EditorLogLists.Count - 1);
+            NextCommand = new RelayCommand(OnNextCommand, () => SelectedEditorLogIndex < EditorLogLists!.Count - 1);
 
             SaveTemplateCommand = new AsyncRelayCommand(SaveTemplateAsync);
             RenameTemplateCommand = new AsyncRelayCommand(RenameTemplateAsync);
@@ -45,7 +49,7 @@ namespace TmCGPTD.ViewModels
             ExportTemplateCommand = new AsyncRelayCommand(ExportTemplateAsync);
 
             _textChanged
-                .Throttle(TimeSpan.FromMilliseconds(500)) // 500É~ÉäïbÇÃÉfÉoÉEÉìÉXéûä‘Çê›íË
+                .Throttle(TimeSpan.FromMilliseconds(200)) // 200„Éü„É™Áßí„ÅÆ„Éá„Éê„Ç¶„É≥„ÇπÊôÇÈñì„ÇíË®≠ÂÆö
                 .Subscribe(_ => GetRecentText());
         }
 
@@ -58,16 +62,15 @@ namespace TmCGPTD.ViewModels
         public IAsyncRelayCommand ExportTemplateCommand { get; }
 
 
-        private ObservableCollection<EditorLogs> _editorLogLists;
-        public ObservableCollection<EditorLogs> EditorLogLists
+        private ObservableCollection<EditorLogs>? _editorLogLists;
+        public ObservableCollection<EditorLogs>? EditorLogLists
         {
             get => _editorLogLists;
             set => SetProperty(ref _editorLogLists, value);
         }
 
-
-        private EditorLogs _selectedEditorLog;
-        public EditorLogs SelectedEditorLog
+        private EditorLogs? _selectedEditorLog;
+        public EditorLogs? SelectedEditorLog
         {
             get => _selectedEditorLog;
             set
@@ -108,24 +111,24 @@ namespace TmCGPTD.ViewModels
                 SelectedEditorLogIndex = 0;
             }
             else
-            { 
+            {
                 SelectedEditorLogIndex++;
             }
         }
-
-        private ObservableCollection<Language> _languages;
-        public ObservableCollection<Language> Languages
+#if WINDOWS
+        private ObservableCollection<Language>? _languages;
+        public ObservableCollection<Language>? Languages
         {
             get => _languages;
             set => SetProperty(ref _languages, value);
         }
-        private Language _selectedLang;
-        public Language SelectedLang
+        private Language? _selectedLang;
+        public Language? SelectedLang
         {
             get => _selectedLang;
             set => SetProperty(ref _selectedLang, value);
         }
-
+#endif
         private int _selectedLangIndex;
         public int SelectedLangIndex
         {
@@ -133,91 +136,22 @@ namespace TmCGPTD.ViewModels
             set => SetProperty(ref _selectedLangIndex, value);
         }
 
-        private UserControl _selectedEditor2View;
-        public UserControl SelectedEditor2View
-        {
-            get => _selectedEditor2View;
-            set => SetProperty(ref _selectedEditor2View, value);
-        }
-
-        private UserControl _selectedEditor4View;
-        public UserControl SelectedEditor4View
-        {
-            get => _selectedEditor4View;
-            set => SetProperty(ref _selectedEditor4View, value);
-        }
-
-        private UserControl _selectedEditor3_2View;
-        public UserControl SelectedEditor3_2View
-        {
-            get => _selectedEditor3_2View;
-            set => SetProperty(ref _selectedEditor3_2View, value);
-        }
-
         private bool _editorModeIsChecked;
         public bool EditorModeIsChecked
         {
             get => _editorModeIsChecked;
-            set
-            {
-                if (SetProperty(ref _editorModeIsChecked, value))
-                {
-                    UpdateSelectedEditorView();
-                }
-            }
+            set => SetProperty(ref _editorModeIsChecked, value);
         }
 
-        private Editor2AvalonEditView _editor2AvalonEditView;
-        private Editor2TextBoxView _editor2TextBoxView;
-        private Editor4AvalonEditView _editor4AvalonEditView;
-        private Editor4TextBoxView _editor4TextBoxView;
-
-        private Editor3_2AvalonEditView _editor3_2AvalonEditView;
-        private Editor3_2TextBoxView _editor3_2TextBoxView;
-
-        private void UpdateSelectedEditorView()
-        {
-            if (_editorModeIsChecked)
-            {
-                if (_editor2AvalonEditView == null)
-                {
-                    _editor2AvalonEditView = new Editor2AvalonEditView();
-                    _editor3_2AvalonEditView = new Editor3_2AvalonEditView();
-                }
-                if (_editor4AvalonEditView == null)
-                {
-                    _editor4AvalonEditView = new Editor4AvalonEditView();
-                }
-                SelectedEditor2View = _editor2AvalonEditView;
-                SelectedEditor4View = _editor4AvalonEditView;
-                SelectedEditor3_2View = _editor3_2AvalonEditView;
-            }
-            else
-            {
-                if (_editor2TextBoxView == null)
-                {
-                    _editor2TextBoxView = new Editor2TextBoxView();
-                    _editor3_2TextBoxView = new Editor3_2TextBoxView();
-                }
-                if (_editor4TextBoxView == null)
-                {
-                    _editor4TextBoxView = new Editor4TextBoxView();
-                }
-                SelectedEditor2View = _editor2TextBoxView;
-                SelectedEditor4View = _editor4TextBoxView;
-                SelectedEditor3_2View = _editor3_2TextBoxView;
-            }
-        }
-
-        private ObservableCollection<PromptTemplate> _templateItems;
-        public ObservableCollection<PromptTemplate> TemplateItems
+        private ObservableCollection<PromptTemplate>? _templateItems;
+        public ObservableCollection<PromptTemplate>? TemplateItems
         {
             get => _templateItems;
             set => SetProperty(ref _templateItems, value);
         }
 
-        private PromptTemplate _selectedTemplateItem;
-        public PromptTemplate SelectedTemplateItem
+        private PromptTemplate? _selectedTemplateItem;
+        public PromptTemplate? SelectedTemplateItem
         {
             get => _selectedTemplateItem;
             set
@@ -278,18 +212,17 @@ namespace TmCGPTD.ViewModels
 
         private async Task SaveTemplateAsync()
         {
-            string phrasesText;
             ContentDialog dialog;
             ContentDialogResult dialogResult;
             try
             {
                 if (SelectedTemplateItemIndex > -1)
                 {
-                    dialog = new ContentDialog() { Title = $"Overwrite '{SelectedTemplateItem.Title}' prompt template?", PrimaryButtonText = "Overwrite", SecondaryButtonText = "New", CloseButtonText = "Cancel" };
+                    dialog = new ContentDialog() { Title = $"Overwrite '{SelectedTemplateItem!.Title}' prompt template?", PrimaryButtonText = "Overwrite", SecondaryButtonText = "New", CloseButtonText = "Cancel" };
                     dialogResult = await VMLocator.MainViewModel.ContentDialogShowAsync(dialog);
                     if (dialogResult == ContentDialogResult.Primary)
                     {
-                        await _dbProcess.UpdateTemplateAsync(SelectedTemplateItem.Title);
+                        await _dbProcess.UpdateTemplateAsync(SelectedTemplateItem.Title!);
                         return;
                     }
                     else if (dialogResult != ContentDialogResult.Secondary)
@@ -297,7 +230,7 @@ namespace TmCGPTD.ViewModels
                         return;
                     }
                 }
-                else if(string.IsNullOrWhiteSpace(GetRecentText()))
+                else if (string.IsNullOrWhiteSpace(GetRecentText()))
                 {
                     return;
                 }
@@ -343,7 +276,7 @@ namespace TmCGPTD.ViewModels
 
             var dialog = new ContentDialog()
             {
-                Title = $"Please enter a new name to change from '{SelectedTemplateItem.Title}'.",
+                Title = $"Please enter a new name to change from '{SelectedTemplateItem!.Title}'.",
                 PrimaryButtonText = "OK",
                 CloseButtonText = "Cancel"
             };
@@ -362,7 +295,7 @@ namespace TmCGPTD.ViewModels
 
             try
             {
-                await _dbProcess.UpdateTemplateNameAsync(SelectedTemplateItem.Title, viewModel.UserInput);
+                await _dbProcess.UpdateTemplateNameAsync(SelectedTemplateItem.Title!, viewModel.UserInput);
             }
             catch (Exception ex)
             {
@@ -381,7 +314,7 @@ namespace TmCGPTD.ViewModels
 
             var dialog = new ContentDialog()
             {
-                Title = $"Delete propmt template '{SelectedTemplateItem.Title}' - are you sure? ",
+                Title = $"Delete propmt template '{SelectedTemplateItem!.Title}' - are you sure? ",
                 PrimaryButtonText = "OK",
                 CloseButtonText = "Cancel"
             };
@@ -394,7 +327,7 @@ namespace TmCGPTD.ViewModels
 
             try
             {
-                await _dbProcess.DeleteTemplateAsync(SelectedTemplateItem.Title);
+                await _dbProcess.DeleteTemplateAsync(SelectedTemplateItem!.Title!);
             }
             catch (Exception ex)
             {
@@ -415,7 +348,7 @@ namespace TmCGPTD.ViewModels
                     {new("TXT files (*.txt)") { Patterns = new[] { "*.txt" } },
                     new("All files (*.*)") { Patterns = new[] { "*" } }}
             };
-            var result = await (Application.Current.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime).MainWindow.StorageProvider.OpenFilePickerAsync(dialog);
+            var result = await (Application.Current!.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)!.MainWindow!.StorageProvider.OpenFilePickerAsync(dialog);
 
             if (result.Count > 0)
             {
@@ -455,7 +388,7 @@ namespace TmCGPTD.ViewModels
                     new("All files (*.*)") { Patterns = new[] { "*" } }}
             };
 
-            var result = await (Application.Current.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime).MainWindow.StorageProvider.SaveFilePickerAsync(dialog);
+            var result = await (Application.Current!.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)!.MainWindow!.StorageProvider.SaveFilePickerAsync(dialog);
 
             if (result != null)
             {
@@ -509,23 +442,27 @@ namespace TmCGPTD.ViewModels
             EditorHeight3 = new GridLength(0.33, GridUnitType.Star);
         }
 
+        private async void InitializeTokenizer()
+        {
+            _tokenizer = await TokenizerBuilder.CreateByModelNameAsync("gpt-3.5-turbo"); // „Éà„Éº„ÇØ„Éä„Ç§„Ç∂„Éº„ÅÆÂàùÊúüÂåñ
+        }
+
         public string GetRecentText()
         {
             List<string> inputText = new List<string>
             {
-                string.Join(Environment.NewLine, Editor1Text.Trim()),
-                string.Join(Environment.NewLine, Editor2Text.Trim()),
-                string.Join(Environment.NewLine, Editor3Text.Trim()),
-                string.Join(Environment.NewLine, Editor4Text.Trim()),
-                string.Join(Environment.NewLine, Editor5Text.Trim())
+                string.Join(Environment.NewLine, Editor1Text!.Trim()),
+                string.Join(Environment.NewLine, Editor2Text!.Trim()),
+                string.Join(Environment.NewLine, Editor3Text!.Trim()),
+                string.Join(Environment.NewLine, Editor4Text!.Trim()),
+                string.Join(Environment.NewLine, Editor5Text!.Trim())
             };
 
             var outputText = inputText;
-            outputText.RemoveAll(s => string.IsNullOrWhiteSpace(s)); // ãÛçsÇçÌèú
+            outputText.RemoveAll(s => string.IsNullOrWhiteSpace(s)); // Á©∫Ë°å„ÇíÂâäÈô§
             string outputTextStr = string.Join(Environment.NewLine + "---" + Environment.NewLine, outputText);
 
-            TikToken tokenizer = TikToken.EncodingForModel("gpt-3.5-turbo"); // ÉgÅ[ÉNÉiÉCÉUÅ[ÇÃèâä˙âª
-            VMLocator.MainViewModel.InputTokens = tokenizer.Encode(outputTextStr).Count.ToString() + " Tokens"; // ÉgÅ[ÉNÉiÉCÉY
+            VMLocator.MainViewModel.InputTokens = _tokenizer!.Encode(outputTextStr, Array.Empty<string>()).Count.ToString() + " Tokens"; // „Éà„Éº„ÇØ„Éä„Ç§„Ç∫
 
             return outputTextStr;
         }
@@ -545,11 +482,17 @@ namespace TmCGPTD.ViewModels
         public double EditorCommonFontSize
         {
             get => _editorCommonFontSize;
-            set => SetProperty(ref _editorCommonFontSize, value);
+            set
+            {
+                if (SetProperty(ref _editorCommonFontSize, value))
+                {
+                    AppSettings.Instance.EditorFontSize = value;
+                }
+            }
         }
 
-        private string _editor1Text;
-        public string Editor1Text
+        private string? _editor1Text;
+        public string? Editor1Text
         {
             get => _editor1Text;
             set
@@ -561,8 +504,8 @@ namespace TmCGPTD.ViewModels
             }
         }
 
-        private string _editor2Text;
-        public string Editor2Text
+        private string? _editor2Text;
+        public string? Editor2Text
         {
             get => _editor2Text;
             set
@@ -574,8 +517,8 @@ namespace TmCGPTD.ViewModels
             }
         }
 
-        private string _editor3Text;
-        public string Editor3Text
+        private string? _editor3Text;
+        public string? Editor3Text
         {
             get => _editor3Text;
             set
@@ -587,8 +530,8 @@ namespace TmCGPTD.ViewModels
             }
         }
 
-        private string _editor4Text;
-        public string Editor4Text
+        private string? _editor4Text;
+        public string? Editor4Text
         {
             get => _editor4Text;
             set
@@ -600,8 +543,8 @@ namespace TmCGPTD.ViewModels
             }
         }
 
-        private string _editor5Text;
-        public string Editor5Text
+        private string? _editor5Text;
+        public string? Editor5Text
         {
             get => _editor5Text;
             set
@@ -613,5 +556,4 @@ namespace TmCGPTD.ViewModels
             }
         }
     }
-
 }

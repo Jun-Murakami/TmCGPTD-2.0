@@ -7,12 +7,16 @@ using Avalonia;
 
 namespace TmCGPTD
 {
+#if WINDOWS
+    public class CustomNumericUpDown : NumericUpDown
+    {
+        protected override Type StyleKeyOverride => typeof(NumericUpDown);
+#else
     public class CustomNumericUpDown : NumericUpDown, IStyleable
     {
-        private TextBox _textBox;
-
-        Type IStyleable.StyleKey => typeof(NumericUpDown);
-
+        Type IStyleable.StyleKey => typeof(NumericUpDown); //avalonia V11 prev6
+#endif
+        private TextBox? _textBox;
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
             base.OnApplyTemplate(e);
@@ -26,7 +30,7 @@ namespace TmCGPTD
             this.DetachedFromVisualTree += OnDetachedFromVisualTree;
         }
 
-        private void TextBox_KeyDown(object sender, KeyEventArgs e)
+        private void TextBox_KeyDown(object? sender, KeyEventArgs e)
         {
             var key = e.Key;
             var isCtrl = e.KeyModifiers.HasFlag(KeyModifiers.Control);
@@ -44,7 +48,7 @@ namespace TmCGPTD
             }
         }
 
-        private void OnDetachedFromVisualTree(object sender, VisualTreeAttachmentEventArgs e)
+        private void OnDetachedFromVisualTree(object? sender, VisualTreeAttachmentEventArgs e)
         {
             if (_textBox != null)
             {

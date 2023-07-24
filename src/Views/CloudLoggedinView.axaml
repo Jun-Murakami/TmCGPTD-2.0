@@ -1,0 +1,47 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             d:DesignWidth="800"
+             d:DesignHeight="450"
+             xmlns:ui="using:FluentAvalonia.UI.Controls"
+             xmlns:uip="using:FluentAvalonia.UI.Controls.Primitives"
+             x:Class="TmCGPTD.Views.CloudLoggedinView">
+    <Border BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
+            BorderThickness="1">
+        <StackPanel Orientation="Vertical"
+                    Spacing="10"
+                    VerticalAlignment="Center">
+            <Image Source="/Assets/iconCloudOn.png"
+                   VerticalAlignment="Center"
+                   Width="50"
+                   Height="50" />
+            <TextBlock Text="{Binding Provider}"
+                       HorizontalAlignment="Center"
+                       Margin="0,0,0,0" />
+            <TextBlock Text="{Binding Email}"
+                       HorizontalAlignment="Center"
+                       Margin="0,7,0,9" />
+            <StackPanel Orientation="Horizontal"
+                        Spacing="10"
+                        HorizontalAlignment="Center"
+                        Margin="10">
+                <Button Content="Log out"
+                        Width="200"
+                        Command="{Binding LogOutCommand}" />
+            </StackPanel>
+            <StackPanel Orientation="Horizontal"
+                        Spacing="2"
+                        HorizontalAlignment="Center"
+                        Margin="5">
+                <ui:HyperlinkButton Content="Change email address"
+                                    Command="{Binding ChangeEmailCommand}" />
+                <ui:HyperlinkButton Content="Change password"
+                                    Command="{Binding ChangePasswordCommand}" />
+                <ui:HyperlinkButton Content="Delete account"
+                                    Command="{Binding DeleteAccountCommand}" />
+            </StackPanel>
+        </StackPanel>
+    </Border>
+</UserControl>

@@ -1,14 +1,16 @@
-﻿
-<ResourceDictionary
-    xmlns="https://github.com/avaloniaui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:system="clr-namespace:System;assembly=System.Runtime">
+﻿<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:system="clr-namespace:System;assembly=System.Runtime">
     <system:String x:Key="My.Strings.PhrasePresets">Phrase Presets :</system:String>
     <system:String x:Key="My.Strings.ConversationHitoryInfo">"conversation history limit" is a client option, not an API parameter.
-        When the set value (tokens) is exceeded,
-        the conversation history will be automatically summarized.
+When the set value (tokens) is exceeded,
+the conversation history will be automatically summarized.
     </system:String>
-    <system:String x:Key="My.Strings.DatabaseInfo">Move database file to a cloud folder (e.g., DropBox) and load them from another computer, chat logs and phrase presets can be synchronized.</system:String>
+    <system:String x:Key="My.Strings.DatabaseSettingsInfo">Move database file to a cloud folder (e.g., DropBox) and load them from another
+computer, chat logs and phrase presets can be synchronized.
+
+Even if cloud synchronization is enabled, putting the local database in DropBox or 
+other location will speed up synchronization.</system:String>
     <system:String x:Key="My.Strings.ChatScreenInfo">Please display chat screen.</system:String>
     <system:String x:Key="My.Strings.DatabaseUpdate">Database file updated. This operation will occur only once. Database has been backed up.</system:String>
     <system:String x:Key="My.Strings.SystemMessage">You are ChatGPT, a large scale language model trained by OpenAI. Think carefully Step by Step through the user's instructions and answer in Markdown.</system:String>
@@ -16,4 +18,39 @@
 - To set it up, type '#System' in the top prompt area followed by the message.
 - To delete, send only '#System'.
 </system:String>
+    <system:String x:Key="My.Strings.NewAccountDetected">A login from new account has been detected.
+Your local data is currently synced with another account.
+Would you like to use current data with new account?
+
+*If cloud data exists in the new account, data conflicts may occur.
+(This operation will not affect synchronized data from previous account.)
+</system:String>
+    <system:String x:Key="My.Strings.NewAccountConflicts">A new user login has been detected, but there are already synchronized data on the cloud, causing a conflict.
+Please merge the data, or select which data to prioritize.
+*Selecting either cloud or local may result in data loss. 
+
+The local database will be backed up before execution.
+</system:String>
+    <system:String x:Key="My.Strings.DataConflicts">Please merge or select preferred data.
+*Note that data may be lost if you choose Cloud or Local.
+
+Before execution, the local database is backed up to the folder.
+</system:String>
+    <system:String x:Key="My.Strings.DeleteAccount">All your data and credentials will be deleted from the cloud database.
+    This operation cannot be undone. Are you sure ?
+</system:String>
+    <system:String x:Key="My.Strings.DeletedAccount">Your account has been deleted.</system:String>
+    <system:String x:Key="My.Strings.EmailAddressChange">A confirmation email has been sent to your new email address.
+Please open the email and click the confirmation link to activate it.
+</system:String>
+    <system:String x:Key="My.Strings.NewEmailInfo">Please enter new email address.</system:String>
+    <system:String x:Key="My.Strings.NewPasswordInfo">Please enter new password.</system:String>
+    <system:String x:Key="My.Strings.NewAccountInfo">If you are a new user, A confirmation email has been sent to you.
+Please check your mailbox. Once your address is verified, you can log in.</system:String>
+    <system:String x:Key="My.Strings.PasswordChange">A password reset email has been sent to you. Please check your mailbox.
+After logging in with your browser, please set a new password from the menu.</system:String>
+    <system:String x:Key="My.Strings.PasswordChanged">Your password has been changed.</system:String>
+    <system:String x:Key="My.Strings.EmailLoginFailed">Login failed. Please check your email address and password.</system:String>
+    <system:String x:Key="My.Strings.OverWriteLog">A chat log with the same name exists.
+Do you want to overwrite it?</system:String>
 </ResourceDictionary>

@@ -8,14 +8,8 @@ using Xilium.CefGlue.Avalonia;
 using Avalonia.Controls;
 using TmCGPTD.Models;
 using System.Text.Json;
-using System.Diagnostics;
-using Avalonia.Threading;
 using System.Reflection;
-using Tmds.DBus.Protocol;
-using System.Reflection.Metadata;
 using System.Text.RegularExpressions;
-using static TmCGPTD.Models.HtmlProcess;
-using System.Reactive.Joins;
 using static TmCGPTD.Models.ChatProcess;
 using System.Threading;
 
@@ -23,12 +17,12 @@ namespace TmCGPTD.ViewModels
 {
     public class ChatViewModel : ViewModelBase
     {
-        private AvaloniaCefBrowser _browser;
-        private Button _button;
-        private Button _button2;
-        DatabaseProcess _databaseProcess = new DatabaseProcess();
-        HtmlProcess _htmlProcess = new HtmlProcess();
-        ChatProcess _chatProcess = new ChatProcess();
+        private AvaloniaCefBrowser? _browser;
+        private Button? _button;
+        private Button? _button2;
+        readonly DatabaseProcess _databaseProcess = new();
+        readonly HtmlProcess _htmlProcess = new();
+        readonly ChatProcess _chatProcess = new();
 
         public ChatViewModel()
         {
@@ -39,12 +33,11 @@ namespace TmCGPTD.ViewModels
             TitleUpdateCommand = new AsyncRelayCommand(async () => await TitleUpdateAsync());
             CategoryUpdateCommand = new AsyncRelayCommand(async () => await CategoryUpdateAsync());
             InitializeChatCommand = new AsyncRelayCommand(async () => await InitializeChatAsync());
-            OpenApiSettingsCommand = new RelayCommand(OpenApiSettings);
 
             ShowSystemMessageInfoCommand = new RelayCommand(ShowSystemMessageInfo);
 
-            SearchPrev = new AsyncRelayCommand(async () => await TextSearch(VMLocator.MainViewModel.SearchKeyword, false));
-            SearchNext = new AsyncRelayCommand(async () => await TextSearch(VMLocator.MainViewModel.SearchKeyword, true));
+            SearchPrev = new AsyncRelayCommand(async () => await TextSearch(VMLocator.MainViewModel.SearchKeyword!, false));
+            SearchNext = new AsyncRelayCommand(async () => await TextSearch(VMLocator.MainViewModel.SearchKeyword!, true));
 
             _ = InitializeChatAsync();
         }
@@ -52,52 +45,52 @@ namespace TmCGPTD.ViewModels
         public IAsyncRelayCommand TitleUpdateCommand { get; }
         public IAsyncRelayCommand CategoryUpdateCommand { get; }
         public IAsyncRelayCommand InitializeChatCommand { get; }
-        public ICommand OpenApiSettingsCommand { get; }
         public ICommand ShowSystemMessageInfoCommand { get; }
         public IAsyncRelayCommand SearchPrev { get; }
         public IAsyncRelayCommand SearchNext { get; }
 
         public async Task<bool> GoChatAsync(CancellationToken token)
         {
-            if (ChatIsRunning)//ƒ`ƒƒƒbƒgÀs’†‚Ìê‡‚ÍƒLƒƒƒ“ƒZƒ‹
+            if (ChatIsRunning)//ãƒãƒ£ãƒƒãƒˆå®Ÿè¡Œä¸­ã®å ´åˆã¯ã‚­ãƒ£ãƒ³ã‚»ãƒ«
             {
                 return true;
             }
             ChatIsRunning = true;
 
             var postDate = DateTime.Now;
-            if (LastId < 0) //ƒ`ƒƒƒbƒg•\¦–³‚¯‚ê‚ÎV‹K‚Æ”»’f
+            if (LastId < 0) //ãƒãƒ£ãƒƒãƒˆè¡¨ç¤ºç„¡ã‘ã‚Œã°æ–°è¦ã¨åˆ¤æ–­
             {
                 await InitializeChatAsync();
-                await Task.Delay(500);
+                await Task.Delay(200);
             }
 
             try
             {
-                // Ä•ÒWƒ‚[ƒh‚Ì‰Šú‰»
+                // å†ç·¨é›†ãƒ¢ãƒ¼ãƒ‰æ™‚ã®åˆæœŸåŒ–
                 if (ReEditIsOn)
                 {
-                    string Code = @"var userDivs = document.querySelectorAll('.user'); // userƒNƒ‰ƒX‚Ìdiv—v‘f‚ğæ“¾
+                    string Code = @"var userDivs = document.querySelectorAll('.user'); // userã‚¯ãƒ©ã‚¹ã®divè¦ç´ ã‚’å–å¾—
                                     for (var i = 0; i < userDivs.length; i++) {
-                                      var editDiv = userDivs[i].querySelector('.editDiv'); // editDivƒNƒ‰ƒX‚Ìdiv—v‘f‚ğæ“¾
-                                      if (editDiv) { // editDiv‚ª‘¶İ‚·‚éê‡
-                                        var assistantDiv = userDivs[i].nextElementSibling; // userƒNƒ‰ƒX‚ÌŸ‚ÌŒZ’í—v‘fiassistantƒNƒ‰ƒX‚Ìdiv—v‘fj‚ğæ“¾
-                                        userDivs[i].parentElement.removeChild(userDivs[i]); // editDiv‚Ìe—v‘f‚ğŠÜ‚ß‚Äíœ
-                                        assistantDiv.parentElement.removeChild(assistantDiv); // assistantƒNƒ‰ƒX‚Ìdiv—v‘f‚ğíœ
+                                      var editDiv = userDivs[i].querySelector('.editDiv'); // editDivã‚¯ãƒ©ã‚¹ã®divè¦ç´ ã‚’å–å¾—
+                                      if (editDiv) { // editDivãŒå­˜åœ¨ã™ã‚‹å ´åˆ
+                                        var assistantDiv = userDivs[i].nextElementSibling; // userã‚¯ãƒ©ã‚¹ã®æ¬¡ã®å…„å¼Ÿè¦ç´ ï¼ˆassistantã‚¯ãƒ©ã‚¹ã®divè¦ç´ ï¼‰ã‚’å–å¾—
+                                        userDivs[i].parentElement.removeChild(userDivs[i]); // editDivã®è¦ªè¦ç´ ã‚’å«ã‚ã¦å‰Šé™¤
+                                        assistantDiv.parentElement.removeChild(assistantDiv); // assistantã‚¯ãƒ©ã‚¹ã®divè¦ç´ ã‚’å‰Šé™¤
                                       }
                                     }";
-                    _browser.ExecuteJavaScript(Code);
+                    _browser!.ExecuteJavaScript(Code);
                 }
 
-                // ƒ†[ƒU[“ü—Í‚ğæ“¾
-                string postText = VMLocator.EditorViewModel.GetRecentText().Trim().Trim('\r', '\n');
+                // ãƒ¦ãƒ¼ã‚¶ãƒ¼å…¥åŠ›ã‚’å–å¾—
+                string postText = VMLocator.EditorViewModel.GetRecentText();
+                postText = postText.Trim().Trim('\r', '\n');
 
-                // ƒƒS‚ğíœ
+                // ãƒ­ã‚´ã‚’å‰Šé™¤
                 string jsCode = $@"var element = document.querySelector('.svg-container');
                                 if (element) {{
                                     element.remove();
                                 }}";
-                _browser.ExecuteJavaScript(jsCode);
+                _browser!.ExecuteJavaScript(jsCode);
 
 
                 string escapedString = JsonSerializer.Serialize(postText);
@@ -108,22 +101,22 @@ namespace TmCGPTD.ViewModels
                 bool isOnlySystemMessage = false;
                 string postTextBody = "";
 
-                // ƒVƒXƒeƒ€ƒƒbƒZ[ƒW‚Ìˆ—
+                // ã‚·ã‚¹ãƒ†ãƒ ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ã®å‡¦ç†
                 string systemMessage = "";
                 if (Regex.IsMatch(postText, @"^#\s*system", RegexOptions.IgnoreCase))
                 {
                     string tempString = Regex.Replace(postText, @"^#(\s*?)system", "", RegexOptions.IgnoreCase).Trim();
 
-                    // Å‰‚Ì"---"‚ÌˆÊ’u‚ğŒŸõ
+                    // æœ€åˆã®"---"ã®ä½ç½®ã‚’æ¤œç´¢
                     int separatorIndex = tempString.IndexOf("---");
                     if (separatorIndex != -1)
                     {
-                        systemMessage = tempString.Substring(0, separatorIndex).Trim();//ƒVƒXƒeƒ€ƒƒbƒZ[ƒW‚ğæ“¾
-                        tempString = tempString.Substring(separatorIndex + 3).Trim();//–{•¶‚¾‚¯c‚·
+                        systemMessage = tempString.Substring(0, separatorIndex).Trim();//ã‚·ã‚¹ãƒ†ãƒ ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ã‚’å–å¾—
+                        tempString = tempString.Substring(separatorIndex + 3).Trim();//æœ¬æ–‡ã ã‘æ®‹ã™
                     }
                     else
                     {
-                        systemMessage = tempString.Trim();//‘¶İ‚µ‚È‚¯‚ê‚ÎƒVƒXƒeƒ€ƒƒbƒZ[ƒW‚Ì‚İ
+                        systemMessage = tempString.Trim();//å­˜åœ¨ã—ãªã‘ã‚Œã°ã‚·ã‚¹ãƒ†ãƒ ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ã®ã¿
                         tempString = "";
                         isOnlySystemMessage = true;
                     }
@@ -143,7 +136,7 @@ namespace TmCGPTD.ViewModels
                 }
 
 
-                // ƒ†[ƒU[‚Ì—v‘f‚ğ¶¬
+                // ãƒ¦ãƒ¼ã‚¶ãƒ¼ã®è¦ç´ ã‚’ç”Ÿæˆ
                 jsCode = $@"var wrapper = document.getElementById('scrollableWrapper');
                         var newUserElement = document.createElement('div');
                         newUserElement.className = 'user';
@@ -160,7 +153,7 @@ namespace TmCGPTD.ViewModels
                 jsCode = $@"window.scrollTo({{top: document.body.scrollHeight, behavior: 'smooth' }});";
                 _browser.ExecuteJavaScript(jsCode);
 
-                // ƒAƒVƒXƒ^ƒ“ƒg‚Ì—v‘f‚ğ¶¬BƒVƒXƒeƒ€ƒƒbƒZ[ƒW‚Ì‚İ‚Ìê‡‚ÍƒXƒLƒbƒv
+                // ã‚¢ã‚·ã‚¹ã‚¿ãƒ³ãƒˆã®è¦ç´ ã‚’ç”Ÿæˆã€‚ã‚·ã‚¹ãƒ†ãƒ ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ã®ã¿ã®å ´åˆã¯ã‚¹ã‚­ãƒƒãƒ—
                 if (!isOnlySystemMessage)
                 {
                     htmlToAdd = $"<span class=\"thinkingHeader\">Now thinking...</span>";
@@ -176,9 +169,9 @@ namespace TmCGPTD.ViewModels
                     _browser.ExecuteJavaScript(jsCode);
                 }
 
-                // Šù‘¶‚ÌƒVƒXƒeƒ€ƒƒbƒZ[ƒW‚ğƒfƒB[ƒvƒRƒs[
+                // æ—¢å­˜ã®ã‚·ã‚¹ãƒ†ãƒ ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ã‚’ãƒ‡ã‚£ãƒ¼ãƒ—ã‚³ãƒ”ãƒ¼
                 Dictionary<string, object>? oldSystemMessage = null;
-                foreach (var item in ConversationHistory)
+                foreach (var item in ConversationHistory!)
                 {
                     if (item.ContainsKey("role") && item["role"].ToString() == "system" && item.ContainsKey("content"))
                     {
@@ -188,8 +181,9 @@ namespace TmCGPTD.ViewModels
                     }
                 }
 
-                // ƒpƒ‰ƒ[ƒ^‚ğ¶¬
-                ChatParameters postParameters = new ChatParameters {
+                // ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ã‚’ç”Ÿæˆ
+                ChatParameters postParameters = new ChatParameters
+                {
                     UserInput = postText,
                     UserInputBody = postTextBody,
                     AssistantResponse = "",
@@ -200,18 +194,18 @@ namespace TmCGPTD.ViewModels
                     PostedConversationHistory = null,
                 };
 
-                // ƒVƒXƒeƒ€ƒƒbƒZ[ƒW‚Ì‚İ‚Ìê‡‚Í“Še‚µ‚È‚¢
+                // ã‚·ã‚¹ãƒ†ãƒ ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ã®ã¿ã®å ´åˆã¯æŠ•ç¨¿ã—ãªã„
                 string resText = "";
                 if (isOnlySystemMessage)
                 {
-                    // Šù‘¶‚ÌƒVƒXƒeƒ€ƒƒbƒZ[ƒW‚ª‚ ‚ê‚Îíœ
+                    // æ—¢å­˜ã®ã‚·ã‚¹ãƒ†ãƒ ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ãŒã‚ã‚Œã°å‰Šé™¤
                     var itemToRemove = GetSystemMessageItem(ConversationHistory);
                     if (itemToRemove != null)
                     {
                         ConversationHistory!.Remove(itemToRemove);
                     }
 
-                    // V‚µ‚¢ƒVƒXƒeƒ€ƒƒbƒZ[ƒW‚ª‚ ‚ê‚Î‰ï˜b—š—ğ‚Ìæ“ª‚É’Ç‰Á
+                    // æ–°ã—ã„ã‚·ã‚¹ãƒ†ãƒ ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ãŒã‚ã‚Œã°ä¼šè©±å±¥æ­´ã®å…ˆé ­ã«è¿½åŠ 
                     var systemInput = new Dictionary<string, object>() { { "role", "system" }, { "content", systemMessage } };
                     if (!string.IsNullOrWhiteSpace(systemMessage))
                     {
@@ -225,25 +219,25 @@ namespace TmCGPTD.ViewModels
                 }
                 else
                 {
-                    // ƒLƒƒƒ“ƒZƒ‹ƒ{ƒ^ƒ“‚ğ•\¦
+                    // ã‚­ãƒ£ãƒ³ã‚»ãƒ«ãƒœã‚¿ãƒ³ã‚’è¡¨ç¤º
                     jsCode = @"var stopButton = document.getElementById('stopButton');
                                stopButton.style.display = 'block';";
                     _browser.ExecuteJavaScript(jsCode);
 
                     await Task.Delay(100);
 
-                    // ƒƒbƒZ[ƒW“Še /////////////////////////////////////////////////
+                    // ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸æŠ•ç¨¿ /////////////////////////////////////////////////
                     resText = await _chatProcess.PostChatAsync(postParameters, token);
 
 
-                    if (string.IsNullOrWhiteSpace(resText)) //•Ô“š‚ª‹ó‚¾‚Á‚½‚ç•Ô“š‘O‚ÉƒLƒƒƒ“ƒZƒ‹‚³‚ê‚½‚Æ”»’f‚·‚é
+                    if (string.IsNullOrWhiteSpace(resText)) //è¿”ç­”ãŒç©ºã ã£ãŸã‚‰è¿”ç­”å‰ã«ã‚­ãƒ£ãƒ³ã‚»ãƒ«ã•ã‚ŒãŸã¨åˆ¤æ–­ã™ã‚‹
                     {
                         jsCode = $@"var wrapper = document.getElementById('scrollableWrapper');
                                 var userElements = wrapper.getElementsByClassName('user');
                                 var assistantElements = wrapper.getElementsByClassName('assistant');
                                 if(userElements.length > 0 && assistantElements.length > 0) {{
-                                    userElements[userElements.length - 1].remove(); // ÅŒã‚Ì'user'—v‘f‚ğíœ
-                                    assistantElements[assistantElements.length - 1].remove(); // ÅŒã‚Ì'assistant'—v‘f‚ğíœ
+                                    userElements[userElements.length - 1].remove(); // æœ€å¾Œã®'user'è¦ç´ ã‚’å‰Šé™¤
+                                    assistantElements[assistantElements.length - 1].remove(); // æœ€å¾Œã®'assistant'è¦ç´ ã‚’å‰Šé™¤
                                 }}
                             ";
                         _browser.ExecuteJavaScript(jsCode);
@@ -256,19 +250,19 @@ namespace TmCGPTD.ViewModels
                         return false;
                     }
 
-                    // ƒLƒƒƒ“ƒZƒ‹ƒ{ƒ^ƒ“‚ğ”ñ•\¦
+                    // ã‚­ãƒ£ãƒ³ã‚»ãƒ«ãƒœã‚¿ãƒ³ã‚’éè¡¨ç¤º
                     jsCode = @"var stopButton = document.getElementById('stopButton');
                                stopButton.style.display = 'none';";
                     _browser.ExecuteJavaScript(jsCode);
 
-                    //‰ï˜b‚ª¬—§‚µ‚½“_‚Åƒ^ƒCƒgƒ‹‚ª‹ó—“‚¾‚Á‚½‚çƒ^ƒCƒgƒ‹‚ğ©“®¶¬‚·‚é
+                    //ä¼šè©±ãŒæˆç«‹ã—ãŸæ™‚ç‚¹ã§ã‚¿ã‚¤ãƒˆãƒ«ãŒç©ºæ¬„ã ã£ãŸã‚‰ã‚¿ã‚¤ãƒˆãƒ«ã‚’è‡ªå‹•ç”Ÿæˆã™ã‚‹
                     if (string.IsNullOrEmpty(ChatTitle))
                     {
                         ChatTitle = await _chatProcess.GetTitleAsync(ConversationHistory);
                     }
                 }
 
-                // ƒJƒeƒSƒŠ[‚ª‹ó—“‚¾‚Á‚½‚çuAPI Chatv‚ğ©“®İ’è‚·‚é
+                // ã‚«ãƒ†ã‚´ãƒªãƒ¼ãŒç©ºæ¬„ã ã£ãŸã‚‰ã€ŒAPI Chatã€ã‚’è‡ªå‹•è¨­å®šã™ã‚‹
                 if (string.IsNullOrEmpty(VMLocator.ChatViewModel.ChatCategory))
                 {
                     VMLocator.ChatViewModel.ChatCategory = "API Chat";
@@ -276,12 +270,12 @@ namespace TmCGPTD.ViewModels
 
                 var resDate = DateTime.Now;
 
-                // ƒf[ƒ^ƒx[ƒX‚ğXV
+                // ãƒ‡ãƒ¼ã‚¿ãƒ™ãƒ¼ã‚¹ã‚’æ›´æ–°
                 await _databaseProcess.InsertDatabaseChatAsync(postDate, postText, resDate, resText);
 
                 await Task.Delay(700);
 
-                // ƒGƒfƒBƒbƒgƒ{ƒ^ƒ“‰Šú‰»
+                // ã‚¨ãƒ‡ã‚£ãƒƒãƒˆãƒœã‚¿ãƒ³åˆæœŸåŒ–
                 jsCode = $@"var wrapper = document.getElementById('scrollableWrapper');
                         var editDivs = wrapper.querySelectorAll('.editDiv');
                         editDivs.forEach(function(editDiv) {{
@@ -305,12 +299,12 @@ namespace TmCGPTD.ViewModels
             }
             catch (Exception ex)
             {
-                // ƒLƒƒƒ“ƒZƒ‹ƒ{ƒ^ƒ“‚ğ”ñ•\¦
+                // ã‚­ãƒ£ãƒ³ã‚»ãƒ«ãƒœã‚¿ãƒ³ã‚’éè¡¨ç¤º
                 string jsCode = @"var stopButton = document.getElementById('stopButton');
                                   stopButton.style.display = 'block';";
-                _browser.ExecuteJavaScript(jsCode);
+                _browser!.ExecuteJavaScript(jsCode);
 
-                // ƒGƒ‰[ƒƒbƒZ[ƒW‚ğ•\¦
+                // ã‚¨ãƒ©ãƒ¼ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ã‚’è¡¨ç¤º
                 var htmlToAdd = $"<span class=\"assistantHeader\">[Error]</span><div style=\"white-space: pre-wrap\" id=\"document\">{ex.Message}</div>";
                 string escapedString = JsonSerializer.Serialize(htmlToAdd);
 
@@ -347,11 +341,11 @@ namespace TmCGPTD.ViewModels
             return null;
         }
 
-        // ƒ`ƒƒƒbƒgóMƒƒ\ƒbƒh--------------------------------------------------------------
+        // ãƒãƒ£ãƒƒãƒˆå—ä¿¡ãƒ¡ã‚½ãƒƒãƒ‰--------------------------------------------------------------
         private bool isReceiving = false;
         private string? postedHtml = "";
 
-        public async Task UpdateUIWithReceivedMessage(string? message,string chatText)
+        public async Task UpdateUIWithReceivedMessage(string? message, string chatText)
         {
             bool isUpdateTag = false;
             var resDate = DateTime.Now;
@@ -359,13 +353,13 @@ namespace TmCGPTD.ViewModels
             string escapedHtml = JsonSerializer.Serialize(convertedHtml);
             string escapedString = JsonSerializer.Serialize(message);
 
-            // ƒ^ƒO‚ª’Ç‰Á‚³‚ê‚½‚©‚Ç‚¤‚©‚ğ”»’è
+            // ã‚¿ã‚°ãŒè¿½åŠ ã•ã‚ŒãŸã‹ã©ã†ã‹ã‚’åˆ¤å®š
             if (convertedHtml.Length != (postedHtml + message).Length)
             {
                 isUpdateTag = true;
             }
 
-            if (message == "[ERROR]") // ƒGƒ‰[‚ª”­¶‚µ‚½ê‡
+            if (message == "[ERROR]") // ã‚¨ãƒ©ãƒ¼ãŒç™ºç”Ÿã—ãŸå ´åˆ
             {
                 string insertMessageScript = $@"
                         (() => {{
@@ -382,9 +376,9 @@ namespace TmCGPTD.ViewModels
                             window.scrollTo({{top: document.body.scrollHeight, behavior: 'smooth' }});
                         }})();
                     ";
-                _browser.ExecuteJavaScript(insertMessageScript);
+                _browser!.ExecuteJavaScript(insertMessageScript);
             }
-            else if (message == "[CANCEL]") // ƒLƒƒƒ“ƒZƒ‹‚³‚ê‚½ê‡
+            else if (message == "[CANCEL]") // ã‚­ãƒ£ãƒ³ã‚»ãƒ«ã•ã‚ŒãŸå ´åˆ
             {
                 string insertMessageScript = $@"
                         (() => {{
@@ -401,14 +395,14 @@ namespace TmCGPTD.ViewModels
                             window.scrollTo({{top: document.body.scrollHeight, behavior: 'smooth' }});
                         }})();
                     ";
-                _browser.ExecuteJavaScript(insertMessageScript);
+                _browser!.ExecuteJavaScript(insertMessageScript);
             }
             else
             {
                 if (!isReceiving)
                 {
                     postedHtml = message;
-                    // óM’†ƒtƒ‰ƒO‚ğƒIƒ“‚É‚·‚é
+                    // å—ä¿¡ä¸­ãƒ•ãƒ©ã‚°ã‚’ã‚ªãƒ³ã«ã™ã‚‹
                     isReceiving = true;
                 }
                 else
@@ -416,7 +410,7 @@ namespace TmCGPTD.ViewModels
                     string insertMessageScript;
                     if (isUpdateTag)
                     {
-                        // ƒ^ƒO‚ÌXV‚ª‚ ‚Á‚½ê‡‚ÍƒƒbƒZ[ƒW‘S‘Ì‚ğ“ü‚ê‘Ö‚¦AƒXƒNƒ[ƒ‹ˆÊ’u‚ªˆê”Ô‰º‚É‚ ‚Á‚½ê‡‚Ì‚İƒXƒNƒ[ƒ‹Às
+                        // ã‚¿ã‚°ã®æ›´æ–°ãŒã‚ã£ãŸå ´åˆã¯ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸å…¨ä½“ã‚’å…¥ã‚Œæ›¿ãˆã€ã‚¹ã‚¯ãƒ­ãƒ¼ãƒ«ä½ç½®ãŒä¸€ç•ªä¸‹ã«ã‚ã£ãŸå ´åˆã®ã¿ã‚¹ã‚¯ãƒ­ãƒ¼ãƒ«å®Ÿè¡Œ
                         insertMessageScript = $@"
                             (() => {{
                                 var isBottom = isAtBottom5();
@@ -433,10 +427,10 @@ namespace TmCGPTD.ViewModels
                                 copyButtons.forEach(button => button.addEventListener('click', copyCode));
                             }})();
                         ";
-                        _browser.ExecuteJavaScript(insertMessageScript);
+                        _browser!.ExecuteJavaScript(insertMessageScript);
                         postedHtml = convertedHtml;
 
-                        // I—¹ˆ— 'thinkingHeader'‚ğíœ‚µAóM’†ƒtƒ‰ƒO‚ğƒIƒt‚É‚·‚é
+                        // çµ‚äº†å‡¦ç† 'thinkingHeader'ã‚’å‰Šé™¤ã—ã€å—ä¿¡ä¸­ãƒ•ãƒ©ã‚°ã‚’ã‚ªãƒ•ã«ã™ã‚‹
                         if (message == "[DONE]")
                         {
                             string removeThinkingHeaderScript = @"
@@ -448,7 +442,7 @@ namespace TmCGPTD.ViewModels
                     }
                     else
                     {
-                        // ƒ^ƒO‚ÌXV‚ª‚È‚¢ê‡‚ÍAƒƒbƒZ[ƒW‚Ì‚İ‚ğ’Ç‰Á
+                        // ã‚¿ã‚°ã®æ›´æ–°ãŒãªã„å ´åˆã¯ã€ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ã®ã¿ã‚’è¿½åŠ 
                         insertMessageScript = $@"
                             (() => {{
                                 var isBottom = isAtBottom5();
@@ -465,14 +459,14 @@ namespace TmCGPTD.ViewModels
                                 }}
                             }})();
                         ";
-                        _browser.ExecuteJavaScript(insertMessageScript);
+                        _browser!.ExecuteJavaScript(insertMessageScript);
                         postedHtml += message;
                     }
                 }
             }
         }
 
-        // V‚µ‚¢ƒ`ƒƒƒbƒg‚ğ‰Šú‰»--------------------------------------------------------------
+        // æ–°ã—ã„ãƒãƒ£ãƒƒãƒˆã‚’åˆæœŸåŒ–--------------------------------------------------------------
         public async Task InitializeChatAsync()
         {
             ReEditIsOn = false;
@@ -485,10 +479,10 @@ namespace TmCGPTD.ViewModels
             HtmlContent = await _htmlProcess.InitializeChatLogToHtml();
         }
 
-        // ƒ^ƒCƒgƒ‹XV--------------------------------------------------------------
+        // ã‚¿ã‚¤ãƒˆãƒ«æ›´æ–°--------------------------------------------------------------
         public async Task TitleUpdateAsync()
         {
-            if(string.IsNullOrWhiteSpace(ChatTitle) || LastId == -1)
+            if (string.IsNullOrWhiteSpace(ChatTitle) || LastId == -1)
             {
                 return;
             }
@@ -497,9 +491,9 @@ namespace TmCGPTD.ViewModels
             var selectedId = VMLocator.DataGridViewModel.SelectedItemIndex;
             try
             {
-                _button.Classes.Add("AnimeStart");
+                _button!.Classes.Add("AnimeStart");
                 await _databaseProcess.UpdateTitleDatabaseAsync(chatId, ChatTitle);
-                if(selectedId >= 0)
+                if (selectedId >= 0)
                 {
                     VMLocator.DataGridViewModel.DataGridIsFocused = true;
                     VMLocator.DataGridViewModel.SelectedItemIndex = selectedId;
@@ -507,14 +501,14 @@ namespace TmCGPTD.ViewModels
                 await Task.Delay(TimeSpan.FromSeconds(5));
                 _button.Classes.Remove("AnimeStart");
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 var dialog = new ContentDialog() { Title = $"Error: {ex.Message}", PrimaryButtonText = "OK" };
                 await VMLocator.MainViewModel.ContentDialogShowAsync(dialog);
             }
         }
 
-        // ƒJƒeƒSƒŠXV--------------------------------------------------------------
+        // ã‚«ãƒ†ã‚´ãƒªæ›´æ–°--------------------------------------------------------------
         public async Task CategoryUpdateAsync()
         {
             if (ChatCategory == null || LastId == -1)
@@ -526,7 +520,7 @@ namespace TmCGPTD.ViewModels
             var selectedId = VMLocator.DataGridViewModel.SelectedItemIndex;
             try
             {
-                _button2.Classes.Add("AnimeStart");
+                _button2!.Classes.Add("AnimeStart");
                 await _databaseProcess.UpdateCategoryDatabaseAsync(chatId, ChatCategory);
                 if (selectedId >= 0)
                 {
@@ -543,7 +537,7 @@ namespace TmCGPTD.ViewModels
             }
         }
 
-        // ƒeƒLƒXƒgŒŸõ--------------------------------------------------------------
+        // ãƒ†ã‚­ã‚¹ãƒˆæ¤œç´¢--------------------------------------------------------------
         public async Task TextSearch(string searchKeyword, bool searchDirection, bool searchReset = false)
         {
             if (_browser == null || string.IsNullOrEmpty(searchKeyword))
@@ -558,7 +552,7 @@ namespace TmCGPTD.ViewModels
                         @"}
                         else
                         {
-                            setTimeout(executeSearchText, 100); // 100ƒ~ƒŠ•bŒã‚ÉÄs
+                            setTimeout(executeSearchText, 100); // 100ãƒŸãƒªç§’å¾Œã«å†è©¦è¡Œ
                         }
                     }
                     executeSearchText();";
@@ -574,41 +568,41 @@ namespace TmCGPTD.ViewModels
             return;
         }
 
-        // ƒvƒƒ“ƒvƒgÄ•ÒW‚ğƒIƒ“‚É‚·‚é--------------------------------------------------------------
+        // ãƒ—ãƒ­ãƒ³ãƒ—ãƒˆå†ç·¨é›†ã‚’ã‚ªãƒ³ã«ã™ã‚‹--------------------------------------------------------------
         public void PromptEditOn()
         {
             ReEditIsOn = true;
-            // JavaScript‚©‚çŒÄ‚Ño‚³‚ê‚éƒƒ\ƒbƒh‚ÌÀ‘•
-            string text = LastPrompt;
+            // JavaScriptã‹ã‚‰å‘¼ã³å‡ºã•ã‚Œã‚‹ãƒ¡ã‚½ãƒƒãƒ‰ã®å®Ÿè£…
+            string text = LastPrompt!;
             string[] texts = text.Split(new[] { "<---TMCGPT--->" }, StringSplitOptions.None);
-            for (int i = 0, loopTo = Math.Min(texts.Length - 1, 4); i <= loopTo; i++) // 5—v‘f–Ú‚Ü‚Å‚ğæ“¾
+            for (int i = 0, loopTo = Math.Min(texts.Length - 1, 4); i <= loopTo; i++) // 5è¦ç´ ç›®ã¾ã§ã‚’å–å¾—
             {
                 string propertyName = $"Editor{i + 1}Text";
-                PropertyInfo property = VMLocator.EditorViewModel.GetType().GetProperty(propertyName);
+                PropertyInfo property = VMLocator.EditorViewModel.GetType().GetProperty(propertyName)!;
                 if (property != null)
                 {
                     property.SetValue(VMLocator.EditorViewModel, string.Empty);
                     if (!string.IsNullOrWhiteSpace(texts[i]))
                     {
-                        property.SetValue(VMLocator.EditorViewModel, texts[i].Trim()); // ‹ó”’‚ğíœ‚µ‚Ä”½‰f
+                        property.SetValue(VMLocator.EditorViewModel, texts[i].Trim()); // ç©ºç™½ã‚’å‰Šé™¤ã—ã¦åæ˜ 
                     }
                 }
             }
         }
 
-        // ƒvƒƒ“ƒvƒgÄ•ÒW‚ğƒIƒt‚É‚·‚é--------------------------------------------------------------
+        // ãƒ—ãƒ­ãƒ³ãƒ—ãƒˆå†ç·¨é›†ã‚’ã‚ªãƒ•ã«ã™ã‚‹--------------------------------------------------------------
         public void PromptEditOff()
         {
             ReEditIsOn = false;
             VMLocator.EditorViewModel.TextClear();
         }
 
-        // ƒVƒXƒeƒ€ƒƒbƒZ[ƒW‚Ì•\¦--------------------------------------------------------------
+        // ã‚·ã‚¹ãƒ†ãƒ ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ã®è¡¨ç¤º--------------------------------------------------------------
         private void ShowSystemMessageInfo()
         {
             string? SystemMessage = "";
 
-            foreach (var item in ConversationHistory)
+            foreach (var item in ConversationHistory!)
             {
                 if (item.ContainsKey("role") && item["role"].ToString() == "system" && item.ContainsKey("content"))
                 {
@@ -620,7 +614,7 @@ namespace TmCGPTD.ViewModels
             if (string.IsNullOrEmpty(SystemMessage))
             {
                 Avalonia.Application.Current!.TryFindResource("My.Strings.SystemMessageInfo", out object? resource1);
-                SystemMessage = resource1.ToString();
+                SystemMessage = resource1!.ToString();
             }
 
             string escapedHtml = JsonSerializer.Serialize(SystemMessage);
@@ -646,18 +640,18 @@ namespace TmCGPTD.ViewModels
                             floatingSystemMessageInfo.style.display = 'block';
                             floatingSystemMessageInfo.style.opacity = 0.95;
                         }})();";
-            _browser.ExecuteJavaScript(jsCode);
+            _browser!.ExecuteJavaScript(jsCode);
 
         }
 
-        // BrowserƒCƒ“ƒXƒ^ƒ“ƒX‚ğó‚¯æ‚é
+        // Browserã‚¤ãƒ³ã‚¹ã‚¿ãƒ³ã‚¹ã‚’å—ã‘å–ã‚‹
         public async void SetBrowser(AvaloniaCefBrowser browser)
         {
             _browser = browser;
             HtmlContent = await _htmlProcess.InitializeChatLogToHtml();
         }
 
-        // ButtonWriteƒCƒ“ƒXƒ^ƒ“ƒX‚ğó‚¯æ‚é
+        // ButtonWriteã‚¤ãƒ³ã‚¹ã‚¿ãƒ³ã‚¹ã‚’å—ã‘å–ã‚‹
         public void SetButtonWrite(Button button)
         {
             _button = button;
@@ -668,8 +662,8 @@ namespace TmCGPTD.ViewModels
             _button2 = button;
         }
 
-        private string _htmlContent;
-        public string HtmlContent
+        private string? _htmlContent;
+        public string? HtmlContent
         {
             get => _htmlContent;
             set
@@ -678,38 +672,30 @@ namespace TmCGPTD.ViewModels
                 OnPropertyChanged(nameof(HtmlContent));
             }
         }
-        
-        public void OpenApiSettings()
-        {
-            VMLocator.ChatViewModel.ChatViewIsVisible = false;
-            VMLocator.WebChatViewModel.WebChatViewIsVisible = false;
-            VMLocator.WebChatBardViewModel.WebChatBardViewIsVisible = false;
-            VMLocator.MainWindowViewModel.ApiSettingIsOpened = true;
-        }
 
         private bool _chatIsRunning;
-        public bool ChatIsRunning //ƒ`ƒƒƒbƒgÀs’†ƒtƒ‰ƒO
+        public bool ChatIsRunning //ãƒãƒ£ãƒƒãƒˆå®Ÿè¡Œä¸­ãƒ•ãƒ©ã‚°
         {
             get => _chatIsRunning;
             set => SetProperty(ref _chatIsRunning, value);
         }
 
         private long _lastId;
-        public long LastId //ÅI‘I‘ğID
+        public long LastId //æœ€çµ‚é¸æŠID
         {
             get => _lastId;
             set => SetProperty(ref _lastId, value);
         }
 
         private bool _chatViewIsVisible;
-        public bool ChatViewIsVisible //ƒ_ƒCƒAƒƒO•\¦—p
+        public bool ChatViewIsVisible //ãƒ€ã‚¤ã‚¢ãƒ­ã‚°è¡¨ç¤ºç”¨
         {
             get => _chatViewIsVisible;
             set => SetProperty(ref _chatViewIsVisible, value);
         }
 
         private bool _reEditIsOn;
-        public bool ReEditIsOn //Postƒ{ƒ^ƒ“‚Ì•\¦Ø‚è‘Ö‚¦—p
+        public bool ReEditIsOn //Postãƒœã‚¿ãƒ³ã®è¡¨ç¤ºåˆ‡ã‚Šæ›¿ãˆç”¨
         {
             get => _reEditIsOn;
             set
@@ -728,36 +714,36 @@ namespace TmCGPTD.ViewModels
             }
         }
 
-        private string _chatTitle;
-        public string ChatTitle
+        private string? _chatTitle;
+        public string? ChatTitle
         {
             get => _chatTitle;
             set => SetProperty(ref _chatTitle, value);
         }
 
-        private string _chatCategory;
-        public string ChatCategory
+        private string? _chatCategory;
+        public string? ChatCategory
         {
             get => _chatCategory;
             set => SetProperty(ref _chatCategory, value);
         }
 
-        private string _lastPrompt;
-        public string LastPrompt
+        private string? _lastPrompt;
+        public string? LastPrompt
         {
             get => _lastPrompt;
             set => SetProperty(ref _lastPrompt, value);
         }
 
-        private List<Dictionary<string, object>> _conversationHistory;
-        public List<Dictionary<string, object>> ConversationHistory
+        private List<Dictionary<string, object>>? _conversationHistory;
+        public List<Dictionary<string, object>>? ConversationHistory
         {
             get => _conversationHistory;
             set => SetProperty(ref _conversationHistory, value);
         }
 
-        private List<Dictionary<string, object>> _lastConversationHistory;
-        public List<Dictionary<string, object>> LastConversationHistory
+        private List<Dictionary<string, object>>? _lastConversationHistory;
+        public List<Dictionary<string, object>>? LastConversationHistory
         {
             get => _lastConversationHistory;
             set => SetProperty(ref _lastConversationHistory, value);

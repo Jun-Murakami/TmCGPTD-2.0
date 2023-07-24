@@ -6,12 +6,12 @@ using System.Diagnostics;
 
 namespace TmCGPTD.ViewModels
 {
-    public partial class MainWindowViewModel: ViewModelBase
+    public partial class MainWindowViewModel : ViewModelBase
     {
         public MainWindowViewModel()
         {
-            ApiSettingIsOpened = false;
-            ClosingApiSettingsCommand = new RelayCommand(ClosingApiSettings);
+            OptionSettingsIsOpened = false;
+            ClosingOptionSettingsCommand = new RelayCommand(ClosingOptionSettings);
             ResetApiSettingsCommand = new RelayCommand(ResetApiSettings);
             ValidateTextInputCommand = new RelayCommand<string>(ValidateTextInput);
 
@@ -61,32 +61,48 @@ namespace TmCGPTD.ViewModels
         public ICommand AltKey0Command { get; }
 
         public ICommand ValidateTextInputCommand { get; }
-        public ICommand ClosingApiSettingsCommand { get; }
+        public ICommand ClosingOptionSettingsCommand { get; }
         public ICommand ResetApiSettingsCommand { get; }
 
 
-        private void ClosingApiSettings()
+        private void ClosingOptionSettings()
         {
-            ApiSettingIsOpened = false;
+            OptionSettingsIsOpened = false;
             VMLocator.ChatViewModel.ChatViewIsVisible = true;
             VMLocator.WebChatViewModel.WebChatViewIsVisible = true;
             VMLocator.WebChatBardViewModel.WebChatBardViewIsVisible = true;
         }
 
-        private void ValidateTextInput(string text)
+        private void ValidateTextInput(string? text)
         {
             Regex regex = new Regex("[^0-9.-]+");
-            if (regex.IsMatch(text))
+            if (regex.IsMatch(text!))
             {
                 return;
             }
         }
 
-        private bool _apiSettingIsOpened;
-        public bool ApiSettingIsOpened
+        private bool _optionSettingsIsOpened;
+        public bool OptionSettingsIsOpened
         {
-            get => _apiSettingIsOpened;
-            set => SetProperty(ref _apiSettingIsOpened, value);
+            get => _optionSettingsIsOpened;
+            set => SetProperty(ref _optionSettingsIsOpened, value);
+        }
+
+        public List<string> DialogList { get; } = new List<string>
+        {
+            "API Parameters",
+            "Options",
+            "Hot Keys",
+            "Web App",
+            "License"
+        };
+
+        private string? _selectedDialogList;
+        public string? SelectedDialogList
+        {
+            get => _selectedDialogList;
+            set => SetProperty(ref _selectedDialogList, value);
         }
 
         private void ResetApiSettings()
