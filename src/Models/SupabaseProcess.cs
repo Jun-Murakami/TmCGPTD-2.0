@@ -170,15 +170,15 @@ namespace TmCGPTD.Models
                             Debug.WriteLine("change.Payload:" + change.Payload);
 
                             // セマフォスリムを使用して、一度に一つのタスクだけがSyncDbAsync()メソッドを実行
-                            await _semaphore.WaitAsync();
-                            try
-                            {
+                            //await _semaphore.WaitAsync();
+                            //try
+                            //{
                                 await _syncProcess.SyncDbAsync();
-                            }
-                            finally
-                            {
+                            //}
+                            //finally
+                            //{
                                 _semaphore.Release();
-                            }
+                            //}
                         }
                         catch (Exception ex)
                         {
