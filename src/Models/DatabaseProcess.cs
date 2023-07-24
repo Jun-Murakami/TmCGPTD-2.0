@@ -1431,6 +1431,12 @@ namespace TmCGPTD.Models
                     command.Parameters.AddWithValue("@date", date.ToString("s"));
                     command.Parameters.AddWithValue("@text", finalText);
                     await command.ExecuteNonQueryAsync();
+
+                    using var command2 = new SQLiteCommand("INSERT INTO editorlog(id, date, text) VALUES (@id, @date, @text)", memoryConnection, (SQLiteTransaction)transaction);
+                    command2.Parameters.AddWithValue("@id", resultId);
+                    command2.Parameters.AddWithValue("@date", date.ToString("s"));
+                    command2.Parameters.AddWithValue("@text", finalText);
+                    await command2.ExecuteNonQueryAsync();
                 }
                 else
                 {
@@ -1438,6 +1444,11 @@ namespace TmCGPTD.Models
                     command.Parameters.AddWithValue("@date", date.ToString("s"));
                     command.Parameters.AddWithValue("@text", finalText);
                     await command.ExecuteNonQueryAsync();
+
+                    using var command2 = new SQLiteCommand("INSERT INTO editorlog(date, text) VALUES (@date, @text)", memoryConnection, (SQLiteTransaction)transaction);
+                    command2.Parameters.AddWithValue("@date", date.ToString("s"));
+                    command2.Parameters.AddWithValue("@text", finalText);
+                    await command2.ExecuteNonQueryAsync();
                 }
 
                 await transaction.CommitAsync();
@@ -1448,8 +1459,8 @@ namespace TmCGPTD.Models
                 throw;
             }
             // インメモリをいったん閉じてまた開く
-            await memoryConnection!.CloseAsync();
-            await DbLoadToMemoryAsync();
+            //await memoryConnection!.CloseAsync();
+            //await DbLoadToMemoryAsync();
         }
 
         // データベースからEditorログリストを取得--------------------------------------------------------------

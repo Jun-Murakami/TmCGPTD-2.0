@@ -28,7 +28,6 @@ namespace TmCGPTD.Models
         {
             if (syncIsRunning) return;
             syncIsRunning = true;
-            string accountCheck;
 
             if (VMLocator.ChatViewModel.ChatIsRunning)
             {
@@ -37,6 +36,8 @@ namespace TmCGPTD.Models
                     await Task.Delay(1000);
                 }
             }
+
+            string accountCheck;
 
             try
             {
