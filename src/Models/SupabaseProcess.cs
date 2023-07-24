@@ -152,17 +152,10 @@ namespace TmCGPTD.Models
                 await SupabaseStates.Instance.Supabase!.Realtime.ConnectAsync();
                 var channel = SupabaseStates.Instance.Supabase!.Realtime.Channel("realtime", "public", "*");
 
-                channel.AddPostgresChangeHandler(PostgresChangesOptions.ListenType.All, async(_, change) =>
+                channel.AddPostgresChangeHandler(PostgresChangesOptions.ListenType.All, (_, change) =>
                 {
                     //_debouncer.Debounce(async () =>
                     //{
-                        if (VMLocator.ChatViewModel.ChatIsRunning)
-                        {
-                            while (VMLocator.ChatViewModel.ChatIsRunning)
-                            {
-                                await Task.Delay(1000);
-                            }
-                        }
 
                         try
                         {
@@ -173,7 +166,7 @@ namespace TmCGPTD.Models
                             //await _semaphore.WaitAsync();
                             //try
                             //{
-                                await _syncProcess.SyncDbAsync();
+                                _ = (Supabase.Realtime.Interfaces.IRealtimeChannel)_syncProcess.SyncDbAsync();
                             //}
                             //finally
                             //{
@@ -183,11 +176,8 @@ namespace TmCGPTD.Models
                         catch (Exception ex)
                         {
                             ContentDialog? cdialog = null;
-                            await Dispatcher.UIThread.InvokeAsync(() =>
-                            {
-                                cdialog = new ContentDialog() { Title = $"Error", Content = $"{ex.Message}", CloseButtonText = "OK" };
-                            });
-                            await VMLocator.MainViewModel.ContentDialogShowAsync(cdialog!);
+                            cdialog = new ContentDialog() { Title = $"Error", Content = $"{ex.Message}", CloseButtonText = "OK" };
+                            _ = (Supabase.Realtime.Interfaces.IRealtimeChannel)VMLocator.MainViewModel.ContentDialogShowAsync(cdialog!);
                         }
                     //});
                 });

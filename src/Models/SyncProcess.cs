@@ -30,6 +30,14 @@ namespace TmCGPTD.Models
             syncIsRunning = true;
             string accountCheck;
 
+            if (VMLocator.ChatViewModel.ChatIsRunning)
+            {
+                while (VMLocator.ChatViewModel.ChatIsRunning)
+                {
+                    await Task.Delay(1000);
+                }
+            }
+
             try
             {
                 if (SupabaseStates.Instance.Supabase == null)
