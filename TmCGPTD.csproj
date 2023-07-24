@@ -46,7 +46,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="CefGlue.Avalonia" Version="106.5249.7-avalonia11" />
+        <PackageReference Include="CefGlue.Avalonia" Version="106.5249.19-avalonia11" />
         <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.1" />
         <PackageReference Include="CsvHelper" Version="30.0.1" />
         <PackageReference Include="HtmlAgilityPack" Version="1.11.49" />
