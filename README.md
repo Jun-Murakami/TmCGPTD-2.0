@@ -6,8 +6,8 @@ Webサービス版のChatGPTとOpenAI APIを統合するクライアントアプ
 
 ## New features in version 2.5.0 !
 
-- A new [web app](https://tmcgptd.web.app/) version has been developed to allow logs from the desktop version to be synchronized in the cloud. You can also view the logs on your smartphone. (User registration or login with Google/Microsoft/GitHub account is required to use the cloud function/web app version.)
-- If you insert an API key in the web app version, you can chat in the browser, although the functionality is minimal. The app also has a feature that compresses old conversation history for unlimited chatting.
+- A new [web app](https://tmcgptd.web.app/) version has been developed to allow logs from the desktop version to be synchronized in the cloud. You can also view the logs on your smartphone. (To use the cloud function/web app version, user registration or login via Google/Microsoft/GitHub account is required.)
+- If you set an API key in the web app version, you can chat in the browser. The features are minimal, but like the desktop version, it compresses old conversation histories automatically, allowing semi-permanent continuation of conversations.
 - We may limit the number of registered users because of the cost of using the backend service.
 (The logs of the desktop version will not be lost even if the cloud service is terminated, since it is still the same as before for local use.)
 If you do not need the cloud function, please use [ver 2.4.x](https://github.com/Jun-Murakami/TmCGPTD-2.0/releases/tag/v2.4.7).
