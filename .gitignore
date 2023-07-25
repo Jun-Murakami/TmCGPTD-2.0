@@ -460,3 +460,4 @@ $RECYCLE.BIN/
 /Assets/supabaseConfig.json
 /supabaseConfig.json
 /appsettings.json
+/build.sh
