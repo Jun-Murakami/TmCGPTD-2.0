@@ -13,6 +13,7 @@ using System.Collections.Generic;
 using Avalonia.Threading;
 using System.Threading;
 using Supabase.Realtime.PostgresChanges;
+using static Supabase.Realtime.Constants;
 
 namespace TmCGPTD.Models
 {
@@ -154,34 +155,29 @@ namespace TmCGPTD.Models
 
                 //SupabaseStates.Instance.Supabase!.Realtime.AddDebugHandler((sender, message, exception) => Debug.WriteLine(message));
 
-                channel.AddPostgresChangeHandler(PostgresChangesOptions.ListenType.All, (_, change) =>
+                channel.AddPostgresChangeHandler(PostgresChangesOptions.ListenType.All, (sender, change) =>
                 {
-                    _debouncer.Debounce(() =>
+                    switch (change.Event)
                     {
-
-                        //try
-                        //{
-                            //Debug.WriteLine("change.Event:" + change.Event);
-                            //Debug.WriteLine("change.Payload:" + change.Payload);
-
-                            // セマフォスリムを使用して、一度に一つのタスクだけがSyncDbAsync()メソッドを実行
-                            //await _semaphore.WaitAsync();
-                            //try
-                            //{
+                        case EventType.Insert:
+                            _debouncer.Debounce(() =>
+                            {
                                 _ = (Supabase.Realtime.Interfaces.IRealtimeChannel)_syncProcess.SyncDbAsync();
-                            //}
-                            //finally
-                            //{
-                                //_semaphore.Release();
-                            //}
-                        //}
-                        //catch (Exception ex)
-                        //{
-                            //ContentDialog? cdialog = null;
-                            //cdialog = new ContentDialog() { Title = $"Error", Content = $"{ex.Message}", CloseButtonText = "OK" };
-                            //_ = (Supabase.Realtime.Interfaces.IRealtimeChannel)VMLocator.MainViewModel.ContentDialogShowAsync(cdialog!);
-                        //}
-                    });
+                            });
+                            break;
+                        case EventType.Update:
+                            _debouncer.Debounce(() =>
+                            {
+                                _ = (Supabase.Realtime.Interfaces.IRealtimeChannel)_syncProcess.SyncDbAsync();
+                            });
+                            break;
+                        case EventType.Delete:
+                            _debouncer.Debounce(() =>
+                            {
+                                _ = (Supabase.Realtime.Interfaces.IRealtimeChannel)_syncProcess.SyncDbAsync();
+                            });
+                            break;
+                    }
                 });
 
                 await channel.Subscribe();

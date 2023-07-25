@@ -434,26 +434,6 @@ namespace TmCGPTD.Models
                     // インメモリをいったん閉じてまた開く
                     await DatabaseProcess.memoryConnection!.CloseAsync();
                     await DatabaseProcess.Instance.DbLoadToMemoryAsync();
-                    ChatList? selectedChatListItem = null;
-                    if (Dispatcher.UIThread.CheckAccess())
-                    {
-                        if (VMLocator.DataGridViewModel.SelectedItem != null)
-                        {
-                            selectedChatListItem = VMLocator.DataGridViewModel.SelectedItem;
-                        }
-                        VMLocator.DataGridViewModel.SelectedItemIndex = -1;
-                    }
-                    else
-                    {
-                        await Dispatcher.UIThread.InvokeAsync(() =>
-                        {
-                            if (VMLocator.DataGridViewModel.SelectedItem != null)
-                            {
-                                selectedChatListItem = VMLocator.DataGridViewModel.SelectedItem;
-                            }
-                            VMLocator.DataGridViewModel.SelectedItemIndex = -1;
-                        });
-                    }
                     VMLocator.DataGridViewModel.ChatList = await DatabaseProcess.Instance.SearchChatDatabaseAsync();
                     await DatabaseProcess.Instance.GetEditorLogDatabaseAsync();
                     await DatabaseProcess.Instance.GetTemplateItemsAsync();
@@ -461,10 +441,7 @@ namespace TmCGPTD.Models
                     await VMLocator.MainViewModel.LoadPhraseItemsAsync();
                     if (Dispatcher.UIThread.CheckAccess())
                     {
-                        if (selectedChatListItem != null)
-                        {
-                            VMLocator.DataGridViewModel.SelectedItem = selectedChatListItem;
-                        }
+                        VMLocator.DataGridViewModel.SelectedItemIndex = -1;
                         VMLocator.MainViewModel.SelectedPhraseItem = selectedPhraseItem;
                         VMLocator.EditorViewModel.SelectedEditorLogIndex = -1;
                         VMLocator.EditorViewModel.SelectedTemplateItemIndex = -1;
@@ -473,10 +450,7 @@ namespace TmCGPTD.Models
                     {
                         await Dispatcher.UIThread.InvokeAsync(() =>
                         {
-                            if (selectedChatListItem != null)
-                            {
-                                VMLocator.DataGridViewModel.SelectedItem = selectedChatListItem;
-                            }
+                            VMLocator.DataGridViewModel.SelectedItemIndex = -1;
                             VMLocator.MainViewModel.SelectedPhraseItem = selectedPhraseItem;
                             VMLocator.EditorViewModel.SelectedEditorLogIndex = -1;
                             VMLocator.EditorViewModel.SelectedTemplateItemIndex = -1;
@@ -1172,26 +1146,6 @@ namespace TmCGPTD.Models
             // インメモリをいったん閉じてまた開く
             await DatabaseProcess.memoryConnection!.CloseAsync();
             await DatabaseProcess.Instance.DbLoadToMemoryAsync();
-            ChatList? selectedChatListItem = null;
-            if (Dispatcher.UIThread.CheckAccess())
-            {
-                if (VMLocator.DataGridViewModel.SelectedItem != null)
-                {
-                    selectedChatListItem = VMLocator.DataGridViewModel.SelectedItem;
-                }
-                VMLocator.DataGridViewModel.SelectedItemIndex = -1;
-            }
-            else
-            {
-                await Dispatcher.UIThread.InvokeAsync(() =>
-                {
-                    if (VMLocator.DataGridViewModel.SelectedItem != null)
-                    {
-                        selectedChatListItem = VMLocator.DataGridViewModel.SelectedItem;
-                    }
-                    VMLocator.DataGridViewModel.SelectedItemIndex = -1;
-                });
-            }
             VMLocator.DataGridViewModel.ChatList = await DatabaseProcess.Instance.SearchChatDatabaseAsync();
             await DatabaseProcess.Instance.GetEditorLogDatabaseAsync();
             await DatabaseProcess.Instance.GetTemplateItemsAsync();
@@ -1199,10 +1153,7 @@ namespace TmCGPTD.Models
             await VMLocator.MainViewModel.LoadPhraseItemsAsync();
             if (Dispatcher.UIThread.CheckAccess())
             {
-                if (selectedChatListItem != null)
-                {
-                    VMLocator.DataGridViewModel.SelectedItem = selectedChatListItem;
-                }
+                VMLocator.DataGridViewModel.SelectedItemIndex = -1;
                 VMLocator.MainViewModel.SelectedPhraseItem = selectedPhraseItem;
                 VMLocator.EditorViewModel.SelectedEditorLogIndex = -1;
                 VMLocator.EditorViewModel.SelectedTemplateItemIndex = -1;
@@ -1211,10 +1162,7 @@ namespace TmCGPTD.Models
             {
                 await Dispatcher.UIThread.InvokeAsync(() =>
                 {
-                    if (selectedChatListItem != null)
-                    {
-                        VMLocator.DataGridViewModel.SelectedItem = selectedChatListItem;
-                    }
+                    VMLocator.DataGridViewModel.SelectedItemIndex = -1;
                     VMLocator.MainViewModel.SelectedPhraseItem = selectedPhraseItem;
                     VMLocator.EditorViewModel.SelectedEditorLogIndex = -1;
                     VMLocator.EditorViewModel.SelectedTemplateItemIndex = -1;
@@ -1609,26 +1557,6 @@ namespace TmCGPTD.Models
                 // インメモリをいったん閉じてまた開く
                 await DatabaseProcess.memoryConnection!.CloseAsync();
                 await DatabaseProcess.Instance.DbLoadToMemoryAsync();
-                ChatList? selectedChatListItem = null;
-                if (Dispatcher.UIThread.CheckAccess())
-                {
-                    if (VMLocator.DataGridViewModel.SelectedItem != null)
-                    {
-                        selectedChatListItem = VMLocator.DataGridViewModel.SelectedItem;
-                    }
-                    VMLocator.DataGridViewModel.SelectedItemIndex = -1;
-                }
-                else
-                {
-                    await Dispatcher.UIThread.InvokeAsync(() =>
-                    {
-                        if (VMLocator.DataGridViewModel.SelectedItem != null)
-                        {
-                            selectedChatListItem = VMLocator.DataGridViewModel.SelectedItem;
-                        }
-                        VMLocator.DataGridViewModel.SelectedItemIndex = -1;
-                    });
-                }
                 VMLocator.DataGridViewModel.ChatList = await DatabaseProcess.Instance.SearchChatDatabaseAsync();
                 await DatabaseProcess.Instance.GetEditorLogDatabaseAsync();
                 await DatabaseProcess.Instance.GetTemplateItemsAsync();
@@ -1636,10 +1564,7 @@ namespace TmCGPTD.Models
                 await VMLocator.MainViewModel.LoadPhraseItemsAsync();
                 if (Dispatcher.UIThread.CheckAccess())
                 {
-                    if (selectedChatListItem != null)
-                    {
-                        VMLocator.DataGridViewModel.SelectedItem = selectedChatListItem;
-                    }
+                    VMLocator.DataGridViewModel.SelectedItemIndex = -1;
                     VMLocator.MainViewModel.SelectedPhraseItem = selectedPhraseItem;
                     VMLocator.EditorViewModel.SelectedEditorLogIndex = -1;
                     VMLocator.EditorViewModel.SelectedTemplateItemIndex = -1;
@@ -1648,10 +1573,7 @@ namespace TmCGPTD.Models
                 {
                     await Dispatcher.UIThread.InvokeAsync(() =>
                     {
-                        if (selectedChatListItem != null)
-                        {
-                            VMLocator.DataGridViewModel.SelectedItem = selectedChatListItem;
-                        }
+                        VMLocator.DataGridViewModel.SelectedItemIndex = -1;
                         VMLocator.MainViewModel.SelectedPhraseItem = selectedPhraseItem;
                         VMLocator.EditorViewModel.SelectedEditorLogIndex = -1;
                         VMLocator.EditorViewModel.SelectedTemplateItemIndex = -1;
