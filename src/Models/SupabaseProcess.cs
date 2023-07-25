@@ -53,7 +53,7 @@ namespace TmCGPTD.Models
                 var options = new SupabaseOptions
                 {
                     SessionHandler = new CustomSessionHandler(),
-                    //AutoConnectRealtime = true,
+                    AutoConnectRealtime = true,
                     AutoRefreshToken = true,
                 };
 
