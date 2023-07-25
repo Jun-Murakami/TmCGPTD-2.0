@@ -34,6 +34,7 @@
         <EmbeddedResource Remove="Helper\**" />
         <None Remove="Helper\**" />
         <None Remove=".gitignore" />
+        <None Remove="build.sh" />
         <AvaloniaResource Include="supabaseConfig.json" />
 		<AvaloniaResource Include="appsettings.json" />
     </ItemGroup>
