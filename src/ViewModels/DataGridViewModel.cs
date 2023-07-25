@@ -74,6 +74,7 @@ namespace TmCGPTD.ViewModels
         {
             if (!VMLocator.ChatViewModel.ChatIsRunning)
             {
+                VMLocator.ChatViewModel.ChatViewIsVisible = true;
                 var result = await _dbProcess.GetChatLogDatabaseAsync(_selectedItem);
 
                 VMLocator.ChatViewModel.ReEditIsOn = false;

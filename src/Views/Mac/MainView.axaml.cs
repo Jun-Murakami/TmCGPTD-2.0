@@ -87,16 +87,19 @@ namespace TmCGPTD.Views
             switch (listBox.SelectedIndex)
             {
                 case 0:
+                    VMLocator.ChatViewModel.ChatViewIsVisible = true;
                     _leftPane.Navigate(typeof(ChatView));
                     MainViewModel.LoginStatus = -1;
                     break;
 
                 case 1:
+                    VMLocator.WebChatViewModel.WebChatViewIsVisible = true;
                     _leftPane.Navigate(typeof(WebChatView), null, new SuppressNavigationTransitionInfo());
                     MainViewModel.LoginStatus = -1;
                     break;
 
                 case 2:
+                    VMLocator.WebChatBardViewModel.WebChatBardViewIsVisible = true;
                     _leftPane.Navigate(typeof(WebChatBardView), null, new SuppressNavigationTransitionInfo());
                     MainViewModel.LoginStatus = -1;
                     break;
