@@ -12,7 +12,7 @@ Webサービス版のChatGPTとOpenAI APIを統合するクライアントアプ
 (The logs of the desktop version will not be lost even if the cloud service is terminated, since it is still the same as before for local use.)
 If you do not need the cloud function, please use [ver 2.4.x](https://github.com/Jun-Murakami/TmCGPTD-2.0/releases/tag/v2.4.7).
 
-## Version 2.5.0 の新機能 !
+## Version 2.5.0 の新機能
 
 - [Webアプリ版](https://tmcgptd.web.app/)を新規開発し、デスクトップ版のログをクラウドで同期できるようにしました。スマホでもログを閲覧できます。（クラウド機能／Webアプリ版を利用するには、ユーザー登録、またはGoogle/Microsoft/GitHubアカウントでのログインが必要です。）
 - Webアプリ版にAPIキーを設定すれば、ブラウザでもチャットが可能です。機能は最低限ですが、デスクトップ版と同じく古い会話履歴を自動的に圧縮して半永久的に会話が継続できる機能は実装しています。
