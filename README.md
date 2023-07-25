@@ -51,8 +51,9 @@ ChatGPTのアカウントでログインしてWebサービス版のログをイ�
 
 <img width="1154" alt="スクリーンショット 2023-07-25 20 08 03" src="https://github.com/Jun-Murakami/TmCGPTD-2.0/assets/126404131/f13dd757-f729-4a14-84b8-825b45b49416">
 <img width="1154" alt="スクリーンショット 2023-07-25 20 08 18" src="https://github.com/Jun-Murakami/TmCGPTD-2.0/assets/126404131/58adee84-fc57-4daf-aa27-12d3f8960644">
+<img width="1154" alt="SC" src="https://github.com/Jun-Murakami/TmCGPTD-2.0/assets/126404131/1fd537ca-f980-4579-a9e0-130a29753a8a">
 
-[Web app repo](https://github.com/Jun-Murakami/TmCGPTD-React)
+Web app repo is [here](https://github.com/Jun-Murakami/TmCGPTD-React).
 
 [AvaloniaUI](https://github.com/AvaloniaUI/Avalonia) is used for multi-platform support.
 
