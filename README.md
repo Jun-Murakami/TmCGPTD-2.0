@@ -1,5 +1,5 @@
 # TmCGPT Debugger
-Client application that integrates the web services version of ChatGPT and OpenAI API. 
+A ChatGPT client that integrates the web services version of ChatGPT and OpenAI API.
 It supports Windows 10 and later, as well as MacOS.  
 
 Webサービス版のChatGPTとOpenAI APIを統合するクライアントアプリです。Windows10以降、MacOSに対応。
@@ -48,8 +48,10 @@ ChatGPTのアカウントでログインしてWebサービス版のログをイ�
 プロンプトのテンプレートを保存、読み込みできます。送信した文章の履歴も自動的に保存します。
 
 > 複数のコンピューターでチャットログを同期するには、画面右上のデータベースアイコンをクリックして、データベースファイルの保存場所をクラウドドライブ（Dropboxなど）に設定してください。
+
 <img width="1154" alt="スクリーンショット 2023-07-25 20 08 03" src="https://github.com/Jun-Murakami/TmCGPTD-2.0/assets/126404131/f13dd757-f729-4a14-84b8-825b45b49416">
 <img width="1154" alt="スクリーンショット 2023-07-25 20 08 18" src="https://github.com/Jun-Murakami/TmCGPTD-2.0/assets/126404131/58adee84-fc57-4daf-aa27-12d3f8960644">
+
 
 [AvaloniaUI](https://github.com/AvaloniaUI/Avalonia) is used for multi-platform support.
 
