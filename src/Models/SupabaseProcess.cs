@@ -120,6 +120,15 @@ namespace TmCGPTD.Models
             });
         }
 
+        public async Task GitHubAuthAsync()
+        {
+            SupabaseStates.Instance.AuthState = await SupabaseStates.Instance.Supabase!.Auth.SignIn(Supabase.Gotrue.Constants.Provider.Github, new SignInOptions
+            {
+                FlowType = Supabase.Gotrue.Constants.OAuthFlowType.PKCE,
+                RedirectTo = "http://localhost:3000/oauth/callback"
+            });
+        }
+
         public async Task GetSessionAsync()
         {
             await SupabaseStates.Instance.Supabase!.Auth.ExchangeCodeForSession(SupabaseStates.Instance.AuthState!.PKCEVerifier!, VMLocator.MainViewModel.AuthCode!);
@@ -134,6 +143,9 @@ namespace TmCGPTD.Models
                     break;
                 case "You are logged in with Microsoft.":
                     await MicrosoftAuthAsync();
+                    break;
+                case "You are logged in with GitHub.":
+                    await GitHubAuthAsync();
                     break;
                 case "You are logged in with Email.":
                     await EmailLoginAsync(AppSettings.Instance.Email!, AppSettings.Instance.Password!);

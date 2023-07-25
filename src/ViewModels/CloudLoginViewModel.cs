@@ -20,6 +20,7 @@ namespace TmCGPTD.ViewModels
             EmailSignupCommand = new AsyncRelayCommand(EmailSignupAsync);
             GoogleLoginCommand = new AsyncRelayCommand(GoogleLoginAsync);
             MicrosoftLoginCommand = new AsyncRelayCommand(MicrosoftLoginAsync);
+            GitHubLoginCommand = new AsyncRelayCommand(GitHubLoginAsync);
             PasswordResetCommand = new AsyncRelayCommand(PasswordResetAsync);
         }
 
@@ -27,6 +28,7 @@ namespace TmCGPTD.ViewModels
         public IAsyncRelayCommand EmailSignupCommand { get; }
         public IAsyncRelayCommand GoogleLoginCommand { get; }
         public IAsyncRelayCommand MicrosoftLoginCommand { get; }
+        public IAsyncRelayCommand GitHubLoginCommand { get; }
         public IAsyncRelayCommand PasswordResetCommand { get; }
 
         private string? _email;
@@ -76,7 +78,6 @@ namespace TmCGPTD.ViewModels
                     await SupabaseStates.Instance.Supabase.Auth.RefreshSession();
                     await _databaseProcess.CleanUpEditorLogDatabaseAsync();
                     await SupabaseProcess.Instance.SubscribeSyncAsync();
-                    //await SupabaseProcess.Instance.DelaySyncDbAsync();
                 }
                 else
                 {
@@ -232,7 +233,6 @@ namespace TmCGPTD.ViewModels
                         await SupabaseStates.Instance.Supabase.Auth.RefreshSession();
                         await _databaseProcess.CleanUpEditorLogDatabaseAsync();
                         await SupabaseProcess.Instance.SubscribeSyncAsync();
-                        //await SupabaseProcess.Instance.DelaySyncDbAsync();
                     }
                 }
             }
@@ -279,7 +279,52 @@ namespace TmCGPTD.ViewModels
                         await SupabaseStates.Instance.Supabase.Auth.RefreshSession();
                         await _databaseProcess.CleanUpEditorLogDatabaseAsync();
                         await SupabaseProcess.Instance.SubscribeSyncAsync();
-                        //await SupabaseProcess.Instance.DelaySyncDbAsync();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                var cdialog = new ContentDialog
+                {
+                    Title = "Error",
+                    Content = $"{ex.Message}",
+                    CloseButtonText = "OK"
+                };
+                await VMLocator.MainViewModel.ContentDialogShowAsync(cdialog);
+            }
+        }
+
+        private async Task GitHubLoginAsync()
+        {
+            try
+            {
+                if (SupabaseStates.Instance.Supabase == null)
+                {
+                    await _supabaseProcess.InitializeSupabaseAsync();
+                }
+
+                if (SupabaseStates.Instance.Supabase!.Auth.CurrentSession == null)
+                {
+                    await _supabaseProcess.GitHubAuthAsync();
+                    VMLocator.MainViewModel.LoginUri = SupabaseStates.Instance.AuthState!.Uri;
+                    VMLocator.MainViewModel.LoginStatus = 2;
+
+                    for (int timeOut = 0; SupabaseStates.Instance.Supabase.Auth.CurrentSession == null && timeOut < 600; timeOut++)
+                    {
+                        await Task.Delay(1000);
+                    }
+
+                    if (SupabaseStates.Instance.Supabase.Auth.CurrentSession != null)
+                    {
+                        VMLocator.MainViewModel.LoginStatus = 3;
+                        AppSettings.Instance.SyncIsOn = true;
+                        VMLocator.CloudLoggedinViewModel.Provider = "You are logged in with GitHub.";
+                        AppSettings.Instance.Provider = "You are logged in with GitHub.";
+                        AppSettings.Instance.Email = SupabaseStates.Instance.Supabase.Auth.CurrentSession.User!.Email;
+                        VMLocator.CloudLoggedinViewModel.Email = SupabaseStates.Instance.Supabase.Auth.CurrentSession.User!.Email;
+                        await SupabaseStates.Instance.Supabase.Auth.RefreshSession();
+                        await _databaseProcess.CleanUpEditorLogDatabaseAsync();
+                        await SupabaseProcess.Instance.SubscribeSyncAsync();
                     }
                 }
             }

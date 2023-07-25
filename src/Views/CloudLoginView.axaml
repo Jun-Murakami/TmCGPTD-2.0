@@ -52,6 +52,10 @@
                     HorizontalAlignment="Center"
                     Width="200"
                     Command="{Binding MicrosoftLoginCommand}" />
+            <Button Content="Log in with GitHub"
+                    HorizontalAlignment="Center"
+                    Width="200"
+                    Command="{Binding GitHubLoginCommand}" />
             <StackPanel Orientation="Horizontal"
                         Spacing="2"
                         HorizontalAlignment="Center"
