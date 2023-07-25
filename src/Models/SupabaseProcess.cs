@@ -157,27 +157,10 @@ namespace TmCGPTD.Models
 
                 channel.AddPostgresChangeHandler(PostgresChangesOptions.ListenType.All, (sender, change) =>
                 {
-                    switch (change.Event)
+                    _debouncer.Debounce(() =>
                     {
-                        case EventType.Insert:
-                            _debouncer.Debounce(() =>
-                            {
-                                _ = (Supabase.Realtime.Interfaces.IRealtimeChannel)_syncProcess.SyncDbAsync();
-                            });
-                            break;
-                        case EventType.Update:
-                            _debouncer.Debounce(() =>
-                            {
-                                _ = (Supabase.Realtime.Interfaces.IRealtimeChannel)_syncProcess.SyncDbAsync();
-                            });
-                            break;
-                        case EventType.Delete:
-                            _debouncer.Debounce(() =>
-                            {
-                                _ = (Supabase.Realtime.Interfaces.IRealtimeChannel)_syncProcess.SyncDbAsync();
-                            });
-                            break;
-                    }
+                        _ = (Supabase.Realtime.Interfaces.IRealtimeChannel)_syncProcess.SyncDbAsync();
+                    });
                 });
 
                 await channel.Subscribe();
