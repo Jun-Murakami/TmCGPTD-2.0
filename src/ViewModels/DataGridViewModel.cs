@@ -75,11 +75,6 @@ namespace TmCGPTD.ViewModels
             if (!VMLocator.ChatViewModel.ChatIsRunning)
             {
                 VMLocator.ChatViewModel.ChatViewIsVisible = true;
-                if (AppSettings.Instance.SyncIsOn && SupabaseStates.Instance.Supabase != null && SupabaseStates.Instance.Supabase?.Auth.CurrentSession?.User?.Id != null)
-                {
-                    await SupabaseStates.Instance.Supabase.Auth.RetrieveSessionAsync();
-                    await SupabaseProcess.Instance.SubscribeSyncAsync();
-                }
                 var result = await _dbProcess.GetChatLogDatabaseAsync(_selectedItem);
 
                 VMLocator.ChatViewModel.ReEditIsOn = false;
