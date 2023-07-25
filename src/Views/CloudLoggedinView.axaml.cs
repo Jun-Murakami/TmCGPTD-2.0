@@ -36,6 +36,7 @@ namespace TmCGPTD.Views
             }
 
             await SupabaseProcess.Instance.SingleSyncDbAsync();
+            await SupabaseProcess.Instance.SubscribeSyncAsync();
         }
         private void InitializeComponent()
         {

@@ -21,7 +21,7 @@ namespace TmCGPTD.Models
     {
         SyncProcess _syncProcess = new();
         private SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
-        private readonly Debouncer _debouncer = new Debouncer(TimeSpan.FromMinutes(0.3));
+        private readonly Debouncer _debouncer = new Debouncer(TimeSpan.FromMinutes(0.1));
 
         private static SupabaseProcess? _instance;
         public static SupabaseProcess Instance
