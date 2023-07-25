@@ -280,6 +280,7 @@ namespace TmCGPTD.Models
                 await VMLocator.MainViewModel.ContentDialogShowAsync(dialog);
             }
             fileConnection.Close();
+            await SupabaseProcess.Instance.SubscribeSyncAsync();
         }
 
         // 定型句プリセットSave--------------------------------------------------------------

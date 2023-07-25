@@ -126,6 +126,7 @@ namespace TmCGPTD.Models
                 }
 
                 await VMLocator.MainViewModel.ContentDialogShowAsync(cdialog!);
+                await SupabaseProcess.Instance.SubscribeSyncAsync();
                 syncIsRunning = false;
                 return;
             }
@@ -425,6 +426,7 @@ namespace TmCGPTD.Models
                     }
 
                     await VMLocator.MainViewModel.ContentDialogShowAsync(cdialog!);
+                    await SupabaseProcess.Instance.SubscribeSyncAsync();
                     syncIsRunning = false;
                     return;
                 }
@@ -573,6 +575,7 @@ namespace TmCGPTD.Models
                     }
                 }
 
+                await SupabaseProcess.Instance.SubscribeSyncAsync();
                 syncIsRunning = false;
             }
             catch (Exception ex)
@@ -601,6 +604,7 @@ namespace TmCGPTD.Models
                 }
 
                 await VMLocator.MainViewModel.ContentDialogShowAsync(cdialog!);
+                await SupabaseProcess.Instance.SubscribeSyncAsync();
                 syncIsRunning = false;
                 return;
             }
