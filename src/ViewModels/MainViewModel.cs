@@ -265,7 +265,6 @@ namespace TmCGPTD.ViewModels
         }
 
         // ----------------------------------------------------------------------------------------------------------------------------
-        // CancellationTokenSourceを作成
         private CancellationTokenSource cts = new CancellationTokenSource();
 
         private async Task PostAsync()
@@ -840,18 +839,19 @@ namespace TmCGPTD.ViewModels
             }
             else
             {
-                // Not on the UI thread, need to dispatch.
                 await Dispatcher.UIThread.InvokeAsync(() =>
                 {
                     VMLocator.ChatViewModel.ChatViewIsVisible = false;
                     VMLocator.WebChatViewModel.WebChatViewIsVisible = false;
                     VMLocator.WebChatBardViewModel.WebChatBardViewIsVisible = false;
-                    
+                });
+                dialogResult = await dialog.ShowAsync();
+                await Dispatcher.UIThread.InvokeAsync(() =>
+                {
                     VMLocator.ChatViewModel.ChatViewIsVisible = true;
                     VMLocator.WebChatViewModel.WebChatViewIsVisible = true;
                     VMLocator.WebChatBardViewModel.WebChatBardViewIsVisible = true;
                 });
-                dialogResult = await dialog.ShowAsync();
             }
 
             return dialogResult;
