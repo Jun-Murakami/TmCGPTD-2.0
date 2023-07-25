@@ -282,6 +282,7 @@ namespace TmCGPTD.Models
             fileConnection.Close();
             if (AppSettings.Instance.SyncIsOn && SupabaseStates.Instance.Supabase != null && Uid != null)
             {
+                await SupabaseStates.Instance.Supabase.Auth.RetrieveSessionAsync();
                 await SupabaseProcess.Instance.SubscribeSyncAsync();
             }
         }

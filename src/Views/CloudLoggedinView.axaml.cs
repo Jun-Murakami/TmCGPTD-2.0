@@ -35,6 +35,7 @@ namespace TmCGPTD.Views
                 //Debug.WriteLine($"You are logged in with {value2}.");
             }
 
+            await SupabaseStates.Instance.Supabase!.Auth.RetrieveSessionAsync();
             await SupabaseProcess.Instance.SingleSyncDbAsync();
             await SupabaseProcess.Instance.SubscribeSyncAsync();
         }
