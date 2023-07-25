@@ -4,13 +4,20 @@ It supports Windows 10 and later, as well as MacOS.
 
 Webサービス版のChatGPTとOpenAI APIを統合するクライアントアプリです。Windows10以降、MacOSに対応。
 
-## New features in version 2.5.0
+## New features in version 2.5.0 !
 
 - A new [web app](https://tmcgptd.web.app/) version has been developed to allow logs from the desktop version to be synchronized in the cloud. You can also view the logs on your smartphone. (User registration or login with Google/Microsoft/GitHub account is required to use the cloud function/web app version.)
 - If you insert an API key in the web app version, you can chat in the browser, although the functionality is minimal. The app also has a feature that compresses old conversation history for unlimited chatting.
 - We may limit the number of registered users because of the cost of using the backend service.
 (The logs of the desktop version will not be lost even if the cloud service is terminated, since it is still the same as before for local use.)
-If you do not need the cloud function, please use [ver 2.4.x](https://github.com/Jun-Murakami/TmCGPTD-2.0/releases/tag/v2.4.7)
+If you do not need the cloud function, please use [ver 2.4.x](https://github.com/Jun-Murakami/TmCGPTD-2.0/releases/tag/v2.4.7).
+
+## Version 2.5.0 の新機能 !
+
+- [Webアプリ版](https://tmcgptd.web.app/)を新規開発し、デスクトップ版のログをクラウドで同期できるようにしました。スマホでもログを閲覧できます。（クラウド機能／Webアプリ版を利用するには、ユーザー登録、またはGoogle/Microsoft/GitHubアカウントでのログインが必要です。）
+- Webアプリ版にAPIキーを設定すれば、ブラウザでもチャットが可能です。機能は最低限ですが、デスクトップ版と同じく古い会話履歴を自動的に圧縮して半永久的に会話が継続できる機能は実装しています。
+- バックエンドサービスのコストの関係で、登録ユーザー数を制限する場合があります。(ローカルで使う分には今までと変わらないので、クラウドサービスが終了してもデスクトップ版のログは消えません。)
+クラウド機能が不要な方は [ver 2.4.x](https://github.com/Jun-Murakami/TmCGPTD-2.0/releases/tag/v2.4.7) をご利用ください。
 
 ## Features:  
   
@@ -24,13 +31,6 @@ If you do not need the cloud function, please use [ver 2.4.x](https://github.com
   You can register frequently used phrases and insert them into the editor.
 - **Prompt template & log**
   Prompt templates can be saved and loaded. Automatically saves up to 200 entries of sent text history.
-
-## Version 2.5.0 での新機能
-
-- [Webアプリ版](https://tmcgptd.web.app/)を新規開発し、デスクトップ版のログをクラウドで同期できるようにしました。スマホでもログを閲覧できます。（クラウド機能／Webアプリ版を利用するには、ユーザー登録、またはGoogle/Microsoft/GitHubアカウントでのログインが必要です。）
-- Webアプリ版にAPIキーを設定すれば、ブラウザでもチャットが可能です。機能は最低限ですが、デスクトップ版と同じく古い会話履歴を自動的に圧縮して半永久的に会話が継続できる機能は実装しています。
-- バックエンドサービスのコストの関係で、登録ユーザー数を制限する場合があります。(ローカルで使う分には今までと変わらないので、クラウドサービスが終了してもデスクトップ版のログは消えません。)
-クラウド機能が不要な方は [ver 2.4.x](https://github.com/Jun-Murakami/TmCGPTD-2.0/releases/tag/v2.4.7) をご利用ください。
 
 ## 機能:  
 
