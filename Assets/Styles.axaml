@@ -49,27 +49,27 @@
         <Style Selector="Grid Button:pointerover">
             <Setter Property="Background" Value="rgb(84, 85, 99)" />
             <Setter Property="BorderBrush" Value="rgb(106, 108, 125)" />
-			<Setter Property="CornerRadius" Value="6" />
+            <Setter Property="CornerRadius" Value="6" />
         </Style>
-		<Style Selector="Grid Button:pressed">
-			<Setter Property="Background" Value="rgb(84, 85, 99)" />
-			<Setter Property="BorderBrush" Value="rgb(106, 108, 125)" />
-			<Setter Property="CornerRadius" Value="6" />
-		</Style>
+        <Style Selector="Grid Button:pressed">
+            <Setter Property="Background" Value="rgb(84, 85, 99)" />
+            <Setter Property="BorderBrush" Value="rgb(106, 108, 125)" />
+            <Setter Property="CornerRadius" Value="6" />
+        </Style>
         <Style Selector="Grid Button:pointerover /template/ ContentPresenter#PART_ContentPresenter">
             <Setter Property="Background" Value="rgb(84, 85, 99)" />
             <Setter Property="BorderBrush" Value="rgb(106, 108, 125)" />
-			<Setter Property="CornerRadius" Value="6" />
+            <Setter Property="CornerRadius" Value="6" />
         </Style>
-		<Style Selector="Grid Button:pressed /template/ ContentPresenter#PART_ContentPresenter">
-			<Setter Property="Background" Value="rgb(84, 85, 99)" />
-			<Setter Property="BorderBrush" Value="rgb(106, 108, 125)" />
-			<Setter Property="CornerRadius" Value="6" />
-		</Style>
+        <Style Selector="Grid Button:pressed /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="rgb(84, 85, 99)" />
+            <Setter Property="BorderBrush" Value="rgb(106, 108, 125)" />
+            <Setter Property="CornerRadius" Value="6" />
+        </Style>
 
         <Style Selector="Grid Button.Post:disabled /template/ ContentPresenter#PART_ContentPresenter">
             <Setter Property="Background" Value="rgb(100, 90, 165)" />
-			<Setter Property="CornerRadius" Value="6" />
+            <Setter Property="CornerRadius" Value="6" />
         </Style>
 
         <Style Selector="Grid#PhrasePresets Button">
@@ -155,11 +155,11 @@
         </Style>
         <Style Selector="ListBox TextBlock,ListBoxItem TextBlock,ListBoxItem:selected TextBlock">
             <Setter Property="FontSize" Value="16" />
-            <Setter Property="Height" Value="16" />
-            <Setter Property="FontFamily" Value="avares://TmCGPTD/Assets/migu-1m-regular.ttf#Migu 1M" />
+            <Setter Property="Height" Value="20" />
+            <Setter Property="FontFamily" Value="avares://AI Prompt Editor/Assets/migu-1m-regular.ttf#Migu 1M" />
         </Style>
         <Style Selector="ListBoxItem /template/ ContentPresenter#PART_ContentPresenter">
-            <Setter Property="Height" Value="28" />
+            <Setter Property="Height" Value="30" />
             <Setter Property="Padding" Value="0" />
         </Style>
         <Style Selector="Grid#EditorGrid TextBox,Grid TextBox#PreviewTextBox">
@@ -416,24 +416,24 @@
             </Style.Animations>
         </Style>
 
-		<Style Selector="TextBlock.FadeOut">
-			<Style.Animations>
-				<Animation Duration="0:0:6">
-					<KeyFrame Cue="0%">
-						<Setter Property="Opacity" Value="0.0" />
-					</KeyFrame>
-					<KeyFrame Cue="10%">
-						<Setter Property="Opacity" Value="1.0" />
-					</KeyFrame>
-					<KeyFrame Cue="80%">
-						<Setter Property="Opacity" Value="1.0" />
-					</KeyFrame>
-					<KeyFrame Cue="100%">
-						<Setter Property="Opacity" Value="0.0" />
-					</KeyFrame>
-				</Animation>
-			</Style.Animations>
-		</Style>
+        <Style Selector="TextBlock.FadeOut">
+            <Style.Animations>
+                <Animation Duration="0:0:6">
+                    <KeyFrame Cue="0%">
+                        <Setter Property="Opacity" Value="0.0" />
+                    </KeyFrame>
+                    <KeyFrame Cue="10%">
+                        <Setter Property="Opacity" Value="1.0" />
+                    </KeyFrame>
+                    <KeyFrame Cue="80%">
+                        <Setter Property="Opacity" Value="1.0" />
+                    </KeyFrame>
+                    <KeyFrame Cue="100%">
+                        <Setter Property="Opacity" Value="0.0" />
+                    </KeyFrame>
+                </Animation>
+            </Style.Animations>
+        </Style>
 
     </Styles>
 </Styles>
