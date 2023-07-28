@@ -256,7 +256,7 @@ namespace TmCGPTD.ViewModels
                     _browser.ExecuteJavaScript(jsCode);
 
                     //会話が成立した時点でタイトルが空欄だったらタイトルを自動生成する
-                    if (string.IsNullOrEmpty(ChatTitle))
+                    if (string.IsNullOrEmpty(ChatTitle) && AppSettings.Instance.IsAutoGenerateChatTitle)
                     {
                         ChatTitle = await _chatProcess.GetTitleAsync(ConversationHistory);
                     }

@@ -138,9 +138,11 @@ namespace TmCGPTD.Views
                 AppSettings.Instance.Provider = settings.Provider;
                 AppSettings.Instance.Session = settings.Session;
                 AppSettings.Instance.SyncIsOn = settings.SyncIsOn;
+                AppSettings.Instance.IsAutoGenerateChatTitle = settings.IsAutoGenerateChatTitle;
                 VMLocator.CloudLoginViewModel.Email = settings.Email;
                 VMLocator.CloudLoginViewModel.Password = settings.Password;
                 VMLocator.CloudLoggedinViewModel.Provider = settings.Provider;
+                VMLocator.AppSettingsViewModel.IsAutoGenerateChatTitle = settings.IsAutoGenerateChatTitle;
 
                 VMLocator.MainWindowViewModel.ApiMaxTokens = settings.ApiMaxTokens;
                 VMLocator.MainWindowViewModel.ApiTemperature = settings.ApiTemperature;

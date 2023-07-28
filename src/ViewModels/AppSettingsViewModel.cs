@@ -61,6 +61,19 @@ namespace TmCGPTD.ViewModels
             }
         }
 
+        private bool _isAutoGenerateChatTitle;
+        public bool IsAutoGenerateChatTitle
+        {
+            get => _isAutoGenerateChatTitle;
+            set
+            {
+                if (SetProperty(ref _isAutoGenerateChatTitle, value))
+                {
+                    AppSettings.Instance.IsAutoGenerateChatTitle = value;
+                }
+            }
+        }
+
         private string? _selectedLanguage;
         public string? SelectedLanguage
         {

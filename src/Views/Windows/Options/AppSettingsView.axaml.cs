@@ -22,6 +22,7 @@ namespace TmCGPTD.Views
         {
             AppSettingsViewModel.SelectedLanguage = AppSettings.Instance.Language;
             AppSettingsViewModel.EditorCommonFontSize = AppSettings.Instance.EditorFontSize;
+            AppSettingsViewModel.IsAutoGenerateChatTitle = AppSettings.Instance.IsAutoGenerateChatTitle;
         }
 
         private void InitializeComponent()

@@ -85,6 +85,7 @@ namespace TmCGPTD
         public bool ApiStopIsEnable { get; set; }
         public bool ApiLogitBiasIsEnable { get; set; }
         public bool MaxContentLengthIsEnable { get; set; }
+        public bool IsAutoGenerateChatTitle { get; set; }
 
 
         // DefaultSetting
@@ -102,6 +103,7 @@ namespace TmCGPTD
             Email = "";
             Password = "";
             Language = "English";
+            IsAutoGenerateChatTitle = true;
 
             EditorHeight1 = new GridLength(0.21, GridUnitType.Star);
             EditorHeight2 = new GridLength(0.30, GridUnitType.Star);
