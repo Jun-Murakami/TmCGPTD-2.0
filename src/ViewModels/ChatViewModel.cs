@@ -260,6 +260,10 @@ namespace TmCGPTD.ViewModels
                     {
                         ChatTitle = await _chatProcess.GetTitleAsync(ConversationHistory);
                     }
+                    else if (string.IsNullOrEmpty(ChatTitle))
+                    {
+                        ChatTitle = "No Title";
+                    }
                 }
 
                 // カテゴリーが空欄だったら「API Chat」を自動設定する

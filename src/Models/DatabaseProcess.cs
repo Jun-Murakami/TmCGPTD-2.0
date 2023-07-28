@@ -1577,6 +1577,9 @@ namespace TmCGPTD.Models
                 }
             }
             await connection.CloseAsync();
+            // インメモリをいったん閉じてまた開く
+            await memoryConnection!.CloseAsync();
+            await DbLoadToMemoryAsync();
         }
 
         // チャットログを更新--------------------------------------------------------------
