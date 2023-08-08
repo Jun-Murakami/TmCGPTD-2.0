@@ -6,21 +6,6 @@ Webサービス版のChatGPTとOpenAI APIを統合するクライアントアプ
 
 <img width="1741" alt="TmCGPTD_v25_01" src="https://github.com/Jun-Murakami/TmCGPTD-2.0/assets/126404131/19443f35-8cfa-49f8-a7a5-06a89f52624a">
 
-## New features in version 2.5.0 !
-
-- A new [web app](https://tmcgptd.web.app/) version has been developed to allow logs from the desktop version to be synchronized in the cloud. You can also view the logs on your smartphone. (To use the cloud function/web app version, user registration or login via Google/Microsoft/GitHub account is required.)
-- If you set an API key in the web app version, you can chat in the browser. The features are minimal, but like the desktop version, it compresses old conversation histories automatically, allowing semi-permanent continuation of conversations.
-- We may limit the number of registered users because of the cost of using the backend service.
-(The logs of the desktop version will not be lost even if the cloud service is terminated, since it is still the same as before for local use.)
-If you do not need the cloud function, please use [ver 2.4.x](https://github.com/Jun-Murakami/TmCGPTD-2.0/releases/tag/v2.4.7).
-
-## Version 2.5.0 の新機能
-
-- [Webアプリ版](https://tmcgptd.web.app/)を新規開発し、デスクトップ版のログをクラウドで同期できるようにしました。スマホでもログを閲覧できます。（クラウド機能／Webアプリ版を利用するには、ユーザー登録、またはGoogle/Microsoft/GitHubアカウントでのログインが必要です。）
-- Webアプリ版にAPIキーを設定すれば、ブラウザでもチャットが可能です。機能は最低限ですが、デスクトップ版と同じく古い会話履歴を自動的に圧縮して半永久的に会話が継続できる機能は実装しています。
-- バックエンドサービスのコストの関係で、登録ユーザー数を制限する場合があります。(ローカルで使う分には今までと変わらないので、クラウドサービスが終了してもデスクトップ版のログは消えません。)
-クラウド機能が不要な方は [ver 2.4.x](https://github.com/Jun-Murakami/TmCGPTD-2.0/releases/tag/v2.4.7) をご利用ください。
-
 ## Features:  
   
 - **Vertical 5-split text editor**  
@@ -48,6 +33,21 @@ ChatGPTのアカウントでログインしてWebサービス版のログをイ�
 プロンプトのテンプレートを保存、読み込みできます。送信した文章の履歴も自動的に保存します。
 
 > 複数のコンピューターでチャットログを同期するには、画面右上のデータベースアイコンをクリックして、データベースファイルの保存場所をクラウドドライブ（Dropboxなど）に設定してください。
+
+## New features in version 2.5.0 !
+
+- A new [web app](https://tmcgptd.web.app/) version has been developed to allow logs from the desktop version to be synchronized in the cloud. You can also view the logs on your smartphone. (To use the cloud function/web app version, user registration or login via Google/Microsoft/GitHub account is required.)
+- If you set an API key in the web app version, you can chat in the browser. The features are minimal, but like the desktop version, it compresses old conversation histories automatically, allowing semi-permanent continuation of conversations.
+- We may limit the number of registered users because of the cost of using the backend service.
+(The logs of the desktop version will not be lost even if the cloud service is terminated, since it is still the same as before for local use.)
+If you do not need the cloud function, please use [ver 2.4.x](https://github.com/Jun-Murakami/TmCGPTD-2.0/releases/tag/v2.4.7).
+
+## Version 2.5.0 の新機能
+
+- [Webアプリ版](https://tmcgptd.web.app/)を新規開発し、デスクトップ版のログをクラウドで同期できるようにしました。スマホでもログを閲覧できます。（クラウド機能／Webアプリ版を利用するには、ユーザー登録、またはGoogle/Microsoft/GitHubアカウントでのログインが必要です。）
+- Webアプリ版にAPIキーを設定すれば、ブラウザでもチャットが可能です。機能は最低限ですが、デスクトップ版と同じく古い会話履歴を自動的に圧縮して半永久的に会話が継続できる機能は実装しています。
+- バックエンドサービスのコストの関係で、登録ユーザー数を制限する場合があります。(ローカルで使う分には今までと変わらないので、クラウドサービスが終了してもデスクトップ版のログは消えません。)
+クラウド機能が不要な方は [ver 2.4.x](https://github.com/Jun-Murakami/TmCGPTD-2.0/releases/tag/v2.4.7) をご利用ください。
 
 <img width="1154" alt="スクリーンショット 2023-07-25 20 08 03" src="https://github.com/Jun-Murakami/TmCGPTD-2.0/assets/126404131/f13dd757-f729-4a14-84b8-825b45b49416">
 <img width="1154" alt="スクリーンショット 2023-07-25 20 08 18" src="https://github.com/Jun-Murakami/TmCGPTD-2.0/assets/126404131/58adee84-fc57-4daf-aa27-12d3f8960644">
