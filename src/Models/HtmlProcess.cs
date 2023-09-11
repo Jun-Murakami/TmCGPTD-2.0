@@ -252,7 +252,7 @@ namespace TmCGPTD.Models
                 }
 
                 // divタグを取得
-                var divTags = mainTag.SelectNodes("./*/*/*/*/div");
+                var divTags = mainTag.SelectNodes("./*/*/*/*/*/div");
                 int count = 0;
 
                 // フィルタリングされたdivタグを保持するリスト
@@ -261,12 +261,17 @@ namespace TmCGPTD.Models
                 // divタグをフィルタリング
                 foreach (var div in divTags)
                 {
-                    if (div.ChildNodes.Count == 0 || div.InnerText.Contains("Model:") || div.InnerText.Contains("Regenerate response"))
+                    if (div.ChildNodes.Count == 0
+                        || div.InnerText.Contains("Model:")
+                        || div.InnerText.Contains("Regenerate response")
+                        || (div.ParentNode?.ParentNode?.ParentNode?.Name == "form"))
                     {
                         continue;
                     }
                     filteredDivs.Add(div);
                 }
+
+
 
                 foreach (var div in filteredDivs)
                 {
@@ -394,12 +399,12 @@ namespace TmCGPTD.Models
                                                .Replace("<strong>", $"**")
                                                .Replace("</strong>", $"**")
                                                .Replace("<hr>", $"{br}")
-                                               .Replace("<h2>", $"{br}")
-                                               .Replace("</h2>", $"{br}")
-                                               .Replace("<h3>", $"{br}")
-                                               .Replace("</h3>", $"{br}")
-                                               .Replace("<h4>", $"{br}")
-                                               .Replace("</h4>", $"{br}")
+                                               .Replace("<h2>", $"{br}**")
+                                               .Replace("</h2>", $"**{br}")
+                                               .Replace("<h3>", $"{br}**")
+                                               .Replace("</h3>", $"**{br}")
+                                               .Replace("<h4>", $"{br}**")
+                                               .Replace("</h4>", $"**{br}")
                                                .Replace("<ol>", $"{br}")
                                                .Replace("</ol>", $"{br}")
                                                .Replace("<ul>", $"{br}")
@@ -422,8 +427,6 @@ namespace TmCGPTD.Models
 
                         pattern = "(\r\n|\n|\r){3,}";
                         htmlString = Regex.Replace(htmlString, pattern, $"{br}{br}");
-
-
 
                         // 置換処理が完了した後、再度HTMLドキュメントに戻す
                         var modifiedHtmlDoc = new HtmlAgilityPack.HtmlDocument();
