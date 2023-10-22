@@ -22,11 +22,8 @@ namespace TmCGPTD.ViewModels
 
         private async void LicenseLoad()
         {
-#if WINDOWS
             using var streamReader = new StreamReader(AssetLoader.Open(new Uri("avares://TmCGPTD/Assets/License.txt")));
-#else
-            using var streamReader = new StreamReader(AvaloniaLocator.Current.GetService<IAssetLoader>()!.Open(new Uri("avares://TmCGPTD/Assets/License.txt")));
-#endif
+
             LicenseText = await streamReader.ReadToEndAsync();
         }
     }

@@ -32,20 +32,7 @@ namespace TmCGPTD.Views
             _stackPanel = this.FindControl<StackPanel>("ProgramTitleBar")!;
             _inputTokenTextBlock = this.FindControl<TextBlock>("InputTokenTextBlock")!;
 
-            if (OperatingSystem.IsMacOS())
-            {
-                _stackPanel.HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center;
-#if MAC
-    _editorViewType = typeof(MacEditorView);
-#endif
-                _inputTokenTextBlock.Margin = new Avalonia.Thickness(0, 0, 5, 5);
-            }
-            else
-            {
-#if WINDOWS
-    _editorViewType = typeof(EditorView);
-#endif
-            }
+            _editorViewType = typeof(EditorView);
 
 
             _syncLogBlock = this.FindControl<TextBlock>("SyncLogText")!;

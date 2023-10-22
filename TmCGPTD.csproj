@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
-        <TargetFramework>net6.0</TargetFramework>
+        <TargetFramework>net7.0</TargetFramework>
         <SelfContained>true</SelfContained>
         <RuntimeIdentifiers>win-x64;osx-x64;linux-x64</RuntimeIdentifiers>
         <Nullable>enable</Nullable>
@@ -14,19 +14,15 @@
         <AssemblyName>TmCGPTD</AssemblyName>
         <RootNameSpace>TmCGPTD</RootNameSpace>
     </PropertyGroup>
-	
     <PropertyGroup Condition="'$(TargetFramework)' == 'net6.0'">
         <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
     </PropertyGroup>
-	
-	<PropertyGroup Condition="'$(OS)' == 'Windows_NT'">
-		<OutputType>WinExe</OutputType>
-	</PropertyGroup>
-	
-	<PropertyGroup Condition="'$(OS)' != 'Windows_NT'">
-		<OutputType>Exe</OutputType>
-	</PropertyGroup>
-	
+    <PropertyGroup Condition="'$(OS)' == 'Windows_NT'">
+        <OutputType>WinExe</OutputType>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(OS)' != 'Windows_NT'">
+        <OutputType>Exe</OutputType>
+    </PropertyGroup>
     <ItemGroup>
         <AvaloniaResource Include="Assets\**" />
         <AvaloniaXaml Remove="Helper\**" />
@@ -35,7 +31,7 @@
         <None Remove="Helper\**" />
         <None Remove=".gitignore" />
         <AvaloniaResource Include="supabaseConfig.json" />
-		<AvaloniaResource Include="appsettings.json" />
+        <AvaloniaResource Include="appsettings.json" />
     </ItemGroup>
     <ItemGroup>
         <Content Include="Assets\TmCGPTD.ico" />
@@ -44,99 +40,54 @@
     <ItemGroup>
         <TrimmerRootDescriptor Include="Roots.xml" />
     </ItemGroup>
-
     <ItemGroup>
-        <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.1" />
-        <PackageReference Include="CsvHelper" Version="30.0.1" />
-        <PackageReference Include="HtmlAgilityPack" Version="1.11.54" />
-        <PackageReference Include="Microsoft.DeepDev.TokenizerLib" Version="1.3.2" />
-        <PackageReference Include="ReverseMarkdown" Version="3.25.0" />
-        <PackageReference Include="supabase-csharp" Version="0.13.6" />
-        <PackageReference Include="System.Data.SQLite" Version="1.0.118" />
+        <PackageReference Include="Avalonia"
+                          Version="11.0.5" />
+        <PackageReference Include="Avalonia.AvaloniaEdit"
+                          Version="11.0.1" />
+        <PackageReference Include="Avalonia.Desktop"
+                          Version="11.0.5" />
+        <!-- Condition below is needed to remove Avalonia.Diagnostics package from build output in Release configuration. -->
+        <PackageReference Condition="'$(Configuration)' == 'Debug'"
+                          Include="Avalonia.Diagnostics"
+                          Version="11.0.5" />
+        <PackageReference Include="Avalonia.Diagnostics"
+                          Condition="'$(Configuration)'=='Debug64'"
+                          Version="11.0.1" />
+        <PackageReference Include="Avalonia.Xaml.Interactivity"
+                          Version="11.0.2" />
+        <PackageReference Include="CefGlue.Avalonia"
+                          Version="117.5938.2-avalonia11" />
+        <PackageReference Include="AvaloniaEdit.TextMate"
+                          Version="11.0.1" />
+        <PackageReference Include="DialogHost.Avalonia"
+                          Version="0.7.7" />
+        <PackageReference Include="FluentAvaloniaUI"
+                          Version="2.0.4" />
+        <PackageReference Include="CommunityToolkit.Mvvm"
+                          Version="8.2.1" />
+        <PackageReference Include="CsvHelper"
+                          Version="30.0.1" />
+        <PackageReference Include="HtmlAgilityPack"
+                          Version="1.11.54" />
+        <PackageReference Include="Microsoft.DeepDev.TokenizerLib"
+                          Version="1.3.2" />
+        <PackageReference Include="ReverseMarkdown"
+                          Version="3.25.0" />
+        <PackageReference Include="supabase-csharp"
+                          Version="0.13.6" />
+        <PackageReference Include="System.Data.SQLite"
+                          Version="1.0.118" />
     </ItemGroup>
-
-	<ItemGroup Condition="'$(OS)' == 'Windows_NT'">
-		<PackageReference Include="Avalonia" Version="11.0.5" />
-		<PackageReference Include="Avalonia.AvaloniaEdit" Version="11.0.1" />
-		<PackageReference Include="Avalonia.Desktop" Version="11.0.5" />
-		<!-- Condition below is needed to remove Avalonia.Diagnostics package from build output in Release configuration. -->
-		<PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" Version="11.0.5" />
-		<PackageReference Include="Avalonia.Diagnostics" Condition="'$(Configuration)'=='Debug64'" Version="11.0.1">
-		</PackageReference>
-		<PackageReference Include="Avalonia.Xaml.Interactivity" Version="11.0.2" />
-		<PackageReference Include="CefGlue.Avalonia" Version="117.5938.2-avalonia11" />
-		<PackageReference Include="AvaloniaEdit.TextMate" Version="11.0.1" />
-		<PackageReference Include="DialogHost.Avalonia" Version="0.7.7" />
-		<PackageReference Include="FluentAvaloniaUI" Version="2.0.4" />
-		<AvaloniaXaml Remove="src\Views\Mac\**" />
-		<Compile Remove="src\Views\Mac\**" />
-		<EmbeddedResource Remove="src\Views\Mac\**" />
-		<Compile Remove="src\Views\Mac\*.cs" />
-		<AvaloniaXaml Remove="src\AppMac.axaml" />
-        <Compile Remove="src\AppMac.axaml.cs" />
-	</ItemGroup>
-
-	<ItemGroup Condition="'$(OS)' != 'Windows_NT'">
-        <PackageReference Include="Avalonia" Version="11.0.0-preview6" />
-        <PackageReference Include="Avalonia.Desktop" Version="11.0.0-preview6" />
-        <!--Condition below is needed to remove Avalonia.Diagnostics package from build output in Release configuration.-->
-        <PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" Version="11.0.0-preview6" />
-        <PackageReference Include="Avalonia.Diagnostics" Condition="'$(Configuration)'=='Debug64'" Version="11.0.0-preview6">
-        </PackageReference>
-        <PackageReference Include="Avalonia.Xaml.Interactivity" Version="11.0.0-preview6" />
-		<PackageReference Include="CefGlue.Avalonia" Version="106.5249.7-avalonia11" />
-        <PackageReference Include="DialogHost.Avalonia" Version="0.7.3" />
-        <PackageReference Include="FluentAvaloniaUI" Version="2.0.0-preview6fork2" />
-		<Compile Remove="src\Views\Windows\Options\HotKeyDisplayView.axaml.cs" />
-		<Compile Remove="src\Views\Windows\Options\ApiSettingsView.axaml.cs" />
-		<Compile Remove="src\Views\Windows\Options\AppSettingsView.axaml.cs" />
-		<Compile Remove="src\Views\Windows\Options\LicenseView.axaml.cs" />
-		<Compile Remove="src\Views\Windows\Options\WebAppView.axaml.cs" />
-		<Compile Remove="src\Views\Windows\Editors\Editor4AvalonEditView.axaml.cs" />
-		<Compile Remove="src\Views\Windows\Editors\EditorView.axaml.cs" />
-		<Compile Remove="src\Views\Windows\Editors\Editor2AvalonEditView.axaml.cs" />
-		<Compile Remove="src\Views\Windows\Editors\EditorFiveView.axaml.cs" />
-		<Compile Remove="src\Views\Windows\Editors\Editor3_2AvalonEditView.axaml.cs" />
-		<Compile Remove="src\Views\Windows\Editors\EditorThreeView.axaml.cs" />
-		<Compile Remove="src\Views\Windows\Editors\Editor4TextBoxView.axaml.cs" />
-		<Compile Remove="src\Views\Windows\Editors\EditorOneView.axaml.cs" />
-		<Compile Remove="src\Views\Windows\Editors\Editor3_2TextBoxView.axaml.cs" />
-		<Compile Remove="src\Views\Windows\Editors\Editor2TextBoxView.axaml.cs" />
-		<AvaloniaXaml Remove="src\Views\Windows\DataGridView.axaml" />
-		<AvaloniaXaml Remove="src\Views\Windows\OptionSettingsView.axaml" />
-		<AvaloniaXaml Remove="src\Views\Windows\MainView.axaml" />
-		<AvaloniaXaml Remove="src\Views\Windows\Options\LicenseView.axaml" />
-		<AvaloniaXaml Remove="src\Views\Windows\Options\AppSettingsView.axaml" />
-		<AvaloniaXaml Remove="src\Views\Windows\Options\ApiSettingsView.axaml" />
-		<AvaloniaXaml Remove="src\Views\Windows\Options\HotKeyDisplayView.axaml" />
-		<AvaloniaXaml Remove="src\Views\Windows\Options\WebAppView.axaml" />
-		<AvaloniaXaml Remove="src\Views\Windows\Editors\EditorView.axaml" />
-		<AvaloniaXaml Remove="src\Views\Windows\Editors\Editor4TextBoxView.axaml" />
-		<AvaloniaXaml Remove="src\Views\Windows\Editors\EditorOneView.axaml" />
-		<AvaloniaXaml Remove="src\Views\Windows\Editors\EditorThreeView.axaml" />
-		<AvaloniaXaml Remove="src\Views\Windows\Editors\Editor2AvalonEditView.axaml" />
-		<AvaloniaXaml Remove="src\Views\Windows\Editors\Editor3_2AvalonEditView.axaml" />
-		<AvaloniaXaml Remove="src\Views\Windows\Editors\EditorFiveView.axaml" />
-		<AvaloniaXaml Remove="src\Views\Windows\Editors\Editor4AvalonEditView.axaml" />
-		<AvaloniaXaml Remove="src\Views\Windows\Editors\Editor2TextBoxView.axaml" />
-		<AvaloniaXaml Remove="src\Views\Windows\Editors\Editor3_2TextBoxView.axaml" />
-		<Compile Remove="src\Views\Windows\DataGridView.axaml.cs" />
-		<Compile Remove="src\Views\Windows\MainView.axaml.cs" />
-		<Compile Remove="src\Views\Windows\OptionSettingsView.axaml.cs" />
-		<AvaloniaXaml Remove="src\AppWindows.axaml" />
-		<Compile Remove="src\AppWindows.axaml.cs" />
-		<AvaloniaResource Remove="Assets\StylesWindows.axaml" />
-		<AvaloniaXaml Remove="Assets\StylesWindows.axaml" />
-		<Compile Remove="src\Views\Class\DocumentTextBindingBehavior.cs" />
-		<Compile Remove="src\Views\Class\ElementGenerator.cs" />
-	</ItemGroup>
-
+    <ItemGroup>
+        <Compile Update="src\App.axaml.cs">
+            <DependentUpon>App.axaml</DependentUpon>
+        </Compile>
+    </ItemGroup>
     <PropertyGroup Condition="'$(OS)' == 'Windows_NT'">
         <DefineConstants>WINDOWS</DefineConstants>
     </PropertyGroup>
-	
     <PropertyGroup Condition="'$(OS)' != 'Windows_NT'">
         <DefineConstants>MAC</DefineConstants>
     </PropertyGroup>
-
 </Project>
