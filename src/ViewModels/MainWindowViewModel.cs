@@ -107,7 +107,7 @@ namespace TmCGPTD.ViewModels
 
         private void ResetApiSettings()
         {
-            ApiMaxTokens = 2048;
+            ApiMaxTokens = 120000;
             ApiTemperature = 1;
             ApiTopP = 1.0;
             ApiN = 1;
@@ -120,7 +120,7 @@ namespace TmCGPTD.ViewModels
             ApiModel = "gpt-3.5-turbo";
             ApiUrl = "https://api.openai.com/v1/chat/completions";
             //ApiKey = "";
-            MaxContentLength = 3072;
+            MaxContentLength = 120000;
 
             ApiMaxTokensIsEnable = false;
             ApiTemperatureIsEnable = false;
@@ -137,6 +137,7 @@ namespace TmCGPTD.ViewModels
 
         public List<string> ModelList { get; } = new List<string>
         {
+            "gpt-4-1106-preview",
             "gpt-4",
             "gpt-4-32k",
             "gpt-4-32k-0613",

@@ -74,26 +74,26 @@ namespace TmCGPTD.Models
             if (!AppSettings.Instance.ApiMaxTokensIsEnable) { maxTokens = 0; }
 
             int maxContentLength = AppSettings.Instance.MaxContentLength;
-            if (!AppSettings.Instance.MaxContentLengthIsEnable) { maxContentLength = 3072; }
+            if (!AppSettings.Instance.MaxContentLengthIsEnable) { maxContentLength = 125000; }
 
             // 制限文字数の計算
-            int limitLength = AppSettings.Instance.ApiMaxTokensIsEnable ? inputTokenCount + maxTokens + 400 : maxContentLength;
+            int limitLength = AppSettings.Instance.ApiMaxTokensIsEnable ? inputTokenCount + maxTokens + 1500 : maxContentLength;
 
             // 履歴を逆順にして保存
             List<Dictionary<string, object>> reversedHistoryList = new List<Dictionary<string, object>>(conversationHistory!);
             reversedHistoryList.Reverse();
 
             // ----------------------------------------
-            // 入力文字列 + maxTokensが4096を超えた場合
-            if ((inputTokenCount + maxTokens) > 4096)
+            // 入力文字列 + maxTokensが128000を超えた場合
+            if ((inputTokenCount + maxTokens) > 128000)
             {
                 if (AppSettings.Instance.ApiMaxTokensIsEnable)
                 {
-                    throw new Exception($"The values for input text ({inputTokenCount}) + max_tokens ({maxTokens}) exceeds 4097 tokens. Please reduce by at least {(inputTokenCount + maxTokens) - 4097} tokens.{Environment.NewLine}");
+                    throw new Exception($"The values for input text ({inputTokenCount}) + max_tokens ({maxTokens}) exceeds 128k tokens. Please reduce by at least {(inputTokenCount + maxTokens) - 128000} tokens.{Environment.NewLine}");
                 }
                 else
                 {
-                    throw new Exception($"The values for input text ({inputTokenCount}) exceeds 4097 tokens. Please reduce by at least {inputTokenCount - 4096} tokens.{Environment.NewLine}");
+                    throw new Exception($"The values for input text ({inputTokenCount}) exceeds 128k tokens. Please reduce by at least {inputTokenCount - 128000} tokens.{Environment.NewLine}");
                 }
             }
 
@@ -482,10 +482,10 @@ namespace TmCGPTD.Models
 
                     var options = new Dictionary<string, object>
                 {
-                    { "model", "gpt-3.5-turbo" },
+                    { "model", "gpt-4-1106-preview" },
                     { "messages", new List<Dictionary<string, object>>
                         {
-                            new Dictionary<string, object> { { "role", "system" }, { "content", "You are a professional editor. Please summarize the following chat log in about 300 tokens using the language in which the text is written. For a text that includes multiple conversations, the conversation set that appears at the beginning is the most important." } },
+                            new Dictionary<string, object> { { "role", "system" }, { "content", "You are a professional editor. Please summarize the following chat log in about 1000 tokens using the language in which the text is written. For a text that includes multiple conversations, the conversation set that appears at the beginning is the most important." } },
                             new Dictionary<string, object> { { "role", "user" }, { "content", forCompMes } }
                         }
                     }
@@ -536,7 +536,7 @@ namespace TmCGPTD.Models
 
                 var options = new Dictionary<string, object>
                 {
-                    { "model", "gpt-3.5-turbo" },
+                    { "model", "gpt-4-1106-preview" },
                     { "messages", new List<Dictionary<string, object>>
                         {
                             new Dictionary<string, object> { { "role", "system" }, { "content",

@@ -52,7 +52,7 @@ namespace TmCGPTD.ViewModels
                         const formTag = mainTag.querySelector('form');
                         const button = formTag.querySelector('button');
                         button.click();";
-                //await _browser.EvaluateJavaScript<string>(script);
+                // await _browser.EvaluateJavaScript<string>(script);
             }
             catch (Exception ex)
             {

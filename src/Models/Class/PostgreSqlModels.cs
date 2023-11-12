@@ -4,7 +4,7 @@ using System;
 
 namespace TmCGPTD.Models
 {
-    public static class PostageSqlModels
+    public static class PostgreSqlModels
     {
         // チャットルーム-----------------------------------------------------------------------------------------------------------------
         [Table("chatrooms")]

@@ -51,6 +51,12 @@ namespace TmCGPTD.Views
             rPane!.SelectionChanged += OnRightListBoxSelectionChanged!;
             lPane.SelectedIndex = 0;
             rPane.SelectedIndex = 0;
+
+            if (OperatingSystem.IsMacOS())
+            {
+                _stackPanel.HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center;
+            }
+
         }
 
         private void OnRightListBoxSelectionChanged(object sender, SelectionChangedEventArgs e)

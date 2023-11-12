@@ -1,0 +1,26 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            // IntelliSense を使用して、C# デバッグに存在する属性を確認します
+            // 既存の属性の説明にホバーを使用する
+            // 詳細については、https://github.com/dotnet/vscode-csharp/blob/main/debugger-launchjson.md を参照してください
+            "name": ".NET Core Launch (console)",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build",
+            // ターゲット フレームワークを変更した場合は、プログラム パスを更新するようにしてください。
+            "program": "${workspaceFolder}/bin/Debug/net7.0/osx-arm64/TmCGPTD.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            // 'console' フィールドの詳細については、https://aka.ms/VSCode-CS-LaunchJson-Console を参照してください
+            "console": "internalConsole",
+            "stopAtEntry": false
+        },
+        {
+            "name": ".NET Core Attach",
+            "type": "coreclr",
+            "request": "attach"
+        }
+    ]
+}
