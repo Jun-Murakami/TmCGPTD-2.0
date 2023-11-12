@@ -1562,13 +1562,21 @@ namespace TmCGPTD.Models
                         .Where(x => x.Id == id)
                         .Delete();
                 }
+
+
+                using SqliteConnection connection = new($"Data Source={AppSettings.Instance.DbPath};");
+                await connection.OpenAsync();
+
+                string sql = $"DELETE FROM editorlog WHERE id IN ({string.Join(",", DeleteList)})";
+                using var commandDel = new SqliteCommand(sql, connection);
+                await commandDel.ExecuteNonQueryAsync();
             }
-
-            using SqliteConnection connection = new SqliteConnection($"Data Source={AppSettings.Instance.DbPath};");
-            await connection.OpenAsync();
-
-            using (SqliteCommand command = new SqliteCommand("SELECT COUNT(*) FROM editorlog", connection))
+            else
             {
+                using SqliteConnection connection = new SqliteConnection($"Data Source={AppSettings.Instance.DbPath};");
+                await connection.OpenAsync();
+
+                using SqliteCommand command = new SqliteCommand("SELECT COUNT(*) FROM editorlog", connection);
                 var rowCount = (long?)command.ExecuteScalar();
 
                 if (rowCount > 200)
@@ -1578,7 +1586,7 @@ namespace TmCGPTD.Models
                     await deleteCommand.ExecuteNonQueryAsync();
                 }
             }
-            await connection.CloseAsync();
+
             // インメモリをいったん閉じてまた開く
             await memoryConnection!.CloseAsync();
             await DbLoadToMemoryAsync();

@@ -114,15 +114,6 @@ namespace TmCGPTD.Views
                 AppSettings.Instance.EditorFontSize = settings.EditorFontSize > 0 ? settings.EditorFontSize : 1;
                 VMLocator.MainViewModel.SelectedPhraseItem = settings.PhrasePreset;
 
-                if (OperatingSystem.IsMacOS())
-                {
-                    VMLocator.EditorViewModel.EditorModeIsChecked = false;
-                }
-                else
-                {
-                    VMLocator.EditorViewModel.EditorModeIsChecked = true;
-                }
-
                 // Get the current culture info
                 var cultureInfo = CultureInfo.CurrentCulture;
                 if (cultureInfo.Name == "ja-JP")
@@ -193,12 +184,6 @@ namespace TmCGPTD.Views
                 VMLocator.DataGridViewModel.ChatList = await _dbProcess.SearchChatDatabaseAsync();
                 VMLocator.DataGridViewModel.SelectedItemIndex = -1;
 
-                if (!OperatingSystem.IsMacOS())
-                {
-                    VMLocator.EditorViewModel.EditorModeIsChecked = settings.EditorMode;
-                }
-                
-                VMLocator.EditorViewModel.SelectedLangIndex = settings.SyntaxHighlighting;
                 VMLocator.EditorViewModel.EditorSeparateMode = settings.SeparatorMode;
 
                 VMLocator.EditorViewModel.SelectedEditorLogIndex = -1;
@@ -332,10 +317,8 @@ namespace TmCGPTD.Views
             settings.X = this.Position.X;
             settings.Y = this.Position.Y;
 
-            settings.EditorMode = VMLocator.EditorViewModel.EditorModeIsChecked;
             settings.EditorFontSize = VMLocator.EditorViewModel.EditorCommonFontSize;
             settings.PhrasePreset = VMLocator.MainViewModel.SelectedPhraseItem!;
-            settings.SyntaxHighlighting = VMLocator.EditorViewModel.SelectedLangIndex;
             settings.PhraseExpanderMode = VMLocator.MainViewModel.PhraseExpanderIsOpened;
             settings.Language = VMLocator.AppSettingsViewModel.SelectedLanguage;
 

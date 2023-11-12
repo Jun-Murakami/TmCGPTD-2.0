@@ -16,7 +16,6 @@ using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Reactive;
 using Microsoft.DeepDev;
-using TextMateSharp.Grammars;
 
 namespace TmCGPTD.ViewModels
 {
@@ -29,8 +28,8 @@ namespace TmCGPTD.ViewModels
         public EditorViewModel()
         {
             EditorCommonFontSize = 16;
-            EditorModeIsChecked = true;
             EditorSeparateMode = 5;
+            SeparatorResetFive();
 
             InitializeTokenizer();
             TextClear();
@@ -112,33 +111,6 @@ namespace TmCGPTD.ViewModels
             {
                 SelectedEditorLogIndex++;
             }
-        }
-
-        private ObservableCollection<Language>? _languages;
-        public ObservableCollection<Language>? Languages
-        {
-            get => _languages;
-            set => SetProperty(ref _languages, value);
-        }
-        private Language? _selectedLang;
-        public Language? SelectedLang
-        {
-            get => _selectedLang;
-            set => SetProperty(ref _selectedLang, value);
-        }
-
-        private int _selectedLangIndex;
-        public int SelectedLangIndex
-        {
-            get => _selectedLangIndex;
-            set => SetProperty(ref _selectedLangIndex, value);
-        }
-
-        private bool _editorModeIsChecked;
-        public bool EditorModeIsChecked
-        {
-            get => _editorModeIsChecked;
-            set => SetProperty(ref _editorModeIsChecked, value);
         }
 
         private ObservableCollection<PromptTemplate>? _templateItems;

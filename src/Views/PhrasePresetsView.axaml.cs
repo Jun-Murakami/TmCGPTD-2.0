@@ -1,8 +1,6 @@
 using Avalonia.Controls;
-using Avalonia.Input;
 using Avalonia.Interactivity;
 using System;
-using System.Diagnostics;
 using TmCGPTD.ViewModels;
 
 namespace TmCGPTD.Views
@@ -113,11 +111,6 @@ namespace TmCGPTD.Views
                     focusedTextBox.Text = focusedTextBox.Text.Insert(start, textBox.Text);
                     focusedTextBox.CaretIndex = start + textBox.Text.Length;
                 }
-                else if (focusedControl is AvaloniaEdit.Editing.TextArea focusedTextArea)
-                {
-                        focusedTextArea.Selection.ReplaceSelectionWithText(textBox.Text);
-                }
-
             }
         }
     }

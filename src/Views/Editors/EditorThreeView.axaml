@@ -28,8 +28,11 @@
                       Height="2"
                       Background="rgb(57, 58, 70)"
                       Focusable="False" />
-        <ui:Frame Grid.Row="2"
-                  Name="Editor3_2Frame" />
+		<TextBox Grid.Row="2"
+                 Name="Editor3_2"
+                 AcceptsReturn="True"
+                 Text="{Binding Source={StaticResource VMLocator}, Path=EditorViewModel.Editor2Text,Mode=TwoWay}"
+                 FontSize="{Binding Source={StaticResource VMLocator}, Path=EditorViewModel.EditorCommonFontSize}" />
         <GridSplitter Grid.Row="3"
                       Height="2"
                       Background="rgb(57, 58, 70)"

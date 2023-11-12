@@ -23,8 +23,6 @@
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
                 <TextBlock Grid.Column="0"
                            Text="Template :"
@@ -53,28 +51,6 @@
                            Source="/Assets/iconSave.png"
                            VerticalAlignment="Center" />
                 </Button>
-                <ComboBox Grid.Column="3"
-                          ToolTip.Tip="Select language for syntax highlighting"
-                          PlaceholderText="Syntax Highlithing"
-                          ItemsSource="{Binding Languages}"
-                          SelectedIndex="{Binding SelectedLangIndex, Mode=TwoWay}"
-                          SelectedItem="{Binding SelectedLang, Mode=TwoWay}"
-                          VerticalAlignment="Center"
-                          Width="186">
-                    <ComboBox.ItemTemplate>
-                        <DataTemplate>
-                            <TextBlock Text="{Binding Aliases[0]}" />
-                        </DataTemplate>
-                    </ComboBox.ItemTemplate>
-                </ComboBox>
-                <ToggleSwitch Grid.Column="4"
-                              ToolTip.Tip="Switch editor mode"
-                              IsChecked="{Binding EditorModeIsChecked}"
-                              OnContent="Code"
-                              OffContent="Text"
-                              Margin="6,0,0,5"
-                              VerticalAlignment="Center"
-                              HotKey="Ctrl+Divide" />
             </Grid>
         </Border>
         <ui:Frame Grid.Row="1"
