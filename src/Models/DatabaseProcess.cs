@@ -6,7 +6,6 @@ using System.Text.Json;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Data;
-using System.Data.Entity.Core.Common.CommandTrees.ExpressionBuilder;
 using Microsoft.Data.Sqlite;
 using System.Globalization;
 using System.IO;
@@ -50,7 +49,7 @@ namespace TmCGPTD.Models
         // SQL db初期化--------------------------------------------------------------
         public static void CreateDatabase()
         {
-            using var connection = new SqliteConnection($"Data Source={AppSettings.Instance.DbPath};Version=3;");
+            using var connection = new SqliteConnection($"Data Source={AppSettings.Instance.DbPath};");
             string sql = "CREATE TABLE phrase (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL DEFAULT '', phrase TEXT NOT NULL DEFAULT '', date DATE);";
 
             using var command = new SqliteCommand(sql, connection);
@@ -105,7 +104,7 @@ namespace TmCGPTD.Models
             try
             {
                 // SQLiteデータベースに接続
-                using SqliteConnection connection = new($"Data Source={AppSettings.Instance.DbPath};Version=3;");
+                using SqliteConnection connection = new($"Data Source={AppSettings.Instance.DbPath};");
                 await connection.OpenAsync();
 
                 bool categoryExists = false;
@@ -260,7 +259,7 @@ namespace TmCGPTD.Models
         // SQL dbファイルをメモリにロード--------------------------------------------------------------
         public async Task DbLoadToMemoryAsync()
         {
-            var fileConnection = new SqliteConnection($"Data Source={AppSettings.Instance.DbPath};Version=3;");
+            var fileConnection = new SqliteConnection($"Data Source={AppSettings.Instance.DbPath};");
             fileConnection.Open();
             // メモリ上のDBファイルを作成
             memoryConnection = new SqliteConnection("Data Source=:memory:");
@@ -292,7 +291,7 @@ namespace TmCGPTD.Models
         {
             DateTime now = DateTime.Now;
             now = now.AddTicks(-(now.Ticks % TimeSpan.TicksPerSecond));  // ミリ秒以下を切り捨てる
-            using var connection = new SqliteConnection($"Data Source={AppSettings.Instance.DbPath};Version=3;");
+            using var connection = new SqliteConnection($"Data Source={AppSettings.Instance.DbPath};");
             await connection.OpenAsync();
 
             using var transaction = await connection.BeginTransactionAsync();
@@ -375,7 +374,7 @@ namespace TmCGPTD.Models
         // 定型句プリセットRename--------------------------------------------------------------
         public async Task UpdatePhrasePresetNameAsync(string oldName, string newName)
         {
-            using var connection = new SqliteConnection($"Data Source={AppSettings.Instance.DbPath};Version=3;");
+            using var connection = new SqliteConnection($"Data Source={AppSettings.Instance.DbPath};");
             await connection.OpenAsync();
 
             using var transaction = await connection.BeginTransactionAsync();
@@ -417,7 +416,7 @@ namespace TmCGPTD.Models
         // 定型句プリセットUpdate--------------------------------------------------------------
         public async Task UpdatePhrasePresetAsync(string name, string phrasesText)
         {
-            using var connection = new SqliteConnection($"Data Source={AppSettings.Instance.DbPath};Version=3;");
+            using var connection = new SqliteConnection($"Data Source={AppSettings.Instance.DbPath};");
             await connection.OpenAsync();
 
             using var transaction = await connection.BeginTransactionAsync();
@@ -461,7 +460,7 @@ namespace TmCGPTD.Models
         {
             try
             {
-                using var connection = new SqliteConnection($"Data Source={AppSettings.Instance.DbPath};Version=3;");
+                using var connection = new SqliteConnection($"Data Source={AppSettings.Instance.DbPath};");
                 await connection.OpenAsync();
 
                 using var transaction = await connection.BeginTransactionAsync(System.Data.IsolationLevel.Serializable);
@@ -584,7 +583,7 @@ namespace TmCGPTD.Models
                 using var csvReader = new CsvReader(reader, config);
                 csvReader.Read(); // ヘッダー行をスキップ
 
-                using var con = new SqliteConnection($"Data Source={AppSettings.Instance.DbPath};Version=3;");
+                using var con = new SqliteConnection($"Data Source={AppSettings.Instance.DbPath};");
                 await con.OpenAsync();
                 using (var transaction = await con.BeginTransactionAsync())
                 {
@@ -814,7 +813,7 @@ namespace TmCGPTD.Models
         // チャットログ削除--------------------------------------------------------------
         public async Task DeleteChatLogDatabaseAsync(long chatId)
         {
-            using (var connection = new SqliteConnection($"Data Source={AppSettings.Instance.DbPath};Version=3;"))
+            using (var connection = new SqliteConnection($"Data Source={AppSettings.Instance.DbPath};"))
             {
                 connection.Open();
                 using var transaction = await connection.BeginTransactionAsync();
@@ -875,7 +874,7 @@ namespace TmCGPTD.Models
                                                 .Update();
                 }
 
-                using var connection = new SqliteConnection($"Data Source={AppSettings.Instance.DbPath};Version=3;");
+                using var connection = new SqliteConnection($"Data Source={AppSettings.Instance.DbPath};");
                 await connection.OpenAsync();
 
                 string query = "UPDATE chatlog SET title=@title WHERE id = @id";
@@ -908,7 +907,7 @@ namespace TmCGPTD.Models
                                                 .Update();
                 }
 
-                using var connection = new SqliteConnection($"Data Source={AppSettings.Instance.DbPath};Version=3;");
+                using var connection = new SqliteConnection($"Data Source={AppSettings.Instance.DbPath};");
                 await connection.OpenAsync();
 
                 string query = "UPDATE chatlog SET category=@category WHERE id = @id";
@@ -1036,7 +1035,7 @@ namespace TmCGPTD.Models
                 }
             }
 
-            using var connection = new SqliteConnection($"Data Source={AppSettings.Instance.DbPath};Version=3;");
+            using var connection = new SqliteConnection($"Data Source={AppSettings.Instance.DbPath};");
             await connection.OpenAsync();
             // トランザクションを開始する
             using var transaction = await connection.BeginTransactionAsync();
@@ -1087,7 +1086,7 @@ namespace TmCGPTD.Models
             };
             string finalText = string.Join(Environment.NewLine + "<---TMCGPT--->" + Environment.NewLine, inputText);
 
-            using var connection = new SqliteConnection($"Data Source={AppSettings.Instance.DbPath};Version=3;");
+            using var connection = new SqliteConnection($"Data Source={AppSettings.Instance.DbPath};");
             await connection.OpenAsync();
 
             using var transaction = await connection.BeginTransactionAsync();
@@ -1132,7 +1131,7 @@ namespace TmCGPTD.Models
         // Template Update--------------------------------------------------------------
         public async Task UpdateTemplateAsync(string title)
         {
-            using var connection = new SqliteConnection($"Data Source={AppSettings.Instance.DbPath};Version=3;");
+            using var connection = new SqliteConnection($"Data Source={AppSettings.Instance.DbPath};");
             await connection.OpenAsync();
 
             using var transaction = await connection.BeginTransactionAsync();
@@ -1186,7 +1185,7 @@ namespace TmCGPTD.Models
         // Template Rename--------------------------------------------------------------
         public async Task UpdateTemplateNameAsync(string oldName, string newName)
         {
-            using var connection = new SqliteConnection($"Data Source={AppSettings.Instance.DbPath};Version=3;");
+            using var connection = new SqliteConnection($"Data Source={AppSettings.Instance.DbPath};");
             await connection.OpenAsync();
 
             using var transaction = await connection.BeginTransactionAsync();
@@ -1230,7 +1229,7 @@ namespace TmCGPTD.Models
         {
             try
             {
-                using var connection = new SqliteConnection($"Data Source={AppSettings.Instance.DbPath};Version=3;");
+                using var connection = new SqliteConnection($"Data Source={AppSettings.Instance.DbPath};");
                 await connection.OpenAsync();
 
                 using var transaction = await connection.BeginTransactionAsync(System.Data.IsolationLevel.Serializable);
@@ -1422,7 +1421,7 @@ namespace TmCGPTD.Models
             DateTime date = DateTime.Now;
             date = date.AddTicks(-(date.Ticks % TimeSpan.TicksPerSecond));
 
-            using var connection = new SqliteConnection($"Data Source={AppSettings.Instance.DbPath};Version=3;");
+            using var connection = new SqliteConnection($"Data Source={AppSettings.Instance.DbPath};");
             await connection.OpenAsync();
 
             using var transaction = await connection.BeginTransactionAsync();
@@ -1565,7 +1564,7 @@ namespace TmCGPTD.Models
                 }
             }
 
-            using SqliteConnection connection = new SqliteConnection($"Data Source={AppSettings.Instance.DbPath};Version=3;");
+            using SqliteConnection connection = new SqliteConnection($"Data Source={AppSettings.Instance.DbPath};");
             await connection.OpenAsync();
 
             using (SqliteCommand command = new SqliteCommand("SELECT COUNT(*) FROM editorlog", connection))
@@ -1647,7 +1646,7 @@ namespace TmCGPTD.Models
                 jsonLastConversationHistory = "";
             }
 
-            using (var connection = new SqliteConnection($"Data Source={AppSettings.Instance.DbPath};Version=3;"))
+            using (var connection = new SqliteConnection($"Data Source={AppSettings.Instance.DbPath};"))
             {
                 connection.Open();
                 // トランザクションを開始する
@@ -1835,7 +1834,7 @@ namespace TmCGPTD.Models
             try
             {
                 // データベースに接続
-                using (var connection = new SqliteConnection($"Data Source={selectedFilePath};Version=3;"))
+                using (var connection = new SqliteConnection($"Data Source={selectedFilePath};"))
                 {
                     connection.Open();
 
