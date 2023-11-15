@@ -245,7 +245,7 @@ namespace TmCGPTD.Models
             {
                 var dialog = new ContentDialog()
                 {
-                    Title = $"Error: {ex}",
+                    Title = $"Error: {ex.Message + ex.StackTrace}",
                     PrimaryButtonText = "OK"
                 };
                 await VMLocator.MainViewModel.ContentDialogShowAsync(dialog);
@@ -273,7 +273,7 @@ namespace TmCGPTD.Models
             {
                 var dialog = new ContentDialog()
                 {
-                    Title = $"Error: {ex}",
+                    Title = $"Error: {ex.Message + ex.StackTrace}",
                     PrimaryButtonText = "Ok"
                 };
                 await VMLocator.MainViewModel.ContentDialogShowAsync(dialog);
@@ -391,7 +391,8 @@ namespace TmCGPTD.Models
                 using var command = new SqliteCommand
                 {
                     CommandText = "UPDATE phrase SET name = @newName WHERE name = @oldName;",
-                    Connection = connection
+                    Connection = connection,
+                    Transaction = (SqliteTransaction)transaction
                 };
 
                 command.Parameters.AddWithValue("@oldName", oldName);
@@ -433,7 +434,8 @@ namespace TmCGPTD.Models
                 using var command = new SqliteCommand
                 {
                     CommandText = "UPDATE phrase SET phrase = @phrasesText WHERE name = @name;",
-                    Connection = connection
+                    Connection = connection,
+                    Transaction = (SqliteTransaction)transaction
                 };
 
                 command.Parameters.AddWithValue("@name", name);
@@ -1160,7 +1162,8 @@ namespace TmCGPTD.Models
                 using var command = new SqliteCommand
                 {
                     CommandText = "UPDATE template SET text = @templateText WHERE title = @title;",
-                    Connection = connection
+                    Connection = connection,
+                    Transaction = (SqliteTransaction)transaction
                 };
 
                 command.Parameters.AddWithValue("@templateText", finalText);
@@ -1202,7 +1205,8 @@ namespace TmCGPTD.Models
                 using var command = new SqliteCommand
                 {
                     CommandText = "UPDATE template SET title = @newName WHERE title = @oldName;",
-                    Connection = connection
+                    Connection = connection,
+                    Transaction = (SqliteTransaction)transaction
                 };
 
                 command.Parameters.AddWithValue("@oldName", oldName);
@@ -1398,7 +1402,7 @@ namespace TmCGPTD.Models
             }
             catch (Exception ex)
             {
-                var dialog = new ContentDialog() { Title = "Error : " + ex.Message, PrimaryButtonText = "OK" };
+                var dialog = new ContentDialog() { Title = "Error : " + ex.Message + ex.StackTrace, PrimaryButtonText = "OK" };
                 _ = VMLocator.MainViewModel.ContentDialogShowAsync(dialog);
             }
         }
@@ -1532,7 +1536,7 @@ namespace TmCGPTD.Models
             }
             catch (Exception ex)
             {
-                var dialog = new ContentDialog() { Title = "Error : " + ex.Message, PrimaryButtonText = "OK" };
+                var dialog = new ContentDialog() { Title = "Error : " + ex.Message + ex.StackTrace, PrimaryButtonText = "OK" };
                 _ = VMLocator.MainViewModel.ContentDialogShowAsync(dialog);
             }
         }
@@ -1665,7 +1669,7 @@ namespace TmCGPTD.Models
                     {
                         // 指定されたIDのデータを取得する
                         string currentText = "";
-                        using (var command = new SqliteCommand("SELECT text FROM chatlog WHERE id=@id", connection))
+                        using (var command = new SqliteCommand("SELECT text FROM chatlog WHERE id=@id", connection, (SqliteTransaction)transaction))
                         {
                             command.Parameters.AddWithValue("@id", lastRowId);
                             using SqliteDataReader reader = (SqliteDataReader)await command.ExecuteReaderAsync();
@@ -1819,11 +1823,12 @@ namespace TmCGPTD.Models
                     VMLocator.ChatViewModel.LastPrompt = promptTextForSave;
                     VMLocator.ChatViewModel.ReEditIsOn = false;
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
                     // エラーが発生した場合、トランザクションをロールバックする
                     await transaction.RollbackAsync();
-                    //var dialog = new ContentDialog() { Title = "Error : " + ex.Message, PrimaryButtonText = "OK" };
+                    //var dialog = new ContentDialog() { Title = "Error : " + ex.Message + ex.StackTrace, PrimaryButtonText = "OK" };
+                    //Debug.WriteLine(ex.Message + ex.StackTrace);
                     //await VMLocator.MainViewModel.ContentDialogShowAsync(dialog);
                     throw;
                 }

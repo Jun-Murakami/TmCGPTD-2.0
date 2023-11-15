@@ -266,6 +266,9 @@ namespace TmCGPTD.Models
 
                 cloudRecords = cloudRecords + resultEditorLog.Models.Count;
 
+                // クラウド上の最大IDを取得
+                var maxCloudId = resultEditorLog.Models.Max(x => x.Id);
+
                 List<long> editorlogDeletedId = new();
 
                 sql = "SELECT id, date FROM editorlog ORDER BY id DESC";
@@ -274,7 +277,9 @@ namespace TmCGPTD.Models
 
                 while (await reader3.ReadAsync())
                 {
-                    var target = resultEditorLog.Models.FirstOrDefault(x => x.Id == reader3.GetInt64(reader3.GetOrdinal("id")));
+                    var localId = reader3.GetInt64(reader3.GetOrdinal("id"));
+                    var target = resultEditorLog.Models.FirstOrDefault(x => x.Id == localId);
+
                     if (target != null)
                     {
                         if (reader3["date"] != DBNull.Value)
@@ -297,14 +302,22 @@ namespace TmCGPTD.Models
                     else
                     {
                         //削除フラグに含まれている場合はローカルのSQLデータベースを削除する
-                        if (resultManagement.Models.Exists(x => x.DeleteTable == "editorlog" && x.DeleteId == reader3.GetInt64(reader3.GetOrdinal("id"))))
+                        if (resultManagement.Models.Exists(x => x.DeleteTable == "editorlog" && x.DeleteId == localId))
                         {
-                            editorlogDeletedId.Add(reader3.GetInt64(reader3.GetOrdinal("id")));
+                            editorlogDeletedId.Add(localId);
                         }
                         else
                         {
-                            localOnly++;
-                            localRecords++;
+                            // ローカルのみに存在し、かつクラウドの最大IDより小さい場合
+                            if (localId < maxCloudId)
+                            {
+                                cloudIsNewer++;
+                            }
+                            else
+                            {
+                                localOnly++;
+                                localRecords++;
+                            }
                         }
                     }
                 }
