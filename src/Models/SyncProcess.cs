@@ -2,10 +2,10 @@
 using System;
 using System.IO;
 using System.Collections.Generic;
-using System.Data.SQLite;
+using Microsoft.Data.Sqlite;
 using System.Linq;
 using System.Threading.Tasks;
-using static TmCGPTD.Models.PostageSqlModels;
+using static TmCGPTD.Models.PostgreSqlModels;
 using System.Text.RegularExpressions;
 using FluentAvalonia.UI.Controls;
 using Postgrest;
@@ -164,22 +164,22 @@ namespace TmCGPTD.Models
                 List<long> phraseDeletedId = new();
 
                 string sql = "SELECT id, date FROM phrase ORDER BY id DESC";
-                using var command = new SQLiteCommand(sql, DatabaseProcess.memoryConnection);
+                using var command = new SqliteCommand(sql, DatabaseProcess.memoryConnection);
                 using var reader = await command.ExecuteReaderAsync();
 
                 while (await reader.ReadAsync())
                 {
                     //resultに同一のIDがあるか検索する
-                    var target = resultPhrase.Models.Find(x => x.Id == (long)reader["id"]);
+                    var target = resultPhrase.Models.Find(x => x.Id == reader.GetInt64(reader.GetOrdinal("id")));
                     if (target != null)
                     {
                         if (reader["date"] != DBNull.Value)
                         {
-                            if (target.Date > (DateTime)reader["date"]) //クラウドが新しい
+                            if (target.Date > reader.GetDateTime(reader.GetOrdinal("date"))) //クラウドが新しい
                             {
                                 cloudIsNewer++;
                             }
-                            else if (target.Date < (DateTime)reader["date"]) //ローカルが新しい
+                            else if (target.Date < reader.GetDateTime(reader.GetOrdinal("date"))) //ローカルが新しい
                             {
                                 localIsNewer++;
                             }
@@ -193,9 +193,9 @@ namespace TmCGPTD.Models
                     else //クラウドに該当IDがない
                     {
                         //削除フラグに含まれている場合はローカルのSQLデータベースを削除する
-                        if (resultManagement.Models.Exists(x => x.DeleteTable == "phrase" && x.DeleteId == (long)reader["id"]))
+                        if (resultManagement.Models.Exists(x => x.DeleteTable == "phrase" && x.DeleteId == reader.GetInt64(reader.GetOrdinal("id"))))
                         {
-                            phraseDeletedId.Add((long)reader["id"]);
+                            phraseDeletedId.Add(reader.GetInt64(reader.GetOrdinal("id")));
                         }
                         else
                         {
@@ -217,21 +217,21 @@ namespace TmCGPTD.Models
                 List<long> templeteDeletedId = new();
 
                 sql = "SELECT id, date FROM template ORDER BY id DESC";
-                using var command2 = new SQLiteCommand(sql, DatabaseProcess.memoryConnection);
+                using var command2 = new SqliteCommand(sql, DatabaseProcess.memoryConnection);
                 using var reader2 = await command2.ExecuteReaderAsync();
 
                 while (await reader2.ReadAsync())
                 {
-                    var target = resultTemplate.Models.Find(x => x.Id == (long)reader2["id"]);
+                    var target = resultTemplate.Models.Find(x => x.Id == reader2.GetInt64(reader2.GetOrdinal("id")));
                     if (target != null)
                     {
                         if (reader2["date"] != DBNull.Value)
                         {
-                            if (target.Date > (DateTime)reader2["date"])
+                            if (target.Date > reader2.GetDateTime(reader2.GetOrdinal("date")))
                             {
                                 cloudIsNewer++;
                             }
-                            else if (target.Date < (DateTime)reader2["date"])
+                            else if (target.Date < reader2.GetDateTime(reader2.GetOrdinal("date")))
                             {
                                 localIsNewer++;
                             }
@@ -245,9 +245,9 @@ namespace TmCGPTD.Models
                     else
                     {
                         //削除フラグに含まれている場合はローカルのSQLデータベースを削除する
-                        if (resultManagement.Models.Exists(x => x.DeleteTable == "template" && x.DeleteId == (long)reader2["id"]))
+                        if (resultManagement.Models.Exists(x => x.DeleteTable == "template" && x.DeleteId == reader2.GetInt64(reader2.GetOrdinal("id"))))
                         {
-                            templeteDeletedId.Add((long)reader2["id"]);
+                            templeteDeletedId.Add(reader2.GetInt64(reader2.GetOrdinal("id")));
                         }
                         else
                         {
@@ -269,21 +269,21 @@ namespace TmCGPTD.Models
                 List<long> editorlogDeletedId = new();
 
                 sql = "SELECT id, date FROM editorlog ORDER BY id DESC";
-                using var command3 = new SQLiteCommand(sql, DatabaseProcess.memoryConnection);
+                using var command3 = new SqliteCommand(sql, DatabaseProcess.memoryConnection);
                 using var reader3 = await command3.ExecuteReaderAsync();
 
                 while (await reader3.ReadAsync())
                 {
-                    var target = resultEditorLog.Models.FirstOrDefault(x => x.Id == (long)reader3["id"]);
+                    var target = resultEditorLog.Models.FirstOrDefault(x => x.Id == reader3.GetInt64(reader3.GetOrdinal("id")));
                     if (target != null)
                     {
                         if (reader3["date"] != DBNull.Value)
                         {
-                            if (target.Date > (DateTime)reader3["date"])
+                            if (target.Date > reader3.GetDateTime(reader3.GetOrdinal("date")))
                             {
                                 cloudIsNewer++;
                             }
-                            else if (target.Date < (DateTime)reader3["date"])
+                            else if (target.Date < reader3.GetDateTime(reader3.GetOrdinal("date")))
                             {
                                 localIsNewer++;
                             }
@@ -297,9 +297,9 @@ namespace TmCGPTD.Models
                     else
                     {
                         //削除フラグに含まれている場合はローカルのSQLデータベースを削除する
-                        if (resultManagement.Models.Exists(x => x.DeleteTable == "editorlog" && x.DeleteId == (long)reader3["id"]))
+                        if (resultManagement.Models.Exists(x => x.DeleteTable == "editorlog" && x.DeleteId == reader3.GetInt64(reader3.GetOrdinal("id"))))
                         {
-                            editorlogDeletedId.Add((long)reader3["id"]);
+                            editorlogDeletedId.Add(reader3.GetInt64(reader3.GetOrdinal("id")));
                         }
                         else
                         {
@@ -321,21 +321,21 @@ namespace TmCGPTD.Models
                 List<long> chatlogDeletedId = new();
 
                 sql = "SELECT id, date FROM chatlog ORDER BY id DESC";
-                using var command4 = new SQLiteCommand(sql, DatabaseProcess.memoryConnection);
+                using var command4 = new SqliteCommand(sql, DatabaseProcess.memoryConnection);
                 using var reader4 = await command4.ExecuteReaderAsync();
 
                 while (await reader4.ReadAsync())
                 {
-                    var target = resultChatRoom.Models.Find(x => x.Id == (long)reader4["id"]);
+                    var target = resultChatRoom.Models.Find(x => x.Id == reader4.GetInt64(reader4.GetOrdinal("id")));
                     if (target != null)
                     {
                         if (reader4["date"] != DBNull.Value)
                         {
-                            if (target.UpdatedOn > (DateTime)reader4["date"])
+                            if (target.UpdatedOn > reader4.GetDateTime(reader4.GetOrdinal("date")))
                             {
                                 cloudIsNewer++;
                             }
-                            else if (target.UpdatedOn < (DateTime)reader4["date"])
+                            else if (target.UpdatedOn < reader4.GetDateTime(reader4.GetOrdinal("date")))
                             {
                                 localIsNewer++;
                             }
@@ -349,9 +349,9 @@ namespace TmCGPTD.Models
                     else
                     {
                         //削除フラグに含まれている場合はローカルのSQLデータベースを削除する
-                        if (resultManagement.Models.Exists(x => x.DeleteTable == "chatlog" && x.DeleteId == (long)reader4["id"]))
+                        if (resultManagement.Models.Exists(x => x.DeleteTable == "chatlog" && x.DeleteId == reader4.GetInt64(reader4.GetOrdinal("id"))))
                         {
-                            chatlogDeletedId.Add((long)reader4["id"]);
+                            chatlogDeletedId.Add(reader4.GetInt64(reader4.GetOrdinal("id")));
                         }
                         else
                         {
@@ -361,7 +361,7 @@ namespace TmCGPTD.Models
                     }
                 }
 
-                using SQLiteConnection connection = new($"Data Source={AppSettings.Instance.DbPath};Version=3;");
+                using SqliteConnection connection = new($"Data Source={AppSettings.Instance.DbPath};");
                 await connection.OpenAsync();
 
                 //保存した削除IDを削除する
@@ -370,7 +370,7 @@ namespace TmCGPTD.Models
                     if (phraseDeletedId.Count > 0)
                     {
                         sql = $"DELETE FROM phrase WHERE id IN ({string.Join(",", phraseDeletedId)})";
-                        using var commandDel = new SQLiteCommand(sql, connection);
+                        using var commandDel = new SqliteCommand(sql, connection);
                         await commandDel.ExecuteNonQueryAsync();
                         isDeleted = true;
                     }
@@ -378,7 +378,7 @@ namespace TmCGPTD.Models
                     if (templeteDeletedId.Count > 0)
                     {
                         sql = $"DELETE FROM template WHERE id IN ({string.Join(",", templeteDeletedId)})";
-                        using var commandDel2 = new SQLiteCommand(sql, connection);
+                        using var commandDel2 = new SqliteCommand(sql, connection);
                         await commandDel2.ExecuteNonQueryAsync();
                         isDeleted = true;
                     }
@@ -386,7 +386,7 @@ namespace TmCGPTD.Models
                     if (editorlogDeletedId.Count > 0)
                     {
                         sql = $"DELETE FROM editorlog WHERE id IN ({string.Join(",", editorlogDeletedId)})";
-                        using var commandDel3 = new SQLiteCommand(sql, connection);
+                        using var commandDel3 = new SqliteCommand(sql, connection);
                         await commandDel3.ExecuteNonQueryAsync();
                         isDeleted = true;
                     }
@@ -394,7 +394,7 @@ namespace TmCGPTD.Models
                     if (chatlogDeletedId.Count > 0)
                     {
                         sql = $"DELETE FROM chatlog WHERE id IN ({string.Join(",", chatlogDeletedId)})";
-                        using var commandDel4 = new SQLiteCommand(sql, connection);
+                        using var commandDel4 = new SqliteCommand(sql, connection);
                         await commandDel4.ExecuteNonQueryAsync();
                         isDeleted = true;
                     }
@@ -617,7 +617,7 @@ namespace TmCGPTD.Models
             var supabase = SupabaseStates.Instance.Supabase;
             var uid = SupabaseStates.Instance.Supabase!.Auth.CurrentUser!.Id;
 
-            using SQLiteConnection connection = new($"Data Source={AppSettings.Instance.DbPath};Version=3;");
+            using SqliteConnection connection = new($"Data Source={AppSettings.Instance.DbPath};");
             await connection.OpenAsync();
 
             try
@@ -631,19 +631,19 @@ namespace TmCGPTD.Models
                 List<long> mergedIdList = new();
 
                 const string sql = "SELECT * FROM phrase ORDER BY name COLLATE NOCASE";
-                using var command2 = new SQLiteCommand(sql, connection);
+                using var command2 = new SqliteCommand(sql, connection);
                 using var reader = await command2.ExecuteReaderAsync();
 
                 while (await reader.ReadAsync())
                 {
-                    var target = resultPhrase.Models.Find(x => x.Id == (long)reader["id"]);
+                    var target = resultPhrase.Models.Find(x => x.Id == reader.GetInt64(reader.GetOrdinal("id")));
 
-                    if (target == null || reader["date"] is DBNull || target.Date != (DateTime)reader["date"]) // クラウドにデータが無いか、ローカルと日付が異なる場合
+                    if (target == null || reader["date"] is DBNull || target.Date != reader.GetDateTime(reader.GetOrdinal("date"))) // クラウドにデータが無いか、ローカルと日付が異なる場合
                     {
                         DateTime date;
                         if (reader["date"] != DBNull.Value)
                         {
-                            date = (DateTime)reader["date"];
+                            date = reader.GetDateTime(reader.GetOrdinal("date"));
                         }
                         else //Nullの場合は現在時刻を入れる
                         {
@@ -654,11 +654,11 @@ namespace TmCGPTD.Models
                         if (isMerge) //マージの場合はIDを振り直す
                         {
                             await supabase!.From<Phrase>().Upsert(new Phrase { UserId = uid, Name = (string)reader["name"], Content = (string)reader["phrase"], Date = date });
-                            mergedIdList.Add((long)reader["id"]);
+                            mergedIdList.Add(reader.GetInt64(reader.GetOrdinal("id")));
                         }
                         else
                         {
-                            models.Add(new Phrase { Id = (long)reader["id"], UserId = uid, Name = (string)reader["name"], Content = (string)reader["phrase"], Date = date });
+                            models.Add(new Phrase { Id = reader.GetInt64(reader.GetOrdinal("id")), UserId = uid, Name = (string)reader["name"], Content = (string)reader["phrase"], Date = date });
                         }
                     }
                 }
@@ -674,7 +674,7 @@ namespace TmCGPTD.Models
                     {
                         foreach (var id in mergedIdList)
                         {
-                            using var command = new SQLiteCommand($"DELETE FROM phrase WHERE id = {id}", connection, (SQLiteTransaction)transaction);
+                            using var command = new SqliteCommand($"DELETE FROM phrase WHERE id = {id}", connection, (SqliteTransaction)transaction);
                             await command.ExecuteNonQueryAsync();
                         }
                         await transaction.CommitAsync();
@@ -703,19 +703,19 @@ namespace TmCGPTD.Models
                 List<long> mergedIdList = new();
 
                 const string sql = "SELECT * FROM editorlog ORDER BY date ASC LIMIT 200";
-                using var command2 = new SQLiteCommand(sql, connection);
+                using var command2 = new SqliteCommand(sql, connection);
                 using var reader = await command2.ExecuteReaderAsync();
 
                 while (await reader.ReadAsync())
                 {
-                    var target = resultEditorLog.Models.Find(x => x.Id == (long)reader["id"]);
+                    var target = resultEditorLog.Models.Find(x => x.Id == reader.GetInt64(reader.GetOrdinal("id")));
 
-                    if (target == null || reader["date"] is DBNull || target.Date != (DateTime)reader["date"]) // クラウドにデータが無いか、ローカルと日付が異なる場合
+                    if (target == null || reader["date"] is DBNull || target.Date != reader.GetDateTime(reader.GetOrdinal("date"))) // クラウドにデータが無いか、ローカルと日付が異なる場合
                     {
                         DateTime date;
                         if (reader["date"] != DBNull.Value)
                         {
-                            date = (DateTime)reader["date"];
+                            date = reader.GetDateTime(reader.GetOrdinal("date"));
                         }
                         else //Nullの場合は現在時刻を入れる
                         {
@@ -726,11 +726,11 @@ namespace TmCGPTD.Models
                         if (isMerge) //マージの場合はIDを振り直す
                         {
                             models.Add(new EditorLog { UserId = uid, Content = (string)reader["text"], Date = date });
-                            mergedIdList.Add((long)reader["id"]);
+                            mergedIdList.Add(reader.GetInt64(reader.GetOrdinal("id")));
                         }
                         else
                         {
-                            models.Add(new EditorLog { Id = (long)reader["id"], UserId = uid, Content = (string)reader["text"], Date = date });
+                            models.Add(new EditorLog { Id = reader.GetInt64(reader.GetOrdinal("id")), UserId = uid, Content = (string)reader["text"], Date = date });
                         }
                     }
                 }
@@ -746,7 +746,7 @@ namespace TmCGPTD.Models
                     {
                         foreach (var id in mergedIdList)
                         {
-                            using var command = new SQLiteCommand($"DELETE FROM editorlog WHERE id = {id}", connection, (SQLiteTransaction)transaction);
+                            using var command = new SqliteCommand($"DELETE FROM editorlog WHERE id = {id}", connection, (SqliteTransaction)transaction);
                             await command.ExecuteNonQueryAsync();
                         }
                         await transaction.CommitAsync();
@@ -775,19 +775,19 @@ namespace TmCGPTD.Models
                 List<long> mergedIdList = new();
 
                 const string sql = "SELECT * FROM template ORDER BY title ASC";
-                using var command2 = new SQLiteCommand(sql, connection);
+                using var command2 = new SqliteCommand(sql, connection);
                 using var reader = await command2.ExecuteReaderAsync();
 
                 while (await reader.ReadAsync())
                 {
-                    var target = resultTemplate.Models.Find(x => x.Id == (long)reader["id"]);
+                    var target = resultTemplate.Models.Find(x => x.Id == reader.GetInt64(reader.GetOrdinal("id")));
 
-                    if (target == null || reader["date"] is DBNull || target.Date != (DateTime)reader["date"]) // クラウドにデータが無いか、ローカルと日付が異なる場合
+                    if (target == null || reader["date"] is DBNull || target.Date != reader.GetDateTime(reader.GetOrdinal("date"))) // クラウドにデータが無いか、ローカルと日付が異なる場合
                     {
                         DateTime date;
                         if (reader["date"] != DBNull.Value)
                         {
-                            date = (DateTime)reader["date"];
+                            date = reader.GetDateTime(reader.GetOrdinal("date"));
                         }
                         else //Nullの場合は現在時刻を入れる
                         {
@@ -798,11 +798,11 @@ namespace TmCGPTD.Models
                         if (isMerge) //マージの場合はIDを振り直す
                         {
                             models.Add(new Template { UserId = uid, Title = (string)reader["title"], Content = (string)reader["text"], Date = date });
-                            mergedIdList.Add((long)reader["id"]);
+                            mergedIdList.Add(reader.GetInt64(reader.GetOrdinal("id")));
                         }
                         else
                         {
-                            models.Add(new Template { Id = (long)reader["id"], UserId = uid, Title = (string)reader["title"], Content = (string)reader["text"], Date = date });
+                            models.Add(new Template { Id = reader.GetInt64(reader.GetOrdinal("id")), UserId = uid, Title = (string)reader["title"], Content = (string)reader["text"], Date = date });
                         }
                     }
                 }
@@ -818,7 +818,7 @@ namespace TmCGPTD.Models
                     {
                         foreach (var id in mergedIdList)
                         {
-                            using var command = new SQLiteCommand($"DELETE FROM template WHERE id = {id}", connection, (SQLiteTransaction)transaction);
+                            using var command = new SqliteCommand($"DELETE FROM template WHERE id = {id}", connection, (SqliteTransaction)transaction);
                             await command.ExecuteNonQueryAsync();
                         }
                         await transaction.CommitAsync();
@@ -847,20 +847,20 @@ namespace TmCGPTD.Models
                 List<long> mergedIdList = new();
 
                 const string sql = "SELECT * FROM chatlog ORDER BY date ASC";
-                using var command2 = new SQLiteCommand(sql, connection);
+                using var command2 = new SqliteCommand(sql, connection);
                 using var reader = await command2.ExecuteReaderAsync();
 
                 while (await reader.ReadAsync())
                 {
-                    var target = resultChatRoom.Models.Find(x => x.Id == (long)reader["id"]);
+                    var target = resultChatRoom.Models.Find(x => x.Id == reader.GetInt64(reader.GetOrdinal("id")));
 
                     var models1 = new List<ChatRoom>();
-                    if (target == null || reader["date"] is DBNull || target.UpdatedOn != (DateTime)reader["date"]) // クラウドにデータが無いか、ローカルと日付が異なる場合
+                    if (target == null || reader["date"] is DBNull || target.UpdatedOn != reader.GetDateTime(reader.GetOrdinal("date"))) // クラウドにデータが無いか、ローカルと日付が異なる場合
                     {
                         DateTime date;
                         if (reader["date"] != DBNull.Value)
                         {
-                            date = (DateTime)reader["date"];
+                            date = reader.GetDateTime(reader.GetOrdinal("date"));
                         }
                         else //Nullの場合は現在時刻を入れる
                         {
@@ -878,11 +878,11 @@ namespace TmCGPTD.Models
                         if (isMerge) //マージの場合はIDを振り直す
                         {
                             models1.Add(new ChatRoom { UserId = uid, Title = (string)reader["title"], Category = (string)reader["category"], LastPrompt = (string)reader["lastprompt"], Json = (string)reader["json"], JsonPrev = (string)reader["jsonprev"], UpdatedOn = date });
-                            mergedIdList.Add((long)reader["id"]);
+                            mergedIdList.Add(reader.GetInt64(reader.GetOrdinal("id")));
                         }
                         else
                         {
-                            models1.Add(new ChatRoom { Id = (long)reader["id"], UserId = uid, Title = (string)reader["title"], Category = (string)reader["category"], LastPrompt = (string)reader["lastprompt"], Json = (string)reader["json"], JsonPrev = (string)reader["jsonprev"], UpdatedOn = date });
+                            models1.Add(new ChatRoom { Id = reader.GetInt64(reader.GetOrdinal("id")), UserId = uid, Title = (string)reader["title"], Category = (string)reader["category"], LastPrompt = (string)reader["lastprompt"], Json = (string)reader["json"], JsonPrev = (string)reader["jsonprev"], UpdatedOn = date });
                         }
 
                         var returnValue = await supabase.From<ChatRoom>().Insert(models1, new QueryOptions { Returning = ReturnType.Representation });
@@ -903,7 +903,7 @@ namespace TmCGPTD.Models
                     {
                         foreach (var id in mergedIdList)
                         {
-                            using var command = new SQLiteCommand($"DELETE FROM chatlog WHERE id = {id}", connection, (SQLiteTransaction)transaction);
+                            using var command = new SqliteCommand($"DELETE FROM chatlog WHERE id = {id}", connection, (SqliteTransaction)transaction);
                             await command.ExecuteNonQueryAsync();
                         }
                         await transaction.CommitAsync();
@@ -927,7 +927,7 @@ namespace TmCGPTD.Models
         {
             var supabase = SupabaseStates.Instance.Supabase;
 
-            using SQLiteConnection connection = new($"Data Source={AppSettings.Instance.DbPath};Version=3;");
+            using SqliteConnection connection = new($"Data Source={AppSettings.Instance.DbPath};");
             await connection.OpenAsync();
 
             try
@@ -939,12 +939,12 @@ namespace TmCGPTD.Models
 
                 Dictionary<long, DateTime?> localData = new();
 
-                using var command = new SQLiteCommand("SELECT id, date FROM phrase ORDER BY id DESC", connection);
+                using var command = new SqliteCommand("SELECT id, date FROM phrase ORDER BY id DESC", connection);
                 using var reader = await command.ExecuteReaderAsync();
                 while (await reader.ReadAsync())
                 {
-                    long id = (long)reader["id"];
-                    DateTime? date = reader["date"] == DBNull.Value ? null : (DateTime)reader["date"];
+                    long id = reader.GetInt64(reader.GetOrdinal("id"));
+                    DateTime? date = reader["date"] == DBNull.Value ? null : reader.GetDateTime(reader.GetOrdinal("date"));
                     localData[id] = date;
                 }
 
@@ -955,7 +955,7 @@ namespace TmCGPTD.Models
                     {
                         const string updateSql = @"INSERT INTO phrase (id, name, phrase, date) VALUES (@Id, @Name, @Content, @Date) 
                                             ON CONFLICT(id) DO UPDATE SET name = excluded.name, phrase = excluded.phrase, date = excluded.date;";
-                        var updateCommand = new SQLiteCommand(updateSql, connection);
+                        var updateCommand = new SqliteCommand(updateSql, connection);
                         updateCommand.Parameters.AddWithValue("@Id", cloudData.Id);
                         updateCommand.Parameters.AddWithValue("@Name", cloudData.Name);
                         updateCommand.Parameters.AddWithValue("@Content", cloudData.Content);
@@ -971,7 +971,7 @@ namespace TmCGPTD.Models
                     if (!cloudIds.Contains(localId))
                     {
                         const string deleteSql = "DELETE FROM phrase WHERE id = @Id;";
-                        var deleteCommand = new SQLiteCommand(deleteSql, connection);
+                        var deleteCommand = new SqliteCommand(deleteSql, connection);
                         deleteCommand.Parameters.AddWithValue("@Id", localId);
                         await deleteCommand.ExecuteNonQueryAsync();
                     }
@@ -993,12 +993,12 @@ namespace TmCGPTD.Models
                 Dictionary<long, DateTime?> localData = new();
 
                 const string sql = "SELECT id, date FROM template ORDER BY id DESC";
-                using var command2 = new SQLiteCommand(sql, connection);
+                using var command2 = new SqliteCommand(sql, connection);
                 using var reader = await command2.ExecuteReaderAsync();
                 while (await reader.ReadAsync())
                 {
-                    long id = (long)reader["id"];
-                    DateTime? date = reader["date"] == DBNull.Value ? null : (DateTime)reader["date"];
+                    long id = reader.GetInt64(reader.GetOrdinal("id"));
+                    DateTime? date = reader["date"] == DBNull.Value ? null : reader.GetDateTime(reader.GetOrdinal("date"));
                     localData[id] = date;
                 }
 
@@ -1009,7 +1009,7 @@ namespace TmCGPTD.Models
                     {
                         const string updateSql = @"INSERT INTO template (id, title, text, date) VALUES (@Id, @Name, @Content, @Date) 
                                             ON CONFLICT(id) DO UPDATE SET title = excluded.title, text = excluded.text, date = excluded.date;";
-                        var command = new SQLiteCommand(updateSql, connection);
+                        var command = new SqliteCommand(updateSql, connection);
                         command.Parameters.AddWithValue("@Id", cloudData.Id);
                         command.Parameters.AddWithValue("@Name", cloudData.Title);
                         command.Parameters.AddWithValue("@Content", cloudData.Content);
@@ -1025,7 +1025,7 @@ namespace TmCGPTD.Models
                     if (!cloudIds.Contains(localId))
                     {
                         const string deleteSql = "DELETE FROM template WHERE id = @Id;";
-                        var deleteCommand = new SQLiteCommand(deleteSql, connection);
+                        var deleteCommand = new SqliteCommand(deleteSql, connection);
                         deleteCommand.Parameters.AddWithValue("@Id", localId);
                         await deleteCommand.ExecuteNonQueryAsync();
                     }
@@ -1046,12 +1046,12 @@ namespace TmCGPTD.Models
                 Dictionary<long, DateTime?> localData = new();
 
                 const string sql = "SELECT id, date FROM editorlog ORDER BY id DESC";
-                using var command3 = new SQLiteCommand(sql, connection);
+                using var command3 = new SqliteCommand(sql, connection);
                 using var reader = await command3.ExecuteReaderAsync();
                 while (await reader.ReadAsync())
                 {
-                    long id = (long)reader["id"];
-                    DateTime? date = reader["date"] == DBNull.Value ? null : (DateTime)reader["date"];
+                    long id = reader.GetInt64(reader.GetOrdinal("id"));
+                    DateTime? date = reader["date"] == DBNull.Value ? null : reader.GetDateTime(reader.GetOrdinal("date"));
                     localData[id] = date;
                 }
 
@@ -1062,7 +1062,7 @@ namespace TmCGPTD.Models
                     {
                         const string updateSql = @"INSERT INTO editorlog (id, date, text) VALUES (@Id, @Date, @Content) 
                                             ON CONFLICT(id) DO UPDATE SET date = excluded.date, text = excluded.text;";
-                        var command = new SQLiteCommand(updateSql, connection);
+                        var command = new SqliteCommand(updateSql, connection);
                         command.Parameters.AddWithValue("@Id", cloudData.Id);
                         command.Parameters.AddWithValue("@Date", cloudData.Date.ToString("s"));
                         command.Parameters.AddWithValue("@Content", cloudData.Content);
@@ -1077,7 +1077,7 @@ namespace TmCGPTD.Models
                     if (!cloudIds.Contains(localId))
                     {
                         const string deleteSql = "DELETE FROM editorlog WHERE id = @Id;";
-                        var deleteCommand = new SQLiteCommand(deleteSql, connection);
+                        var deleteCommand = new SqliteCommand(deleteSql, connection);
                         deleteCommand.Parameters.AddWithValue("@Id", localId);
                         await deleteCommand.ExecuteNonQueryAsync();
                     }
@@ -1098,12 +1098,12 @@ namespace TmCGPTD.Models
                 Dictionary<long, DateTime?> localData = new();
 
                 const string sql = "SELECT * FROM chatlog ORDER BY id DESC";
-                using var command4 = new SQLiteCommand(sql, connection);
+                using var command4 = new SqliteCommand(sql, connection);
                 using var reader = await command4.ExecuteReaderAsync();
                 while (await reader.ReadAsync())
                 {
-                    long id = (long)reader["id"];
-                    DateTime? date = reader["date"] == DBNull.Value ? null : (DateTime)reader["date"];
+                    long id = reader.GetInt64(reader.GetOrdinal("id"));
+                    DateTime? date = reader["date"] == DBNull.Value ? null : reader.GetDateTime(reader.GetOrdinal("date"));
                     localData[id] = date;
                 }
 
@@ -1118,7 +1118,7 @@ namespace TmCGPTD.Models
 
                         const string updateSql = @"INSERT INTO chatlog (id, date, title, json, text, category, lastprompt, jsonprev) VALUES (@Id, @UpdatedOn, @Title, @Json, @Message, @Category, @LastPrompt, @JsonPrev) 
                             ON CONFLICT(id) DO UPDATE SET date = excluded.date, title = excluded.title, json = excluded.json, text = excluded.text, category = excluded.category, lastprompt = excluded.lastprompt, jsonprev = excluded.jsonprev;";
-                        var command = new SQLiteCommand(updateSql, connection);
+                        var command = new SqliteCommand(updateSql, connection);
                         command.Parameters.AddWithValue("@Id", cloudData.Id);
                         command.Parameters.AddWithValue("@UpdatedOn", cloudData.UpdatedOn.ToString("s"));
                         command.Parameters.AddWithValue("@Title", cloudData.Title);
@@ -1138,7 +1138,7 @@ namespace TmCGPTD.Models
                     if (!cloudIds.Contains(localId))
                     {
                         const string deleteSql = "DELETE FROM chatlog WHERE id = @Id;";
-                        var deleteCommand = new SQLiteCommand(deleteSql, connection);
+                        var deleteCommand = new SqliteCommand(deleteSql, connection);
                         deleteCommand.Parameters.AddWithValue("@Id", localId);
                         await deleteCommand.ExecuteNonQueryAsync();
                     }
@@ -1181,7 +1181,7 @@ namespace TmCGPTD.Models
         // -------------------------------------------------------------------------------------------------------
         public async Task CopyAllLocalToCloudDbAsync()
         {
-            using SQLiteConnection connection = new($"Data Source={AppSettings.Instance.DbPath};Version=3;");
+            using SqliteConnection connection = new($"Data Source={AppSettings.Instance.DbPath};");
             await connection.OpenAsync();
 
             var supabase = SupabaseStates.Instance.Supabase;
@@ -1204,12 +1204,12 @@ namespace TmCGPTD.Models
                 var models = new List<Phrase>();
 
                 string sql = "SELECT COUNT(*) FROM phrase";
-                using var command = new SQLiteCommand(sql, connection);
+                using var command = new SqliteCommand(sql, connection);
                 long? countTable = (long?)await command.ExecuteScalarAsync();
                 VMLocator.ProgressViewModel.ProgressText = "Uploading phrase presets...";
 
                 sql = "SELECT * FROM phrase ORDER BY name COLLATE NOCASE";
-                using var command2 = new SQLiteCommand(sql, connection);
+                using var command2 = new SqliteCommand(sql, connection);
 
                 using var reader = await command2.ExecuteReaderAsync();
 
@@ -1229,7 +1229,7 @@ namespace TmCGPTD.Models
                     }
                     else
                     {
-                        DateTime date = (DateTime)reader["date"];
+                        DateTime date = reader.GetDateTime(reader.GetOrdinal("date"));
                         date = date.AddTicks(-(date.Ticks % TimeSpan.TicksPerSecond));
                         models.Add(new Phrase { UserId = uid, Name = (string)reader["name"], Content = (string)reader["phrase"], Date = date });
                     }
@@ -1253,12 +1253,12 @@ namespace TmCGPTD.Models
                 var models = new List<EditorLog>();
 
                 string sql = "SELECT COUNT(*) FROM editorlog LIMIT 200";
-                using var command = new SQLiteCommand(sql, connection);
+                using var command = new SqliteCommand(sql, connection);
                 long? countTable = (long?)await command.ExecuteScalarAsync();
                 VMLocator.ProgressViewModel.ProgressText = $"Uploading editor-logs...";
 
                 sql = "SELECT * FROM editorlog ORDER BY date ASC LIMIT 200";
-                using var command2 = new SQLiteCommand(sql, connection);
+                using var command2 = new SqliteCommand(sql, connection);
 
                 using var reader = await command2.ExecuteReaderAsync();
 
@@ -1278,7 +1278,7 @@ namespace TmCGPTD.Models
                     }
                     else
                     {
-                        DateTime date = (DateTime)reader["date"];
+                        DateTime date = reader.GetDateTime(reader.GetOrdinal("date"));
                         date = date.AddTicks(-(date.Ticks % TimeSpan.TicksPerSecond));
                         models.Add(new EditorLog { UserId = uid, Content = (string)reader["text"], Date = date });
                     }
@@ -1302,12 +1302,12 @@ namespace TmCGPTD.Models
                 var models = new List<Template>();
 
                 string sql = "SELECT COUNT(*) FROM template";
-                using var command = new SQLiteCommand(sql, connection);
+                using var command = new SqliteCommand(sql, connection);
                 long? countTable = (long?)await command.ExecuteScalarAsync();
                 VMLocator.ProgressViewModel.ProgressText = "Uploading templates...";
 
                 sql = "SELECT * FROM template ORDER BY title ASC";
-                using var command2 = new SQLiteCommand(sql, connection);
+                using var command2 = new SqliteCommand(sql, connection);
 
                 using var reader = await command2.ExecuteReaderAsync();
 
@@ -1327,7 +1327,7 @@ namespace TmCGPTD.Models
                     }
                     else
                     {
-                        DateTime date = (DateTime)reader["date"];
+                        DateTime date = reader.GetDateTime(reader.GetOrdinal("date"));
                         date = date.AddTicks(-(date.Ticks % TimeSpan.TicksPerSecond));
                         models.Add(new Template { UserId = uid, Title = (string)reader["title"], Content = (string)reader["text"], Date = date });
                     }
@@ -1351,12 +1351,12 @@ namespace TmCGPTD.Models
                 var models2 = new List<Message>();
 
                 string sql = "SELECT COUNT(*) FROM chatlog";
-                using var command = new SQLiteCommand(sql, connection);
+                using var command = new SqliteCommand(sql, connection);
                 long? countTable = (long?)await command.ExecuteScalarAsync();
                 VMLocator.ProgressViewModel.ProgressText = "Uploading chat-logs...";
 
                 sql = "SELECT * FROM chatlog ORDER BY date ASC";
-                using var command2 = new SQLiteCommand(sql, connection);
+                using var command2 = new SqliteCommand(sql, connection);
 
                 using var reader = await command2.ExecuteReaderAsync();
 
@@ -1378,7 +1378,7 @@ namespace TmCGPTD.Models
                     }
                     else
                     {
-                        DateTime date = (DateTime)reader["date"];
+                        DateTime date = reader.GetDateTime(reader.GetOrdinal("date"));
                         date = date.AddTicks(-(date.Ticks % TimeSpan.TicksPerSecond));
                         models1.Add(new ChatRoom { UserId = uid, Title = (string)reader["title"], Category = (string)reader["category"], LastPrompt = (string)reader["lastprompt"], Json = (string)reader["json"], JsonPrev = (string)reader["jsonprev"], UpdatedOn = date });
                     }
@@ -1423,7 +1423,7 @@ namespace TmCGPTD.Models
                 throw new Exception($"Failed to delete local logs: {ex.Message}\n{ex.StackTrace}");
             }
 
-            using SQLiteConnection connection2 = new($"Data Source={AppSettings.Instance.DbPath};Version=3;");
+            using SqliteConnection connection2 = new($"Data Source={AppSettings.Instance.DbPath};");
             await connection2.OpenAsync();
 
             VMLocator.ProgressViewModel.ProgressText = "Fetching data from the cloud...";
@@ -1434,7 +1434,7 @@ namespace TmCGPTD.Models
             {
                 foreach (var phrase in resultPhrase.Models)
                 {
-                    var command = new SQLiteCommand("INSERT INTO phrase (id, name, phrase, date) VALUES (@Id, @Name, @Content, @Date)", connection2);
+                    var command = new SqliteCommand("INSERT INTO phrase (id, name, phrase, date) VALUES (@Id, @Name, @Content, @Date)", connection2);
                     command.Parameters.AddWithValue("@Id", phrase.Id);
                     command.Parameters.AddWithValue("@Name", phrase.Name);
                     command.Parameters.AddWithValue("@Content", phrase.Content);
@@ -1463,7 +1463,7 @@ namespace TmCGPTD.Models
             {
                 foreach (var editorLog in resultEditorLog.Models)
                 {
-                    var command = new SQLiteCommand("INSERT INTO editorlog (id, date, text) VALUES (@Id, @Date, @Content )", connection2);
+                    var command = new SqliteCommand("INSERT INTO editorlog (id, date, text) VALUES (@Id, @Date, @Content )", connection2);
                     command.Parameters.AddWithValue("@Id", editorLog.Id);
                     command.Parameters.AddWithValue("@Date", editorLog.Date.ToString("s"));
                     command.Parameters.AddWithValue("@Content", editorLog.Content);
@@ -1490,7 +1490,7 @@ namespace TmCGPTD.Models
             {
                 foreach (var template in resultTemplate.Models)
                 {
-                    var command = new SQLiteCommand("INSERT INTO template (id, title, text, date) VALUES (@Id, @Name, @Content, @Date)", connection2);
+                    var command = new SqliteCommand("INSERT INTO template (id, title, text, date) VALUES (@Id, @Name, @Content, @Date)", connection2);
                     command.Parameters.AddWithValue("@Id", template.Id);
                     command.Parameters.AddWithValue("@Name", template.Title);
                     command.Parameters.AddWithValue("@Content", template.Content);
@@ -1523,7 +1523,7 @@ namespace TmCGPTD.Models
 
                     string combinedMessage = CombineMessage(resultMessage.Models);
 
-                    var command = new SQLiteCommand("INSERT INTO chatlog (id, date, title, json, text, category, lastprompt, jsonprev) VALUES (@Id, @UpdatedOn, @Title, @Json, @Message, @Category, @LastPrompt, @JsonPrev)", connection2);
+                    var command = new SqliteCommand("INSERT INTO chatlog (id, date, title, json, text, category, lastprompt, jsonprev) VALUES (@Id, @UpdatedOn, @Title, @Json, @Message, @Category, @LastPrompt, @JsonPrev)", connection2);
                     command.Parameters.AddWithValue("@Id", chatLog.Id);
                     command.Parameters.AddWithValue("@UpdatedOn", chatLog.UpdatedOn.ToString("s"));
                     command.Parameters.AddWithValue("@Title", chatLog.Title);
@@ -1708,7 +1708,7 @@ namespace TmCGPTD.Models
         // -------------------------------------------------------------------------------------------------------
         private async Task DeleteLocalDbAsync()
         {
-            using SQLiteConnection connection = new SQLiteConnection($"Data Source={AppSettings.Instance.DbPath};Version=3;");
+            using SqliteConnection connection = new SqliteConnection($"Data Source={AppSettings.Instance.DbPath};");
             await connection.OpenAsync();
             using (var transaction = await connection.BeginTransactionAsync())
             {
@@ -1716,7 +1716,7 @@ namespace TmCGPTD.Models
                 {
                     foreach (var table in new List<string> { "phrase", "chatlog", "editorlog", "template", "management" })
                     {
-                        var command = new SQLiteCommand($"DELETE FROM {table}", connection, (SQLiteTransaction)transaction);
+                        var command = new SqliteCommand($"DELETE FROM {table}", connection, (SqliteTransaction)transaction);
                         await command.ExecuteNonQueryAsync();
                     }
                     transaction.Commit();
@@ -1769,9 +1769,9 @@ namespace TmCGPTD.Models
                 var supabase = SupabaseStates.Instance.Supabase;
                 var uid = SupabaseStates.Instance.Supabase!.Auth.CurrentUser!.Id;
 
-                using SQLiteConnection connection = new($"Data Source={AppSettings.Instance.DbPath};Version=3;");
+                using SqliteConnection connection = new($"Data Source={AppSettings.Instance.DbPath};");
                 await connection.OpenAsync();
-                var command = new SQLiteCommand("SELECT * FROM management WHERE id = 0;", connection);
+                var command = new SqliteCommand("SELECT * FROM management WHERE id = 0;", connection);
                 using var reader = await command.ExecuteReaderAsync();
 
                 if (await reader.ReadAsync())
@@ -1790,7 +1790,7 @@ namespace TmCGPTD.Models
                 else
                 {
                     const string Sql = "INSERT INTO management (id, user_id, delete_table, delete_id, date) VALUES (@Id, @User_id, @Delete_table, @Delete_id, @Date) ";
-                    command = new SQLiteCommand(Sql, connection);
+                    command = new SqliteCommand(Sql, connection);
                     command.Parameters.AddWithValue("@Id", "0");
                     command.Parameters.AddWithValue("@User_id", SupabaseStates.Instance.Supabase!.Auth.CurrentUser!.Id);
                     command.Parameters.AddWithValue("@Delete_table", "");
@@ -1826,16 +1826,16 @@ namespace TmCGPTD.Models
                                 { "template", new Dictionary<long, DateTime>() }
                             };
 
-                using SQLiteConnection connection = new($"Data Source={AppSettings.Instance.DbPath};Version=3;");
+                using SqliteConnection connection = new($"Data Source={AppSettings.Instance.DbPath};");
                 await connection.OpenAsync();
-                var command0 = new SQLiteCommand("SELECT * FROM management WHERE id != 0;", connection);
+                var command0 = new SqliteCommand("SELECT * FROM management WHERE id != 0;", connection);
                 using var reader0 = command0.ExecuteReader();
 
                 for (int i = 0; reader0.Read(); i++)
                 {
                     string deleteTable = (string)reader0["delete_table"];
                     long deleteId = (long)reader0["delete_id"];
-                    DateTime date = (DateTime)reader0["date"];
+                    DateTime date = reader0.GetDateTime(reader0.GetOrdinal("date"));
 
                     deleteDict[deleteTable][deleteId] = date;
                 }
@@ -1857,7 +1857,7 @@ namespace TmCGPTD.Models
                         //ローカルの削除リストにない場合は、SQLクエリでmanagementテーブルにid、uid、DeleteTable、DeleteId、Dateを追加する。
                         if (deleteDict.All(kv => kv.Value.Count != 0) && !deleteDict[deleteTable].ContainsKey(deleteId))
                         {
-                            var command1 = new SQLiteCommand("INSERT INTO management (id, user_id, delete_table, delete_id, date) VALUES (@Id, @User_id, @Delete_table, @Delete_id, @Date) ", connection);
+                            var command1 = new SqliteCommand("INSERT INTO management (id, user_id, delete_table, delete_id, date) VALUES (@Id, @User_id, @Delete_table, @Delete_id, @Date) ", connection);
                             command1.Parameters.AddWithValue("@Id", management.Id);
                             command1.Parameters.AddWithValue("@User_id", uid);
                             command1.Parameters.AddWithValue("@Delete_table", deleteTable);
@@ -1900,13 +1900,13 @@ namespace TmCGPTD.Models
         // -------------------------------------------------------------------------------------------------------
         public async Task DeleteManagementTableDbAsync()
         {
-            using SQLiteConnection connection = new SQLiteConnection($"Data Source={AppSettings.Instance.DbPath};Version=3;");
+            using SqliteConnection connection = new SqliteConnection($"Data Source={AppSettings.Instance.DbPath};");
             await connection.OpenAsync();
             using (var transaction = await connection.BeginTransactionAsync())
             {
                 try
                 {
-                    var command = new SQLiteCommand("DELETE FROM management", connection, (SQLiteTransaction)transaction);
+                    var command = new SqliteCommand("DELETE FROM management", connection, (SqliteTransaction)transaction);
                     await command.ExecuteNonQueryAsync();
 
                     transaction.Commit();
