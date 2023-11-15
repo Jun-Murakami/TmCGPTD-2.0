@@ -110,6 +110,9 @@ namespace TmCGPTD.Views
                     string tempFilePath = System.IO.Path.Combine(AppSettings.Instance.AppDataPath, "tempHtmlFile.html");
                     await File.WriteAllTextAsync(tempFilePath, htmlContent);
 
+#if MAC
+                    tempFilePath = $"file:///{tempFilePath}";
+#endif
                     _browser.Address = tempFilePath;
                 }
                 else
