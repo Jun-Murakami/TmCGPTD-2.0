@@ -33,6 +33,7 @@ namespace TmCGPTD.ViewModels
             EditorCommonFontSize = 16;
             EditorModeIsChecked = true;
             EditorSeparateMode = 5;
+            SeparatorResetFive();
 
             InitializeTokenizer();
             TextClear();
