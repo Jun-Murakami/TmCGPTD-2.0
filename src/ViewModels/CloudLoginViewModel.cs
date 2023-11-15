@@ -96,7 +96,7 @@ namespace TmCGPTD.ViewModels
                 var cdialog = new ContentDialog
                 {
                     Title = "Error",
-                    Content = resource2 + $"\n{ex.Message}",
+                    Content = resource2 + $"\n{ex.Message + ex.StackTrace}",
                     CloseButtonText = "OK"
                 };
                 await VMLocator.MainViewModel.ContentDialogShowAsync(cdialog);
@@ -142,7 +142,7 @@ namespace TmCGPTD.ViewModels
                 var cdialog = new ContentDialog
                 {
                     Title = "Error",
-                    Content = $"{ex.Message}",
+                    Content = $"{ex.Message + ex.StackTrace}",
                     CloseButtonText = "OK"
                 };
                 await VMLocator.MainViewModel.ContentDialogShowAsync(cdialog);
@@ -195,7 +195,7 @@ namespace TmCGPTD.ViewModels
                 var cdialog = new ContentDialog
                 {
                     Title = "Error",
-                    Content = $"{ex.Message}",
+                    Content = $"{ex.Message + ex.StackTrace}",
                     CloseButtonText = "OK"
                 };
                 await VMLocator.MainViewModel.ContentDialogShowAsync(cdialog);
@@ -241,7 +241,7 @@ namespace TmCGPTD.ViewModels
                 var cdialog = new ContentDialog
                 {
                     Title = "Error",
-                    Content = $"{ex.Message}",
+                    Content = $"{ex.Message + ex.StackTrace}",
                     CloseButtonText = "OK"
                 };
                 await VMLocator.MainViewModel.ContentDialogShowAsync(cdialog);
@@ -287,7 +287,7 @@ namespace TmCGPTD.ViewModels
                 var cdialog = new ContentDialog
                 {
                     Title = "Error",
-                    Content = $"{ex.Message}",
+                    Content = $"{ex.Message + ex.StackTrace}",
                     CloseButtonText = "OK"
                 };
                 await VMLocator.MainViewModel.ContentDialogShowAsync(cdialog);
@@ -333,7 +333,7 @@ namespace TmCGPTD.ViewModels
                 var cdialog = new ContentDialog
                 {
                     Title = "Error",
-                    Content = $"{ex.Message}",
+                    Content = $"{ex.Message + ex.StackTrace}",
                     CloseButtonText = "OK"
                 };
                 await VMLocator.MainViewModel.ContentDialogShowAsync(cdialog);

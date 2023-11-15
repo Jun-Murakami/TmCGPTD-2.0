@@ -466,7 +466,7 @@ namespace TmCGPTD.Models
             }
             catch (Exception ex)
             {
-                return $"Error : {ex.Message}";
+                return $"Error : {ex.Message + ex.StackTrace}";
             }
         }
         //htmlエンティティ変換

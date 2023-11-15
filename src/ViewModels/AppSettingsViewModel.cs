@@ -160,7 +160,7 @@ namespace TmCGPTD.ViewModels
             }
             catch (Exception ex)
             {
-                ProcessLog = "Error: " + ex.Message;
+                ProcessLog = "Error: " + ex.Message + ex.StackTrace;
             }
         }
 
@@ -215,7 +215,7 @@ namespace TmCGPTD.ViewModels
                 }
                 catch (Exception ex)
                 {
-                    ProcessLog = "Error: " + ex.Message;
+                    ProcessLog = "Error: " + ex.Message + ex.StackTrace;
                 }
             }
         }

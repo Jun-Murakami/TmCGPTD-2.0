@@ -263,7 +263,7 @@ namespace TmCGPTD.ViewModels
             }
             catch (Exception ex)
             {
-                dialog = new ContentDialog() { Title = $"Error: {ex.Message}", PrimaryButtonText = "OK" };
+                dialog = new ContentDialog() { Title = $"Error: {ex.Message + ex.StackTrace}", PrimaryButtonText = "OK" };
                 await VMLocator.MainViewModel.ContentDialogShowAsync(dialog);
             }
         }
@@ -300,7 +300,7 @@ namespace TmCGPTD.ViewModels
             }
             catch (Exception ex)
             {
-                dialog = new ContentDialog() { Title = $"Error: {ex.Message}", PrimaryButtonText = "OK" };
+                dialog = new ContentDialog() { Title = $"Error: {ex.Message + ex.StackTrace}", PrimaryButtonText = "OK" };
                 await VMLocator.MainViewModel.ContentDialogShowAsync(dialog);
             }
             await _dbProcess.GetTemplateItemsAsync();
@@ -332,7 +332,7 @@ namespace TmCGPTD.ViewModels
             }
             catch (Exception ex)
             {
-                dialog = new ContentDialog() { Title = $"Error: {ex.Message}", PrimaryButtonText = "OK" };
+                dialog = new ContentDialog() { Title = $"Error: {ex.Message + ex.StackTrace}", PrimaryButtonText = "OK" };
                 await VMLocator.MainViewModel.ContentDialogShowAsync(dialog);
             }
             SelectedTemplateItemIndex = -1;
@@ -368,7 +368,7 @@ namespace TmCGPTD.ViewModels
                 }
                 catch (Exception ex)
                 {
-                    var cdialog = new ContentDialog() { Title = $"Error: {ex.Message}", PrimaryButtonText = "OK" };
+                    var cdialog = new ContentDialog() { Title = $"Error: {ex.Message + ex.StackTrace}", PrimaryButtonText = "OK" };
                     await VMLocator.MainViewModel.ContentDialogShowAsync(cdialog);
                 }
             }
@@ -421,7 +421,7 @@ namespace TmCGPTD.ViewModels
                 }
                 catch (Exception ex)
                 {
-                    var cdialog = new ContentDialog() { Title = $"Error: {ex.Message}", PrimaryButtonText = "OK" };
+                    var cdialog = new ContentDialog() { Title = $"Error: {ex.Message + ex.StackTrace}", PrimaryButtonText = "OK" };
                     await VMLocator.MainViewModel.ContentDialogShowAsync(cdialog);
                 }
             }

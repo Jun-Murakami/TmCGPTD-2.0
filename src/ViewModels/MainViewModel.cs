@@ -15,6 +15,7 @@ using Avalonia;
 using Avalonia.Platform.Storage;
 using System.Threading;
 using Avalonia.Threading;
+using System.Diagnostics;
 
 namespace TmCGPTD.ViewModels
 {
@@ -185,7 +186,10 @@ namespace TmCGPTD.ViewModels
             {
                 if (SetProperty(ref _selectedPhraseItem, value))
                 {
-                    SelectedPhraseItemChangedAsync();
+                    if (!string.IsNullOrWhiteSpace(value))
+                    {
+                        SelectedPhraseItemChangedAsync();
+                    }
                 }
             }
         }
@@ -319,7 +323,7 @@ namespace TmCGPTD.ViewModels
             catch (Exception ex)
             {
                 VMLocator.ChatViewModel.ChatIsRunning = false;
-                var cdialog = new ContentDialog() { Title = "Error: " + ex.Message, PrimaryButtonText = "OK" };
+                var cdialog = new ContentDialog() { Title = "Error: " + ex.Message + ex.StackTrace, PrimaryButtonText = "OK" };
                 await ContentDialogShowAsync(cdialog);
 
                 if (backupConversationHistory != null)
@@ -362,7 +366,7 @@ namespace TmCGPTD.ViewModels
                 }
                 catch (Exception ex)
                 {
-                    var cdialog = new ContentDialog() { Title = "Failed to import log." + Environment.NewLine + "Error: " + ex.Message, PrimaryButtonText = "OK" };
+                    var cdialog = new ContentDialog() { Title = "Failed to import log." + Environment.NewLine + "Error: " + ex.Message + ex.StackTrace, PrimaryButtonText = "OK" };
                     await ContentDialogShowAsync(cdialog);
                 }
                 VMLocator.DataGridViewModel.ChatList = await _dbProcess.SearchChatDatabaseAsync();
@@ -400,7 +404,7 @@ namespace TmCGPTD.ViewModels
                 }
                 catch (Exception ex)
                 {
-                    var cdialog = new ContentDialog() { Title = "Failed to export log." + Environment.NewLine + "Error: " + ex.Message, PrimaryButtonText = "OK" };
+                    var cdialog = new ContentDialog() { Title = "Failed to export log." + Environment.NewLine + "Error: " + ex.Message + ex.StackTrace, PrimaryButtonText = "OK" };
                     await ContentDialogShowAsync(cdialog);
                 }
             }
@@ -436,7 +440,7 @@ namespace TmCGPTD.ViewModels
             }
             catch (Exception ex)
             {
-                dialog = new ContentDialog() { Title = "Failed to delete log." + Environment.NewLine + "Error: " + ex.Message, PrimaryButtonText = "OK" };
+                dialog = new ContentDialog() { Title = "Failed to delete log." + Environment.NewLine + "Error: " + ex.Message + ex.StackTrace, PrimaryButtonText = "OK" };
                 await ContentDialogShowAsync(dialog);
             }
         }
@@ -461,7 +465,7 @@ namespace TmCGPTD.ViewModels
             }
             catch (Exception ex)
             {
-                var dialog = new ContentDialog() { Title = $"Error: {ex.Message}", PrimaryButtonText = "OK" };
+                var dialog = new ContentDialog() { Title = $"Error: {ex.Message + ex.StackTrace}", PrimaryButtonText = "OK" };
                 await ContentDialogShowAsync(dialog);
                 ClearPhrases();
             }
@@ -520,7 +524,7 @@ namespace TmCGPTD.ViewModels
             }
             catch (Exception ex)
             {
-                dialog = new ContentDialog() { Title = $"Error: {ex.Message}", PrimaryButtonText = "OK" };
+                dialog = new ContentDialog() { Title = $"Error: {ex.Message + ex.StackTrace}", PrimaryButtonText = "OK" };
                 await ContentDialogShowAsync(dialog);
             }
         }
@@ -558,7 +562,7 @@ namespace TmCGPTD.ViewModels
             }
             catch (Exception ex)
             {
-                dialog = new ContentDialog() { Title = $"Error: {ex.Message}", PrimaryButtonText = "OK" };
+                dialog = new ContentDialog() { Title = $"Error: {ex.Message + ex.StackTrace}", PrimaryButtonText = "OK" };
                 await ContentDialogShowAsync(dialog);
             }
 
@@ -594,7 +598,7 @@ namespace TmCGPTD.ViewModels
             }
             catch (Exception ex)
             {
-                dialog = new ContentDialog() { Title = $"Error: {ex.Message}", PrimaryButtonText = "OK" };
+                dialog = new ContentDialog() { Title = $"Error: {ex.Message + ex.StackTrace}", PrimaryButtonText = "OK" };
                 await ContentDialogShowAsync(dialog);
             }
             await LoadPhraseItemsAsync();
@@ -632,7 +636,7 @@ namespace TmCGPTD.ViewModels
                 }
                 catch (Exception ex)
                 {
-                    var cdialog = new ContentDialog() { Title = $"Error: {ex.Message}", PrimaryButtonText = "OK" };
+                    var cdialog = new ContentDialog() { Title = $"Error: {ex.Message + ex.StackTrace}", PrimaryButtonText = "OK" };
                     await ContentDialogShowAsync(cdialog);
                 }
             }
@@ -675,7 +679,7 @@ namespace TmCGPTD.ViewModels
                 }
                 catch (Exception ex)
                 {
-                    var cdialog = new ContentDialog() { Title = $"Error: {ex.Message}", PrimaryButtonText = "OK" };
+                    var cdialog = new ContentDialog() { Title = $"Error: {ex.Message + ex.StackTrace}", PrimaryButtonText = "OK" };
                     await ContentDialogShowAsync(cdialog);
                 }
             }

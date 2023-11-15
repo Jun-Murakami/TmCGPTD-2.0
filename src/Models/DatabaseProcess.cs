@@ -374,6 +374,9 @@ namespace TmCGPTD.Models
         // 定型句プリセットRename--------------------------------------------------------------
         public async Task UpdatePhrasePresetNameAsync(string oldName, string newName)
         {
+            DateTime now = DateTime.Now;
+            now = now.AddTicks(-(now.Ticks % TimeSpan.TicksPerSecond));  // ミリ秒以下を切り捨てる
+
             using var connection = new SqliteConnection($"Data Source={AppSettings.Instance.DbPath};");
             await connection.OpenAsync();
 
@@ -385,18 +388,20 @@ namespace TmCGPTD.Models
                     var update = await SupabaseStates.Instance.Supabase.From<Phrase>()
                                                 .Where(x => x.Name == oldName)
                                                 .Set(x => x.Name!, newName)
+                                                .Set(x => x.Date!, now)
                                                 .Update();
                 }
 
                 using var command = new SqliteCommand
                 {
-                    CommandText = "UPDATE phrase SET name = @newName WHERE name = @oldName;",
+                    CommandText = "UPDATE phrase SET name = @newName, date = @date  WHERE name = @oldName;",
                     Connection = connection,
                     Transaction = (SqliteTransaction)transaction
                 };
 
                 command.Parameters.AddWithValue("@oldName", oldName);
                 command.Parameters.AddWithValue("@newName", newName);
+                command.Parameters.AddWithValue("@date", now.ToString("s"));
 
                 int rowsAffected = await command.ExecuteNonQueryAsync();
                 if (rowsAffected == 0)
@@ -417,6 +422,9 @@ namespace TmCGPTD.Models
         // 定型句プリセットUpdate--------------------------------------------------------------
         public async Task UpdatePhrasePresetAsync(string name, string phrasesText)
         {
+            DateTime now = DateTime.Now;
+            now = now.AddTicks(-(now.Ticks % TimeSpan.TicksPerSecond));  // ミリ秒以下を切り捨てる
+
             using var connection = new SqliteConnection($"Data Source={AppSettings.Instance.DbPath};");
             await connection.OpenAsync();
 
@@ -428,18 +436,20 @@ namespace TmCGPTD.Models
                     var update = await SupabaseStates.Instance.Supabase.From<Phrase>()
                                                 .Where(x => x.Name == name)
                                                 .Set(x => x.Content!, phrasesText)
+                                                .Set(x => x.Date!, now)
                                                 .Update();
                 }
 
                 using var command = new SqliteCommand
                 {
-                    CommandText = "UPDATE phrase SET phrase = @phrasesText WHERE name = @name;",
+                    CommandText = "UPDATE phrase SET phrase = @phrasesText, date = @date WHERE name = @name;",
                     Connection = connection,
                     Transaction = (SqliteTransaction)transaction
                 };
 
                 command.Parameters.AddWithValue("@name", name);
                 command.Parameters.AddWithValue("@phrasesText", phrasesText);
+                command.Parameters.AddWithValue("@date", now.ToString("s"));
 
                 int rowsAffected = await command.ExecuteNonQueryAsync();
                 if (rowsAffected == 0)
@@ -866,6 +876,9 @@ namespace TmCGPTD.Models
         // タイトルの更新--------------------------------------------------------------
         public async Task UpdateTitleDatabaseAsync(long chatId, string title)
         {
+            DateTime date = DateTime.Now;
+            date = date.AddTicks(-(date.Ticks % TimeSpan.TicksPerSecond));
+
             try
             {
                 if (AppSettings.Instance.SyncIsOn && SupabaseStates.Instance.Supabase != null && Uid != null)
@@ -873,16 +886,18 @@ namespace TmCGPTD.Models
                     var update = await SupabaseStates.Instance.Supabase.From<ChatRoom>()
                                                 .Where(x => x.Id == chatId)
                                                 .Set(x => x.Title!, title)
+                                                .Set(x => x.UpdatedOn!, date)
                                                 .Update();
                 }
 
                 using var connection = new SqliteConnection($"Data Source={AppSettings.Instance.DbPath};");
                 await connection.OpenAsync();
 
-                string query = "UPDATE chatlog SET title=@title WHERE id = @id";
+                string query = "UPDATE chatlog SET title=@title, date = @date WHERE id = @id";
                 using var command = new SqliteCommand(query, connection);
                 command.Parameters.AddWithValue("@title", title);
                 command.Parameters.AddWithValue("@id", chatId);
+                command.Parameters.AddWithValue("@date", date.ToString("s"));
 
                 await command.ExecuteNonQueryAsync();
             }
@@ -899,6 +914,9 @@ namespace TmCGPTD.Models
         // カテゴリの更新--------------------------------------------------------------
         public async Task UpdateCategoryDatabaseAsync(long chatId, string category)
         {
+            DateTime date = DateTime.Now;
+            date = date.AddTicks(-(date.Ticks % TimeSpan.TicksPerSecond));
+
             try
             {
                 if (AppSettings.Instance.SyncIsOn && SupabaseStates.Instance.Supabase != null && Uid != null)
@@ -906,16 +924,18 @@ namespace TmCGPTD.Models
                     var update = await SupabaseStates.Instance.Supabase.From<ChatRoom>()
                                                 .Where(x => x.Id == chatId)
                                                 .Set(x => x.Category!, category)
+                                                .Set(x => x.UpdatedOn!, date)
                                                 .Update();
                 }
 
                 using var connection = new SqliteConnection($"Data Source={AppSettings.Instance.DbPath};");
                 await connection.OpenAsync();
 
-                string query = "UPDATE chatlog SET category=@category WHERE id = @id";
+                string query = "UPDATE chatlog SET category=@category, date = @date WHERE id = @id";
                 using var command = new SqliteCommand(query, connection);
                 command.Parameters.AddWithValue("@category", category);
                 command.Parameters.AddWithValue("@id", chatId);
+                command.Parameters.AddWithValue("@date", date.ToString("s"));
 
                 await command.ExecuteNonQueryAsync();
             }
@@ -1133,6 +1153,9 @@ namespace TmCGPTD.Models
         // Template Update--------------------------------------------------------------
         public async Task UpdateTemplateAsync(string title)
         {
+            DateTime date = DateTime.Now;
+            date = date.AddTicks(-(date.Ticks % TimeSpan.TicksPerSecond));
+
             using var connection = new SqliteConnection($"Data Source={AppSettings.Instance.DbPath};");
             await connection.OpenAsync();
 
@@ -1156,18 +1179,20 @@ namespace TmCGPTD.Models
                     var update = await SupabaseStates.Instance.Supabase.From<Template>()
                                                 .Where(x => x.Title == title)
                                                 .Set(x => x.Content!, finalText)
+                                                .Set(x => x.Date!, date)
                                                 .Update();
                 }
 
                 using var command = new SqliteCommand
                 {
-                    CommandText = "UPDATE template SET text = @templateText WHERE title = @title;",
+                    CommandText = "UPDATE template SET text = @templateText, date = @date WHERE title = @title;",
                     Connection = connection,
                     Transaction = (SqliteTransaction)transaction
                 };
 
                 command.Parameters.AddWithValue("@templateText", finalText);
                 command.Parameters.AddWithValue("@title", title);
+                command.Parameters.AddWithValue("@date", date.ToString("s"));
 
                 int rowsAffected = await command.ExecuteNonQueryAsync();
                 if (rowsAffected == 0)
@@ -1188,6 +1213,9 @@ namespace TmCGPTD.Models
         // Template Rename--------------------------------------------------------------
         public async Task UpdateTemplateNameAsync(string oldName, string newName)
         {
+            DateTime date = DateTime.Now;
+            date = date.AddTicks(-(date.Ticks % TimeSpan.TicksPerSecond));
+
             using var connection = new SqliteConnection($"Data Source={AppSettings.Instance.DbPath};");
             await connection.OpenAsync();
 
@@ -1198,19 +1226,21 @@ namespace TmCGPTD.Models
                 {
                     var update = await SupabaseStates.Instance.Supabase.From<Template>()
                                                 .Where(x => x.Title == oldName)
+                                                .Set(x => x.Date!, date)
                                                 .Set(x => x.Title!, newName)
                                                 .Update();
                 }
 
                 using var command = new SqliteCommand
                 {
-                    CommandText = "UPDATE template SET title = @newName WHERE title = @oldName;",
+                    CommandText = "UPDATE template SET title = @newName, date = @date WHERE title = @oldName;",
                     Connection = connection,
                     Transaction = (SqliteTransaction)transaction
                 };
 
                 command.Parameters.AddWithValue("@oldName", oldName);
                 command.Parameters.AddWithValue("@newName", newName);
+                command.Parameters.AddWithValue("@date", date.ToString("s"));
 
                 int rowsAffected = await command.ExecuteNonQueryAsync();
                 if (rowsAffected == 0)
@@ -1823,7 +1853,7 @@ namespace TmCGPTD.Models
                     VMLocator.ChatViewModel.LastPrompt = promptTextForSave;
                     VMLocator.ChatViewModel.ReEditIsOn = false;
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     // エラーが発生した場合、トランザクションをロールバックする
                     await transaction.RollbackAsync();

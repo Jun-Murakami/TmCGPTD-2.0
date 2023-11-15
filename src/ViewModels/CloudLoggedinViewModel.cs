@@ -98,7 +98,7 @@ namespace TmCGPTD.ViewModels
             }
             catch (Exception ex)
             {
-                var cdialog = new ContentDialog() { Title = "Error", Content = $"{ex.Message}", CloseButtonText = "OK" };
+                var cdialog = new ContentDialog() { Title = "Error", Content = $"{ex.Message + ex.StackTrace}", CloseButtonText = "OK" };
                 await VMLocator.MainViewModel.ContentDialogShowAsync(cdialog);
             }
         }
@@ -135,7 +135,7 @@ namespace TmCGPTD.ViewModels
             }
             catch (Exception ex)
             {
-                var cdialog = new ContentDialog() { Title = "Error", Content = $"{ex.Message}", CloseButtonText = "OK" };
+                var cdialog = new ContentDialog() { Title = "Error", Content = $"{ex.Message + ex.StackTrace}", CloseButtonText = "OK" };
                 await VMLocator.MainViewModel.ContentDialogShowAsync(cdialog);
             }
         }
@@ -175,7 +175,7 @@ namespace TmCGPTD.ViewModels
             }
             catch (Exception ex)
             {
-                var cdialog = new ContentDialog() { Title = $"Error", Content = $"{ex.Message}", CloseButtonText = "OK" };
+                var cdialog = new ContentDialog() { Title = $"Error", Content = $"{ex.Message + ex.StackTrace}", CloseButtonText = "OK" };
                 await VMLocator.MainViewModel.ContentDialogShowAsync(cdialog);
             }
 

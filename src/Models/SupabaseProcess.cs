@@ -62,7 +62,7 @@ namespace TmCGPTD.Models
             }
             catch (Exception ex)
             {
-                var cdialog = new ContentDialog() { Title = $"Error", Content = $"{ex.Message}", CloseButtonText = "OK" };
+                var cdialog = new ContentDialog() { Title = $"Error", Content = $"{ex.Message + ex.StackTrace}", CloseButtonText = "OK" };
                 await VMLocator.MainViewModel.ContentDialogShowAsync(cdialog);
             }
         }
@@ -182,13 +182,13 @@ namespace TmCGPTD.Models
                 ContentDialog? cdialog = null;
                 if (Dispatcher.UIThread.CheckAccess())
                 {
-                    cdialog = new ContentDialog() { Title = $"Error", Content = $"{ex.Message}", CloseButtonText = "OK" };
+                    cdialog = new ContentDialog() { Title = $"Error", Content = $"{ex.Message + ex.StackTrace}", CloseButtonText = "OK" };
                 }
                 else
                 { 
                     await Dispatcher.UIThread.InvokeAsync(() =>
                     {
-                        cdialog = new ContentDialog() { Title = $"Error", Content = $"{ex.Message}", CloseButtonText = "OK" };
+                        cdialog = new ContentDialog() { Title = $"Error", Content = $"{ex.Message + ex.StackTrace}", CloseButtonText = "OK" };
                     });
                 }
                 await VMLocator.MainViewModel.ContentDialogShowAsync(cdialog!);
@@ -230,7 +230,7 @@ namespace TmCGPTD.Models
                 ContentDialog? cdialog = null;
                 await Dispatcher.UIThread.InvokeAsync(() =>
                 {
-                    cdialog = new ContentDialog() { Title = $"Error", Content = $"{ex.Message}", CloseButtonText = "OK" };
+                    cdialog = new ContentDialog() { Title = $"Error", Content = $"{ex.Message + ex.StackTrace}", CloseButtonText = "OK" };
                 });
                 await VMLocator.MainViewModel.ContentDialogShowAsync(cdialog!);
             }   
@@ -266,7 +266,7 @@ namespace TmCGPTD.Models
                 ContentDialog? cdialog = null;
                 await Dispatcher.UIThread.InvokeAsync(() =>
                 {
-                    cdialog = new ContentDialog() { Title = $"Error", Content = $"{ex.Message}", CloseButtonText = "OK" };
+                    cdialog = new ContentDialog() { Title = $"Error", Content = $"{ex.Message + ex.StackTrace}", CloseButtonText = "OK" };
                 });
                 await VMLocator.MainViewModel.ContentDialogShowAsync(cdialog!);
             }
