@@ -137,6 +137,7 @@ namespace TmCGPTD.ViewModels
 
         public List<string> ModelList { get; } = new List<string>
         {
+            "gpt-4-1106-preview",
             "gpt-4",
             "gpt-4-32k",
             "gpt-4-32k-0613",
