@@ -84,8 +84,7 @@
         <PackageReference Include="Avalonia.Diagnostics" Condition="'$(Configuration)'=='Debug64'" Version="11.0.0-preview6">
         </PackageReference>
         <PackageReference Include="Avalonia.Xaml.Interactivity" Version="11.0.0-preview6" />
-		<PackageReference Include="CefGlue.Avalonia.ARM64" Version="117.5938.2-avalonia11" Condition="'$(RuntimeIdentifier)' == 'osx-arm64'" />
-		<PackageReference Include="CefGlue.Avalonia" Version="117.5938.2-avalonia11" Condition="'$(RuntimeIdentifier)' != 'osx-arm64'" />
+		<PackageReference Include="CefGlue.Avalonia" Version="106.5249.7-avalonia11" />
         <PackageReference Include="DialogHost.Avalonia" Version="0.7.3" />
         <PackageReference Include="FluentAvaloniaUI" Version="2.0.0-preview6fork2" />
 		<Compile Remove="src\Views\Windows\Options\HotKeyDisplayView.axaml.cs" />
