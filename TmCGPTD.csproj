@@ -139,4 +139,12 @@
         <DefineConstants>MAC</DefineConstants>
     </PropertyGroup>
 
+	<PropertyGroup Condition="$([MSBuild]::IsOSPlatform('OSX'))">
+		<PackageSuffix>-ARM64</PackageSuffix>
+		<CefGluePackageSuffix>.ARM64</CefGluePackageSuffix>
+	</PropertyGroup>
+	<PropertyGroup Condition="$([MSBuild]::IsOSPlatform('OSX'))">
+		<CefGlueTargetPlatform>osx-arm64</CefGlueTargetPlatform>
+	</PropertyGroup>
+	
 </Project>
