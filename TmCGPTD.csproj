@@ -127,8 +127,8 @@
 		<Compile Remove="src\AppWindows.axaml.cs" />
 		<AvaloniaResource Remove="Assets\StylesWindows.axaml" />
 		<AvaloniaXaml Remove="Assets\StylesWindows.axaml" />
-		<Compile Remove="src\Views\Class\DocumentTextBindingBehavior.cs" />
-		<Compile Remove="src\Views\Class\ElementGenerator.cs" />
+		<Compile Remove="src\Views\Classes\DocumentTextBindingBehavior.cs" />
+		<Compile Remove="src\Views\Classes\ElementGenerator.cs" />
 	</ItemGroup>
 
     <PropertyGroup Condition="'$(OS)' == 'Windows_NT'">
