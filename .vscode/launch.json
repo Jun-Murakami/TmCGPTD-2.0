@@ -10,7 +10,7 @@
       "request": "launch",
       "preLaunchTask": "build",
       // ターゲット フレームワークを変更した場合は、プログラム パスを更新するようにしてください。
-      "program": "${workspaceFolder}/bin/Debug/net6.0/win-x64/TmCGPTD.dll",
+      "program": "${workspaceFolder}/bin/Debug/net7.0/osx-arm64/TmCGPTD.dll",
       "args": [],
       "cwd": "${workspaceFolder}",
       // 'console' フィールドの詳細については、https://aka.ms/VSCode-CS-LaunchJson-Console を参照してください
