@@ -636,9 +636,9 @@ namespace TmCGPTD.Models
             try
             {
                 var resultPhrase = await supabase!
-                      .From<Phrase>()
-                      .Order(x => x.Id, Ordering.Descending)
-                      .Get();
+                        .From<Phrase>()
+                        .Order(x => x.Id, Ordering.Descending)
+                        .Get();
 
                 var models = new List<Phrase>();
                 List<long> mergedIdList = new();
@@ -884,8 +884,8 @@ namespace TmCGPTD.Models
                         if (target != null) // クラウドにデータがある場合は一旦削除（カスケードでメッセージを一旦消す）
                         {
                             await supabase.From<ChatRoom>()
-                                           .Where(x => x.Id == target.Id)
-                                           .Delete();
+                                            .Where(x => x.Id == target.Id)
+                                            .Delete();
                         }
 
                         if (isMerge) //マージの場合はIDを振り直す

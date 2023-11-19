@@ -86,7 +86,6 @@ namespace TmCGPTD.ViewModels
                 let timeoutID2 = null;
 
               window.myCustomSearchFunction = function (keyword, searchForward, resetSearchIndex = false) {
-                
 
                 function findOverflowYAutoElement(element) {
                     // 子要素を取得
@@ -112,8 +111,6 @@ namespace TmCGPTD.ViewModels
                     return null;
                 }
 
-
-
                 if (!document.getElementById('searchDisplay')) {
                   // Create the div element with the id 'searchDisplay'
                   const searchDisplay = document.createElement('div');
@@ -126,20 +123,20 @@ namespace TmCGPTD.ViewModels
                   const style = document.createElement('style');
                   style.textContent = `
                           #searchDisplay {
-	                        position: fixed;
-	                        width: 172px;
-	                        top: 7px;
-	                        right: 57px;
-	                        background: #3a3b47;
-	                        border-radius: 6px;
-	                        border-width: 1px;
-	                        border: #545563 solid;
-	                        padding: 0px 15px 0px 15px;
+                            position: fixed;
+                            width: 172px;
+                            top: 7px;
+                            right: 57px;
+                            background: #3a3b47;
+                            border-radius: 6px;
+                            border-width: 1px;
+                            border: #545563 solid;
+                            padding: 0px 15px 0px 15px;
                             color: #fff;
-	                        display: none;
-	                        outline: none;
-	                        transition: opacity 0.6s;
-	                        font-size: 0.9em;
+                            display: none;
+                            outline: none;
+                            transition: opacity 0.6s;
+                            font-size: 0.9em;
                             z-index: 10000;
                             box-shadow: inset 0 -3em 3em rgba(0,0,0,0.1), 0.3em 0.3em 1em rgba(0,0,0,0.3);
                           }

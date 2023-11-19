@@ -484,13 +484,13 @@ namespace TmCGPTD.Models
                     if (AppSettings.Instance.SyncIsOn && SupabaseStates.Instance.Supabase != null && Uid != null)
                     {
                         var result = await SupabaseStates.Instance.Supabase.From<Phrase>()
-                                       .Where(x => x.Name == selectedPhraseItem)
-                                       .Get();
+                                        .Where(x => x.Name == selectedPhraseItem)
+                                        .Get();
                         targetId = result.Models[0].Id;
 
                         await SupabaseStates.Instance.Supabase.From<Phrase>()
-                                       .Where(x => x.Name == selectedPhraseItem)
-                                       .Delete();
+                                        .Where(x => x.Name == selectedPhraseItem)
+                                        .Delete();
                         //削除履歴を追加
                         await SupabaseStates.Instance.Supabase.From<Management>().Insert(new Management { UserId = Uid!, DeleteTable = "phrase", DeleteId = targetId, Date = date });
                     }
@@ -618,7 +618,7 @@ namespace TmCGPTD.Models
                                     {
                                         date = date.AddTicks(-(date.Ticks % TimeSpan.TicksPerSecond));  // ミリ秒以下を切り捨てる
                                         var resultEditor = await SupabaseStates.Instance.Supabase.From<EditorLog>()
-                                             .Insert(new EditorLog { UserId = Uid, Date = date, Content = rowData[1] });
+                                            .Insert(new EditorLog { UserId = Uid, Date = date, Content = rowData[1] });
 
                                         long editorId = resultEditor.Models[0].Id;
 
@@ -836,8 +836,8 @@ namespace TmCGPTD.Models
                     if (AppSettings.Instance.SyncIsOn && SupabaseStates.Instance.Supabase != null && Uid != null)
                     {
                         await SupabaseStates.Instance.Supabase.From<ChatRoom>()
-                                       .Where(x => x.Id == chatId)
-                                       .Delete();
+                                        .Where(x => x.Id == chatId)
+                                        .Delete();
 
                         //削除履歴を追加
                         await SupabaseStates.Instance.Supabase.From<Management>().Insert(new Management { UserId = Uid!, DeleteTable = "chatlog", DeleteId = chatId, Date = date });
@@ -1278,8 +1278,8 @@ namespace TmCGPTD.Models
                                                     .Where(x => x.Title == selectedTemplateItem)
                                                     .Get();
                         await SupabaseStates.Instance.Supabase.From<Template>()
-                                       .Where(x => x.Title == selectedTemplateItem)
-                                       .Delete();
+                                        .Where(x => x.Title == selectedTemplateItem)
+                                        .Delete();
                         //削除履歴を追加
                         targetId = result.Models[0].Id;
                         await SupabaseStates.Instance.Supabase.From<Management>().Insert(new Management { UserId = Uid!, DeleteTable = "template", DeleteId = targetId, Date = date });
@@ -1767,8 +1767,8 @@ namespace TmCGPTD.Models
                                                         .Update();
 
                             await SupabaseStates.Instance.Supabase.From<Message>() // 既存のデータを一旦削除する
-                                               .Where(x => x.RoomId == lastRowId)
-                                               .Delete();
+                                                .Where(x => x.RoomId == lastRowId)
+                                                .Delete();
 
                             var models = new List<Message>();
 
