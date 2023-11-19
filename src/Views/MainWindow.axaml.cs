@@ -307,11 +307,8 @@ namespace TmCGPTD.Views
             //  "Key": "Aes 256-bit Key",
             //  "Iv": "IV"
             //}
-#if WINDOWS
             using var streamReader = new StreamReader(AssetLoader.Open(new Uri("avares://TmCGPTD/appsettings.json")));
-#else
-            using var streamReader = new StreamReader(AvaloniaLocator.Current.GetService<IAssetLoader>()!.Open(new Uri("avares://TmCGPTD/appsettings.json")));
-#endif
+
             string aesJson = await streamReader.ReadToEndAsync();
 
             SupabaseStates.Instance.AesSettings = System.Text.Json.JsonSerializer.Deserialize<AesSettings>(aesJson)!;

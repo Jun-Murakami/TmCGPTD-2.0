@@ -16,9 +16,8 @@ using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Reactive;
 using Microsoft.DeepDev;
-#if WINDOWS
 using TextMateSharp.Grammars;
-#endif
+
 
 namespace TmCGPTD.ViewModels
 {
@@ -116,7 +115,7 @@ namespace TmCGPTD.ViewModels
                 SelectedEditorLogIndex++;
             }
         }
-#if WINDOWS
+
         private ObservableCollection<Language>? _languages;
         public ObservableCollection<Language>? Languages
         {
@@ -129,7 +128,7 @@ namespace TmCGPTD.ViewModels
             get => _selectedLang;
             set => SetProperty(ref _selectedLang, value);
         }
-#endif
+        
         private int _selectedLangIndex;
         public int SelectedLangIndex
         {
