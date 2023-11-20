@@ -70,8 +70,12 @@
                           Version="11.0.1" />
         <PackageReference Include="Avalonia.Xaml.Interactivity"
                           Version="11.0.5" />
+        <PackageReference Include="CefGlue.Avalonia.ARM64"
+                          Version="117.5938.2-avalonia11"
+                          Condition="'$(RuntimeIdentifier)' == 'osx-arm64'" />
         <PackageReference Include="CefGlue.Avalonia"
-                          Version="117.5938.2-avalonia11" />
+                          Version="117.5938.2-avalonia11"
+                          Condition="'$(RuntimeIdentifier)' != 'osx-arm64'" />
         <PackageReference Include="AvaloniaEdit.TextMate"
                           Version="11.0.5" />
         <PackageReference Include="DialogHost.Avalonia"
@@ -93,7 +97,6 @@
     <PropertyGroup Condition="'$(OS)' != 'Windows_NT'">
         <DefineConstants>MAC</DefineConstants>
     </PropertyGroup>
-
     <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('OSX'))">
         <PackageSuffix>-ARM64</PackageSuffix>
         <CefGluePackageSuffix>.ARM64</CefGluePackageSuffix>
