@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
-        <TargetFramework>net7.0</TargetFramework>
+        <TargetFramework>net6.0</TargetFramework>
         <SelfContained>true</SelfContained>
         <RuntimeIdentifiers>win-x64;osx-x64;osx-arm64;linux-x64</RuntimeIdentifiers>
         <Nullable>enable</Nullable>
@@ -14,7 +14,7 @@
         <AssemblyName>TmCGPTD</AssemblyName>
         <RootNameSpace>TmCGPTD</RootNameSpace>
     </PropertyGroup>
-    <PropertyGroup Condition="'$(TargetFramework)' == 'net7.0'">
+    <PropertyGroup Condition="'$(TargetFramework)' == 'net6.0'">
         <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
     </PropertyGroup>
     <PropertyGroup Condition="'$(OS)' == 'Windows_NT'">
