@@ -114,7 +114,7 @@ namespace TmCGPTD
             AppDataPath = GetAppDataDirectory();
             DbPath = Path.Combine(AppDataPath, "log_database.db");
 
-            ApiMaxTokens = 2048;
+            ApiMaxTokens = 12800;
             ApiTemperature = 1;
             ApiTopP = 1.0;
             ApiN = 1;
@@ -127,7 +127,7 @@ namespace TmCGPTD
             ApiModel = "gpt-3.5-turbo";
             ApiUrl = "https://api.openai.com/v1/chat/completions";
             ApiKey = "";
-            MaxContentLength = 3072;
+            MaxContentLength = 12000;
 
             ApiMaxTokensIsEnable = false;
             ApiTemperatureIsEnable = false;

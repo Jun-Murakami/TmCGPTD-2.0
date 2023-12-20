@@ -15,25 +15,15 @@ namespace TmCGPTD
         // SynchronizationContext-reliant code before AppMain is called: things aren't initialized
         // yet and stuff might break.
         [STAThread]
-        public static void Main(string[] args)
-        {
-            // Other initialization code
-            BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
+        public static void Main(string[] args) => BuildAvaloniaApp()
+            .StartWithClassicDesktopLifetime(args);
 
-            // Add the unhandled exception handler
-            AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
-
-        }
 
         // Avalonia configuration, don't remove; also used by visual designer.
         public static AppBuilder BuildAvaloniaApp()
             => AppBuilder.Configure<App>()
                 .UsePlatformDetect()
                 .LogToTrace()
-                .With(new Win32PlatformOptions
-                {
-                     // off in Avalonia11
-                })
                 .AfterSetup(_ => CefRuntimeLoader.Initialize(new CefSettings()
                 {
                     CachePath = AppSettings.Instance.AppDataPath,
@@ -57,13 +47,5 @@ namespace TmCGPTD
                     IsStandard = true
                 }
                 }));
-
-        private static void OnUnhandledException(object sender, UnhandledExceptionEventArgs e)
-        {
-            // Handle the unhandled exception here
-            Debug.WriteLine("Unhandled exception occurred: " + e.ExceptionObject);
-        }
-
-
     }
 }

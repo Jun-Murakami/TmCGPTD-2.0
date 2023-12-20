@@ -9,6 +9,7 @@ namespace TmCGPTD.Views
         public Editor3_2TextBoxView()
         {
             InitializeComponent();
+            DataContext = VMLocator.EditorViewModel;
         }
 
         private void InitializeComponent()

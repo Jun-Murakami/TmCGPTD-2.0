@@ -8,7 +8,7 @@ namespace TmCGPTD.Views
         public EditorOneView()
         {
             InitializeComponent();
-
+            DataContext = VMLocator.EditorViewModel;
 
             var editorOne = this.FindControl<TextBox>("OneEditor");
 

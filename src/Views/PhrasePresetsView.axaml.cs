@@ -1,6 +1,7 @@
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.Markup.Xaml;
 using System;
 using System.Diagnostics;
 using TmCGPTD.ViewModels;
@@ -118,6 +119,11 @@ namespace TmCGPTD.Views
                 }
 
             }
+        }
+
+        private void InitializeComponent()
+        {
+            AvaloniaXamlLoader.Load(this);
         }
     }
 }
