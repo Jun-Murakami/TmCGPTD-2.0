@@ -17,10 +17,10 @@ namespace TmCGPTD.Views
         private ListBox lPane;
         private ListBox rPane;
         private TextBlock _syncLogBlock;
-        private TextBlock _inputTokenTextBlock;
         private Frame _leftPane;
         private Frame _rightPane;
         private Type? _editorViewType;
+
         public MainView()
         {
             InitializeComponent();
@@ -30,12 +30,10 @@ namespace TmCGPTD.Views
             MainViewModel.PropertyChanged += ViewModel_PropertyChanged!;
 
             _stackPanel = this.FindControl<StackPanel>("ProgramTitleBar")!;
-            _inputTokenTextBlock = this.FindControl<TextBlock>("InputTokenTextBlock")!;
 
             if (OperatingSystem.IsMacOS())
             {
                 _stackPanel.HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center;
-                _inputTokenTextBlock.Margin = new Avalonia.Thickness(0, 0, 5, 5);
             }
 
             _editorViewType = typeof(EditorView);

@@ -22,7 +22,7 @@
         <TextBox Grid.Row="0"
                  Name="Editor3_1"
                  AcceptsReturn="True"
-                 Text="{Binding Source={StaticResource VMLocator}, Path=EditorViewModel.Editor1Text,Mode=TwoWay}"
+                 Text="{Binding Editor3_1Text}"
                  FontSize="{Binding Source={StaticResource VMLocator}, Path=EditorViewModel.EditorCommonFontSize}" />
         <GridSplitter Grid.Row="1"
                       Height="2"
@@ -37,7 +37,7 @@
         <TextBox Grid.Row="4"
                  Name="Editor3_3"
                  AcceptsReturn="True"
-                 Text="{Binding Source={StaticResource VMLocator}, Path=EditorViewModel.Editor3Text,Mode=TwoWay}"
+                 Text="{Binding Editor3_3Text}"
                  FontSize="{Binding Source={StaticResource VMLocator}, Path=EditorViewModel.EditorCommonFontSize}" />
     </Grid>
 </UserControl>

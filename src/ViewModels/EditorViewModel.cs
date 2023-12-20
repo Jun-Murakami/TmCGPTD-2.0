@@ -470,11 +470,15 @@ namespace TmCGPTD.ViewModels
 
         public void TextClear()
         {
-            Editor1Text = string.Empty;
-            Editor2Text = string.Empty;
-            Editor3Text = string.Empty;
-            Editor4Text = string.Empty;
-            Editor5Text = string.Empty;
+            Editor1_1Text = string.Empty;
+            Editor3_1Text = string.Empty;
+            Editor3_2Text = string.Empty;
+            Editor3_3Text = string.Empty;
+            Editor5_1Text = string.Empty;
+            Editor5_2Text = string.Empty;
+            Editor5_3Text = string.Empty;
+            Editor5_4Text = string.Empty;
+            Editor5_5Text = string.Empty;
             SelectedTemplateItemIndex = -1;
         }
 
@@ -552,6 +556,123 @@ namespace TmCGPTD.ViewModels
                 if (SetProperty(ref _editor5Text, value))
                 {
                     _textChanged.OnNext(Unit.Default);
+                }
+            }
+        }
+
+        private string? _editor1_1Text;
+        public string? Editor1_1Text
+        {
+            get => _editor1_1Text;
+            set
+            {
+                if (SetProperty(ref _editor1_1Text, value))
+                {
+                    Editor1Text = _editor1_1Text;
+                }
+            }
+        }
+
+        private string? _editor3_1Text;
+        public string? Editor3_1Text
+        {
+            get => _editor3_1Text;
+            set
+            {
+                if (SetProperty(ref _editor3_1Text, value))
+                {
+                    Editor1Text = _editor3_1Text;
+                }
+            }
+        }
+
+        private string? _editor3_2Text;
+        public string? Editor3_2Text
+        {
+            get => _editor3_2Text;
+            set
+            {
+                if (SetProperty(ref _editor3_2Text, value))
+                {
+                    Editor2Text = _editor3_2Text;
+                }
+            }
+        }
+
+        private string? _editor3_3Text;
+        public string? Editor3_3Text
+        {
+            get => _editor3_3Text;
+            set
+            {
+                if (SetProperty(ref _editor3_3Text, value))
+                {
+                    Editor3Text = _editor3_3Text;
+                }
+            }
+        }
+
+        private string? _editor5_1Text;
+        public string? Editor5_1Text
+        {
+            get => _editor5_1Text;
+            set
+            {
+                if (SetProperty(ref _editor5_1Text, value))
+                {
+                    Editor1Text = _editor5_1Text;
+                }
+            }
+        }
+
+        private string? _editor5_2Text;
+        public string? Editor5_2Text
+        {
+            get => _editor5_2Text;
+            set
+            {
+                if (SetProperty(ref _editor5_2Text, value))
+                {
+                    Editor2Text = _editor5_2Text;
+                }
+            }
+        }
+
+        private string? _editor5_3Text;
+        public string? Editor5_3Text
+        {
+            get => _editor5_3Text;
+            set
+            {
+                if (SetProperty(ref _editor5_3Text, value))
+                {
+                    Editor3Text = _editor5_3Text;
+                }
+            }
+        }
+
+        private string? _editor5_4Text;
+        public string? Editor5_4Text
+        {
+            get => _editor5_4Text;
+            set
+            {
+                if (SetProperty(ref _editor5_4Text, value))
+                {
+                    Editor4Text = _editor5_4Text;
+                }
+            }
+        }
+
+        private string? _editor5_5Text;
+        public string? Editor5_5Text
+        {
+            get => _editor5_5Text;
+            set
+            {
+                if (SetProperty(ref _editor5_5Text, value))
+                {
+                    Editor5Text = _editor5_5Text;
                 }
             }
         }

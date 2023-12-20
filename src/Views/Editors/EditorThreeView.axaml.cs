@@ -19,7 +19,20 @@ namespace TmCGPTD.Views
             {
                 var br = Environment.NewLine;
                 if (VMLocator.EditorViewModel == null || VMLocator.EditorViewModel.GetRecentText() == null) return;
-                VMLocator.EditorViewModel.Editor3Text = (VMLocator.EditorViewModel.Editor3Text + br + VMLocator.EditorViewModel.Editor4Text + br + VMLocator.EditorViewModel.Editor5Text).Trim();
+                
+                VMLocator.EditorViewModel.Editor1_1Text = VMLocator.EditorViewModel.Editor1Text;
+                VMLocator.EditorViewModel.Editor3_1Text = VMLocator.EditorViewModel.Editor1Text;
+                VMLocator.EditorViewModel.Editor5_1Text = VMLocator.EditorViewModel.Editor1Text;
+
+                VMLocator.EditorViewModel.Editor3_2Text = VMLocator.EditorViewModel.Editor2Text;
+                VMLocator.EditorViewModel.Editor5_2Text = VMLocator.EditorViewModel.Editor2Text;
+
+                VMLocator.EditorViewModel.Editor3_3Text = (VMLocator.EditorViewModel.Editor3Text + br + VMLocator.EditorViewModel.Editor4Text + br + VMLocator.EditorViewModel.Editor5Text).Trim();
+                VMLocator.EditorViewModel.Editor5_3Text = VMLocator.EditorViewModel.Editor3_3Text;
+
+                VMLocator.EditorViewModel.Editor5_4Text = string.Empty;
+                VMLocator.EditorViewModel.Editor5_5Text = string.Empty;
+
                 VMLocator.EditorViewModel.Editor4Text = string.Empty;
                 VMLocator.EditorViewModel.Editor5Text = string.Empty;
             };

@@ -10,7 +10,7 @@
     <Panel>
         <TextBox VerticalAlignment="Stretch"
                  AcceptsReturn="True"
-                 Text="{Binding Path=DataContext.Editor2Text, RelativeSource={RelativeSource FindAncestor, AncestorType=views:EditorView},Mode=TwoWay}"
+                 Text="{Binding Editor3_2Text}"
                  FontSize="{Binding Path=DataContext.EditorCommonFontSize, RelativeSource={RelativeSource FindAncestor, AncestorType=views:EditorView}}"
                  Name="Editor2TextBox"
                  InputMethod.IsInputMethodEnabled="True" />
