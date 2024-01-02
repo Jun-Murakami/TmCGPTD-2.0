@@ -259,20 +259,26 @@ namespace TmCGPTD.Models
 
                 foreach (var div in filteredDivs)
                 {
-                    var className = div.GetAttributeValue("class", "");
-                    var regex = new Regex(@".*\[#\w{6}\].*");
-                    var match = regex.Match(className);
+                    // 再帰的にimgタグを検索するメソッドを呼び出す
+                    var imgTags = div.Descendants("img").ToList();
 
-                    string role;
+                    // imgタグの中でalt属性が"User"であるものが存在するかチェック
+                    bool isUser = imgTags.Any(img => img.GetAttributeValue("alt", "") == "User");
+
+                    // ロールを設定
+                    string role = isUser ? "user" : "assistant";
+
                     string content;
                     string br = Environment.NewLine;
 
-                    if (!match.Success)
+                    if (role == "user")
                     {
-                        role = "user";
                         // 子ノードのInnerTextを取得し、文字列として結合
                         string htmlString = div.InnerHtml;
                         string pattern = "<span class=.*>[0-9]+ / [0-9]+</span>";
+                        htmlString = Regex.Replace(htmlString, pattern, "");
+
+                        pattern = "<div class=\"font-semibold select-none\">.+?</div>";
                         htmlString = Regex.Replace(htmlString, pattern, "");
 
                         // 置換処理が完了した後、再度HTMLドキュメントに戻す
@@ -303,8 +309,6 @@ namespace TmCGPTD.Models
                     }
                     else
                     {
-                        role = "assistant";
-
                         var nodes = div.DescendantsAndSelf().ToList();
 
                         foreach (var node in nodes)
@@ -347,6 +351,12 @@ namespace TmCGPTD.Models
 
                         pattern = "Used <b>[^<]*</b>";
                         htmlString = Regex.Replace(htmlString, pattern, $"");
+
+                        pattern = "<div class=\"font-semibold select-none\">.+?</div>";
+                        htmlString = Regex.Replace(htmlString, pattern, "");
+
+                        pattern = "<div class=\"gizmo-shadow-stroke.+?</div>";
+                        htmlString = Regex.Replace(htmlString, pattern, "");
 
                         pattern = "<a href=\"([^\"]*?)\"[^>]*?>([^<]*?)</a>";
                         string replacement = $"[$2]($1)";
