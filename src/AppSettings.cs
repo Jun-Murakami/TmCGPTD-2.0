@@ -54,6 +54,7 @@ namespace TmCGPTD
                 }
             }
         }
+        public bool IsAutoImporting { get; set; }
         public string? Provider { get; set; }
         public string? Email { get; set; }
         public string? Password { get; set; }
@@ -99,6 +100,7 @@ namespace TmCGPTD
             SeparatorMode = 5;
             Session = null;
             SyncIsOn = false;
+            IsAutoImporting = false;
             Provider = "";
             Email = "";
             Password = "";

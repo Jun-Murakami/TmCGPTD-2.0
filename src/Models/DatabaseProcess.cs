@@ -20,6 +20,7 @@ using System.Diagnostics;
 using System.Text.RegularExpressions;
 using static TmCGPTD.Models.PostgreSqlModels;
 using static Postgrest.Constants;
+using Avalonia.Threading;
 
 namespace TmCGPTD.Models
 {
@@ -849,14 +850,17 @@ namespace TmCGPTD.Models
                         await command.ExecuteNonQueryAsync();
                     }
 
-                    //削除履歴を追加
-                    using (var command = new SqliteCommand("INSERT INTO management (user_id, delete_table, delete_id, date) VALUES (@user_id, @delete_table, @delete_id, @date)", connection, (SqliteTransaction)transaction))
+                    if (AppSettings.Instance.SyncIsOn && SupabaseStates.Instance.Supabase != null && Uid != null)
                     {
-                        command.Parameters.AddWithValue("@user_id", Uid);
-                        command.Parameters.AddWithValue("@delete_table", "chatlog");
-                        command.Parameters.AddWithValue("@delete_id", chatId);
-                        command.Parameters.AddWithValue("@date", date.ToString("s"));
-                        await command.ExecuteNonQueryAsync();
+                        //削除履歴を追加
+                        using (var command = new SqliteCommand("INSERT INTO management (user_id, delete_table, delete_id, date) VALUES (@user_id, @delete_table, @delete_id, @date)", connection, (SqliteTransaction)transaction))
+                        {
+                            command.Parameters.AddWithValue("@user_id", Uid);
+                            command.Parameters.AddWithValue("@delete_table", "chatlog");
+                            command.Parameters.AddWithValue("@delete_id", chatId);
+                            command.Parameters.AddWithValue("@date", date.ToString("s"));
+                            await command.ExecuteNonQueryAsync();
+                        }
                     }
 
                     await transaction.CommitAsync();
@@ -950,6 +954,7 @@ namespace TmCGPTD.Models
         }
 
         // Webチャットログのインポート--------------------------------------------------------------
+
         public async Task<string> InsertWebChatLogDatabaseAsync(string webChatTitle, List<Dictionary<string, object>> webConversationHistory, string webLog, string chatService)
         {
             if (string.IsNullOrEmpty(webLog))
@@ -957,9 +962,15 @@ namespace TmCGPTD.Models
                 return "No chat log found.";
             }
 
+            if (VMLocator.WebChatViewModel.IsImportRunning)
+            {
+                return "Through";
+            }
+
             int? matchingId = null;
             string query = "";
 
+            // 既存のチャットログとタイトルが一致するものがあるか検索
             using (var command = new SqliteCommand { Connection = memoryConnection })
             {
                 command.CommandText = "SELECT id FROM chatlog WHERE title = @webChatTitle LIMIT 1";
@@ -979,10 +990,57 @@ namespace TmCGPTD.Models
 
             if (matchingId.HasValue)
             {
+                // 既存のチャットログとタイトルが一致するテキストログをデータベースから取得
+                string webLogFromDb;
+                using (var command = new SqliteCommand { Connection = memoryConnection })
+                {
+                    command.CommandText = "SELECT text FROM chatlog WHERE id = @matchingId LIMIT 1";
+                    command.Parameters.AddWithValue("@matchingId", matchingId.Value);
+
+                    using var reader = await command.ExecuteReaderAsync();
+                    if (await reader.ReadAsync())
+                    {
+                        webLogFromDb = reader.GetString(0);
+                    }
+                    else
+                    {
+                        return "No matching chat log found.";
+                    }
+                }
+
+                // 既存のチャットログとタイトルが一致するテキストログがWebチャットログのテキストに含まれているか検索
+                bool isWebLogFromDbInWebLog = webLog.Contains(webLogFromDb);
+
                 Application.Current!.TryFindResource("My.Strings.OverWriteLog", out object? resource1);
-                var dialog = new ContentDialog() { Title = $"{resource1}{Environment.NewLine}{Environment.NewLine}'{webChatTitle}'", PrimaryButtonText = "Overwrite", SecondaryButtonText = "Rename", CloseButtonText = "Cancel" };
-                var dialogResult = await VMLocator.MainViewModel.ContentDialogShowAsync(dialog);
-                if (dialogResult == ContentDialogResult.Primary)
+
+                var dialogResult = ContentDialogResult.None;
+
+                if (!isWebLogFromDbInWebLog)
+                {
+                    VMLocator.WebChatViewModel.IsImportRunning = true;
+
+                    if (Dispatcher.UIThread.CheckAccess())
+                    {
+                        var dialog = new ContentDialog() { Title = $"{resource1}{Environment.NewLine}{Environment.NewLine}'{webChatTitle}'", PrimaryButtonText = "Overwrite", SecondaryButtonText = "Rename", CloseButtonText = "Cancel" };
+                        dialogResult = await VMLocator.MainViewModel.ContentDialogShowAsync(dialog);
+                    }
+                    else
+                    {
+                        await Dispatcher.UIThread.InvokeAsync(async () =>
+                        {
+                            var dialog = new ContentDialog() { Title = $"{resource1}{Environment.NewLine}{Environment.NewLine}'{webChatTitle}'", PrimaryButtonText = "Overwrite", SecondaryButtonText = "Rename", CloseButtonText = "Cancel" };
+                            dialogResult = await VMLocator.MainViewModel.ContentDialogShowAsync(dialog);
+                        });
+                    }
+
+                    VMLocator.WebChatViewModel.IsImportRunning = false;
+                }
+
+                if (isWebLogFromDbInWebLog && webLog == webLogFromDb)
+                {
+                    return "Through";
+                }
+                else if (!VMLocator.WebChatViewModel.IsImportRunning && (isWebLogFromDbInWebLog || dialogResult == ContentDialogResult.Primary))
                 {
                     if (AppSettings.Instance.SyncIsOn && SupabaseStates.Instance.Supabase != null && Uid != null)
                     {
@@ -1003,32 +1061,68 @@ namespace TmCGPTD.Models
                 }
                 else if (dialogResult == ContentDialogResult.Secondary)
                 {
-                    dialog = new ContentDialog()
+                    if (Dispatcher.UIThread.CheckAccess())
                     {
-                        Title = "Please enter a new chat name.",
-                        PrimaryButtonText = "OK",
-                        CloseButtonText = "Cancel"
-                    };
+                        var dialog = new ContentDialog()
+                        {
+                            Title = "Please enter a new chat name.",
+                            PrimaryButtonText = "OK",
+                            CloseButtonText = "Cancel"
+                        };
 
-                    var viewModel = new PhrasePresetsNameInputViewModel(dialog);
-                    dialog.Content = new PhrasePresetsNameInput()
-                    {
-                        DataContext = viewModel
-                    };
-                    dialogResult = await VMLocator.MainViewModel.ContentDialogShowAsync(dialog);
-                    if (dialogResult != ContentDialogResult.Primary || string.IsNullOrWhiteSpace(viewModel.UserInput))
-                    {
-                        return "Cancel";
-                    }
-                    else
-                    {
-                        webChatTitle = viewModel.UserInput;
-                        var msg = await InsertWebChatLogDatabaseAsync(webChatTitle, webConversationHistory, webLog, chatService);
-                        if (msg == "Cancel")
+                        var viewModel = new PhrasePresetsNameInputViewModel(dialog);
+                        dialog.Content = new PhrasePresetsNameInput()
+                        {
+                            DataContext = viewModel
+                        };
+                        dialogResult = await VMLocator.MainViewModel.ContentDialogShowAsync(dialog);
+                        if (dialogResult != ContentDialogResult.Primary || string.IsNullOrWhiteSpace(viewModel.UserInput))
                         {
                             return "Cancel";
                         }
-                        return "OK";
+                        else
+                        {
+                            webChatTitle = viewModel.UserInput;
+                            var msg = await InsertWebChatLogDatabaseAsync(webChatTitle, webConversationHistory, webLog, chatService);
+                            if (msg == "Cancel")
+                            {
+                                return "Cancel";
+                            }
+                            return "OK";
+                        }
+                    }
+                    else
+                    {
+                        await Dispatcher.UIThread.InvokeAsync(async () =>
+                        {
+                            var dialog = new ContentDialog()
+                            {
+                                Title = "Please enter a new chat name.",
+                                PrimaryButtonText = "OK",
+                                CloseButtonText = "Cancel"
+                            };
+
+                            var viewModel = new PhrasePresetsNameInputViewModel(dialog);
+                            dialog.Content = new PhrasePresetsNameInput()
+                            {
+                                DataContext = viewModel
+                            };
+                            dialogResult = await VMLocator.MainViewModel.ContentDialogShowAsync(dialog);
+                            if (dialogResult != ContentDialogResult.Primary || string.IsNullOrWhiteSpace(viewModel.UserInput))
+                            {
+                                return "Cancel";
+                            }
+                            else
+                            {
+                                webChatTitle = viewModel.UserInput;
+                                var msg = await InsertWebChatLogDatabaseAsync(webChatTitle, webConversationHistory, webLog, chatService);
+                                if (msg == "Cancel")
+                                {
+                                    return "Cancel";
+                                }
+                                return "OK";
+                            }
+                        });
                     }
                 }
                 else

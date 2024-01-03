@@ -32,6 +32,7 @@ namespace TmCGPTD.Views
             WebChatViewModel.SetBrowser(browser);
             //browser.Focusable = false;
             browser.LoadEnd += Browser_LoadEnd;
+            browser.TitleChanged += Browser_TitleChanged;
 
             _searchBox = this.FindControl<TextBox>("SearchBox")!;
         }
@@ -54,8 +55,17 @@ namespace TmCGPTD.Views
             browser.Dispose();
         }
 
+        private void Browser_TitleChanged(object? sender, string title)
+        {
+            if (AppSettings.Instance.IsAutoImporting)
+            {
+                _ = VMLocator.WebChatViewModel.ImportWebChatLog();
+            }
+        }
+
         private void Browser_LoadEnd(object? sender, LoadEndEventArgs e)
         {
+
             string addElementsCode = @"
                                     var button;
                                     var style;

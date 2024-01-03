@@ -214,14 +214,22 @@ namespace TmCGPTD.Models
                 if (titleNode != null)
                 {
                     string titleText = titleNode.InnerText;
-                    if (titleText == "New chat" || titleText == "" || titleText == "ChatGPT")
+                    if (!AppSettings.Instance.IsAutoImporting && ( titleText == "New chat" || titleText == "" || titleText == "ChatGPT" ) )
                     {
                         return resourceString;
+                    }
+                    else if (AppSettings.Instance.IsAutoImporting && (titleText == "New chat" || titleText == "" || titleText == "ChatGPT"))
+                    {
+                        return "Through";
                     }
                     else
                     {
                         webChatTitle = ReplaceEntities(titleText);
                     }
+                }
+                else if (AppSettings.Instance.IsAutoImporting)
+                {
+                    return "Through";
                 }
                 else
                 {

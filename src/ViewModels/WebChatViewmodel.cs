@@ -22,6 +22,8 @@ namespace TmCGPTD.ViewModels
             ImportWebChatLogCommand = new AsyncRelayCommand(async () => await ImportWebChatLog());
             UpdateBrowserCommand = new RelayCommand(UpdateBrowser);
 
+            AutoImportIsOn = AppSettings.Instance.IsAutoImporting;
+
             WebChatViewIsVisible = true;
         }
 
@@ -63,9 +65,27 @@ namespace TmCGPTD.ViewModels
         }
         public async Task ImportWebChatLog()
         {
-            var htmlSource = await _browser!.EvaluateJavaScript<string>("return document.documentElement.outerHTML;");
+            string htmlSource = await _browser!.EvaluateJavaScript<string>("return document.documentElement.outerHTML;");
+
+            if (AppSettings.Instance.IsAutoImporting)
+            {
+                //htmlに"conversation-turn-"が含まれていない場合、20回htmlを読み込み直す
+                string tempHtmlSource = htmlSource;
+                for (int i = 0; i < 20; i++)
+                {
+                    if (htmlSource.Contains("conversation-turn-") && htmlSource == tempHtmlSource)
+                    {
+                        await Task.Delay(1000);
+                        htmlSource = await _browser.EvaluateJavaScript<string>("return document.documentElement.outerHTML;");
+                        break;
+                    }
+                    htmlSource = await _browser.EvaluateJavaScript<string>("return document.documentElement.outerHTML;");
+                    await Task.Delay(1000);
+                    tempHtmlSource = await _browser.EvaluateJavaScript<string>("return document.documentElement.outerHTML;");
+                }
+            }
             var msg = await _htmlProcess.GetWebChatLogAsync(htmlSource);
-            if (msg == "Cancel" || msg == "OK")
+            if (msg == "Cancel" || msg == "OK" || msg == "Through")
             {
                 return;
             }
@@ -309,6 +329,26 @@ namespace TmCGPTD.ViewModels
         {
             get => _webChatViewIsVisible;
             set => SetProperty(ref _webChatViewIsVisible, value);
+        }
+
+        private bool _autoImportIsOn;
+        public bool AutoImportIsOn
+        {
+            get => _autoImportIsOn;
+            set
+            {
+                if (SetProperty(ref _autoImportIsOn, value))
+                {
+                    AppSettings.Instance.IsAutoImporting = value;
+                }
+            }
+        }
+
+        private bool _isImportRunning;
+        public bool IsImportRunning
+        {
+            get => _isImportRunning;
+            set => SetProperty(ref _isImportRunning, value);
         }
     }
 }
