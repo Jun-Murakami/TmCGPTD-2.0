@@ -8,36 +8,36 @@
              xmlns:ui="using:FluentAvalonia.UI.Controls"
              xmlns:views="clr-namespace:TmCGPTD.Views"
              x:Class="TmCGPTD.Views.EditorThreeView">
-    <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="{Binding Source={StaticResource VMLocator}, Path=EditorViewModel.EditorHeight1,Mode=TwoWay}"
+	<Grid>
+		<Grid.RowDefinitions>
+			<RowDefinition Height="{Binding Source={StaticResource VMLocator}, Path=EditorViewModel.EditorHeight1,Mode=TwoWay}"
                            MinHeight="10" />
-            <RowDefinition Height="5" />
-            <RowDefinition Height="{Binding Source={StaticResource VMLocator}, Path=EditorViewModel.EditorHeight2,Mode=TwoWay}"
+			<RowDefinition Height="5" />
+			<RowDefinition Height="{Binding Source={StaticResource VMLocator}, Path=EditorViewModel.EditorHeight2,Mode=TwoWay}"
                            MinHeight="10" />
-            <RowDefinition Height="5" />
-            <RowDefinition Height="{Binding Source={StaticResource VMLocator}, Path=EditorViewModel.EditorHeight3,Mode=TwoWay}"
+			<RowDefinition Height="5" />
+			<RowDefinition Height="{Binding Source={StaticResource VMLocator}, Path=EditorViewModel.EditorHeight3,Mode=TwoWay}"
                            MinHeight="10" />
-        </Grid.RowDefinitions>
-        <TextBox Grid.Row="0"
+		</Grid.RowDefinitions>
+		<TextBox Grid.Row="0"
                  Name="Editor3_1"
                  AcceptsReturn="True"
-                 Text="{Binding Editor3_1Text}"
+                 Text="{Binding Source={StaticResource VMLocator}, Path=EditorViewModel.Editor1Text,Mode=TwoWay}"
                  FontSize="{Binding Source={StaticResource VMLocator}, Path=EditorViewModel.EditorCommonFontSize}" />
-        <GridSplitter Grid.Row="1"
+		<GridSplitter Grid.Row="1"
                       Height="2"
                       Background="rgb(57, 58, 70)"
                       Focusable="False" />
-        <ui:Frame Grid.Row="2"
+		<ui:Frame Grid.Row="2"
                   Name="Editor3_2Frame" />
-        <GridSplitter Grid.Row="3"
+		<GridSplitter Grid.Row="3"
                       Height="2"
                       Background="rgb(57, 58, 70)"
                       Focusable="False" />
-        <TextBox Grid.Row="4"
+		<TextBox Grid.Row="4"
                  Name="Editor3_3"
                  AcceptsReturn="True"
-                 Text="{Binding Editor3_3Text}"
+                 Text="{Binding Source={StaticResource VMLocator}, Path=EditorViewModel.Editor3Text,Mode=TwoWay}"
                  FontSize="{Binding Source={StaticResource VMLocator}, Path=EditorViewModel.EditorCommonFontSize}" />
-    </Grid>
+	</Grid>
 </UserControl>

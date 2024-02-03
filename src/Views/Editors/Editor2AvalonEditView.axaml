@@ -15,7 +15,7 @@
                                Name="Editor2Avalon"
                                FontSize="{Binding Path=DataContext.EditorCommonFontSize, RelativeSource={RelativeSource FindAncestor, AncestorType=views:EditorView}}">
             <i:Interaction.Behaviors>
-                <behaviors:DocumentTextBindingBehavior Text="{Binding Editor5_2Text}" />
+				<behaviors:DocumentTextBindingBehavior Text="{Binding Path=DataContext.Editor2Text, RelativeSource={RelativeSource FindAncestor, AncestorType=views:EditorView},Mode=TwoWay}" />
             </i:Interaction.Behaviors>
         </AvalonEdit:TextEditor>
     </Panel>
