@@ -255,7 +255,12 @@ namespace TmCGPTD.Models
                 {
                     if (div.ChildNodes.Count == 0
                         || div.InnerText.Contains("Model:")
+                        || div.InnerText.Contains("ChatGPT 4")
+                        || div.InnerText.Contains("ChatGPT 3.5")
+                        || div.InnerText.Contains("ChatGPT Plugins")
                         || div.InnerText.Contains("Regenerate response")
+                        || div.InnerText.Contains("これまでの会話は役に立ちましたか？")
+                        || div.InnerText.Contains("Is this conversation helpful so far?")
                         || (div.ParentNode?.ParentNode?.ParentNode?.Name == "form"))
                     {
                         continue;

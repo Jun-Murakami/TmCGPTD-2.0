@@ -1590,6 +1590,7 @@ namespace TmCGPTD.Models
                     VMLocator.EditorViewModel.SelectedEditorLogIndex = -1;
                     VMLocator.EditorViewModel.SelectedTemplateItemIndex = -1;
                     VMLocator.DataGridViewModel.SelectedItemIndex = -1;
+                    VMLocator.ProgressViewModel.Hide();
                 }
                 else
                 {
@@ -1600,6 +1601,7 @@ namespace TmCGPTD.Models
                         VMLocator.EditorViewModel.SelectedEditorLogIndex = -1;
                         VMLocator.EditorViewModel.SelectedTemplateItemIndex = -1;
                         VMLocator.DataGridViewModel.SelectedItemIndex = -1;
+                        VMLocator.ProgressViewModel.Hide();
                     });
                 }
             }
