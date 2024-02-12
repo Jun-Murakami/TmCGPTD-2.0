@@ -12,8 +12,8 @@ Webサービス版のChatGPTとOpenAI APIを統合するクライアントアプ
 Designed to make it easy to cut and paste text to configure prompts.
 - **Importing web service version logs**  
 You can log in with your ChatGPT account and import logs from the web service version. Even if the chat log has reached its maximum length, you can continue semi-permanently using the API after importing.
-- **Web version of ChatGPT and Goggle Bard support**  
-A web version of ChatGPT can be used with the built-in browser. Texts can be sent directly from the prompt editor, and GoogleBard is also supported.
+- **Web version of ChatGPT and Goggle Gemini support**  
+A web version of ChatGPT can be used with the built-in browser. Texts can be sent directly from the prompt editor, and Google Gemini is also supported.
 - **Preset phrase function**  
 You can register frequently used phrases and insert them into the editor.
 - **Prompt template & log**  
@@ -25,8 +25,8 @@ Prompt templates can be saved and loaded. Automatically saves up to 200 entries 
 文章を切り貼りして、長めの命令文／プロンプトを構成しやすいようになっています。送信時は自動的に結合されます。
 - **Webサービス版ログのインポート**  
 ChatGPTのアカウントでログインしてWebサービス版のログをインポートできます。チャットの長さが最大に達しているログでも、インポートした後は半永久的に会話が継続できます。（古い会話履歴を自動的に圧縮し、裏で保持する機能が備わっています。）取り込んだ全てのログに対してテキスト全文検索が出来ます。
-- **Webサービス版チャットとGoggle Bard対応**  
-内蔵のブラウザでそのままWeb版のチャットも使用できます。プロンプトエディタから直接文章を送信可能で、GoogleBardにも対応しています。
+- **Webサービス版チャットとGoggle Gemini対応**  
+内蔵のブラウザでそのままWeb版のチャットも使用できます。プロンプトエディタから直接文章を送信可能で、Google Geminiにも対応しています。
 - **定型句プリセット機能**  
 よく使う定型句を登録しておいて、エディターに挿入できます。
 - **プロンプトテンプレート＆ログ**  

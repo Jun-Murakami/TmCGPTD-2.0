@@ -167,7 +167,7 @@
             <Setter Property="SelectionBrush" Value="rgb(110, 100, 175)" />
             <Setter Property="SelectionForegroundBrush" Value="White" />
             <Setter Property="Foreground" Value="rgb(220, 220, 220)" />
-            <Setter Property="Background" Value="rgb(42, 43, 55)" />
+            <Setter Property="Background" Value="rgb(23, 23, 23)" />
             <Setter Property="BorderThickness" Value="0" />
             <Setter Property="CornerRadius" Value="0" />
             <Setter Property="TextWrapping" Value="Wrap" />
@@ -182,11 +182,11 @@
             <Setter Property="Foreground" Value="rgb(220, 220, 220)" />
         </Style>
         <Style Selector="Grid#EditorGrid TextBox:focus /template/ Border#PART_BorderElement">
-            <Setter Property="Background" Value="rgb(42, 43, 55)" />
+            <Setter Property="Background" Value="rgb(23, 23, 23)" />
             <Setter Property="BorderThickness" Value="0" />
         </Style>
         <Style Selector="Grid#EditorGrid TextBox:pointerover /template/ Border#PART_BorderElement">
-            <Setter Property="Background" Value="rgb(42, 43, 55)" />
+            <Setter Property="Background" Value="rgb(23, 23, 23)" />
             <Setter Property="BorderThickness" Value="0" />
         </Style>
 
@@ -209,7 +209,7 @@
             <Setter Property="Background" Value="rgb(52, 53, 65)" />
         </Style>
         <Style Selector="Grid TextBox#PreviewTextBox:focus /template/ Border#PART_BorderElement">
-            <Setter Property="Background" Value="rgb(42, 43, 55)" />
+            <Setter Property="Background" Value="rgb(23, 23, 23)" />
             <Setter Property="BorderThickness" Value="0" />
         </Style>
         <Style Selector="Grid TextBox#PreviewTextBox:pointerover /template/ Border#PART_BorderElement">
@@ -232,7 +232,7 @@
             <Setter Property="Foreground" Value="rgb(255, 255, 255)" />
         </Style>
         <Style Selector="TextBox.NormalInput:focus Border#PART_BorderElement">
-            <Setter Property="Background" Value="rgb(42, 43, 55)" />
+            <Setter Property="Background" Value="rgb(23, 23, 23)" />
         </Style>
 
         <Style Selector="Grid#PhrasePresets TextBox">

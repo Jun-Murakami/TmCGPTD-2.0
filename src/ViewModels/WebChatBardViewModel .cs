@@ -31,15 +31,15 @@ namespace TmCGPTD.ViewModels
             {
                 string escapedString = JsonSerializer.Serialize(VMLocator.EditorViewModel.GetRecentText());
 
-                string script = @"const mainTag = document.querySelector('main');
-                        const textarea = mainTag.querySelector('textarea');" +
-                        $"textarea.value = {escapedString};";
+                string script = $@"const mainTag = document.querySelector('main');
+                        const textarea = mainTag.querySelector('div.textarea > p');
+                        textarea.textContent = {escapedString};";
                 await _browser!.EvaluateJavaScript<string>(script);
 
                 await Task.Delay(300);
 
                 script = @"const mainTag = document.querySelector('main');
-                        const textarea = mainTag.querySelector('textarea');
+                        const textarea = mainTag.querySelector('div.textarea > p');
                         var event = new Event('input', { bubbles: true });  // イベントを作成
                         textarea.dispatchEvent(event);  // イベントをディスパッチ";
                 await _browser.EvaluateJavaScript<string>(script);
@@ -48,7 +48,7 @@ namespace TmCGPTD.ViewModels
 
                 script = @"const mainTag = document.querySelector('main');
                         const sendDiv = mainTag.querySelector('div.send-button-container');
-                        const button = sendDiv.querySelector('button');
+                        const button = sendDiv.querySelector('button.send-button');
                         button.click();";
                 await _browser.EvaluateJavaScript<string>(script);
             }

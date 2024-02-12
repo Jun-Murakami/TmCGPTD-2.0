@@ -463,7 +463,7 @@ namespace TmCGPTD.Models
                 }
 
                 DatabaseProcess _dbProcess = new DatabaseProcess();
-                var msg = await _dbProcess.InsertWebChatLogDatabaseAsync(webChatTitle, webConversationHistory, webLog, "Web Chat");
+                var msg = await _dbProcess.InsertWebChatLogDatabaseAsync(webChatTitle, webConversationHistory, webLog, "ChatGPT");
                 if (msg == "Cancel")
                 {
                     return "Cancel";
@@ -515,13 +515,13 @@ namespace TmCGPTD.Models
                 if (titleNode != null)
                 {
                     string titleText = titleNode.InnerText;
-                    if (titleText != "Bard")
+                    if (titleText != "Gemini")
                     {
                         return resourceString;
                     }
                     else
                     {
-                        webChatTitle = "Bard: " + DateTime.Now;
+                        webChatTitle = "Gemini: " + DateTime.Now;
                     }
                 }
                 else
@@ -719,7 +719,7 @@ namespace TmCGPTD.Models
                 //Debug.WriteLine(webLog);
 
                 DatabaseProcess _dbProcess = new DatabaseProcess();
-                var msg = await _dbProcess.InsertWebChatLogDatabaseAsync(webChatTitle, webConversationHistory, webLog, "Bard");
+                var msg = await _dbProcess.InsertWebChatLogDatabaseAsync(webChatTitle, webConversationHistory, webLog, "Gemini");
                 if (msg == "Cancel")
                 {
                     return "Cancel";

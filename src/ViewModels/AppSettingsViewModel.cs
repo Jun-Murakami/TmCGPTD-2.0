@@ -149,7 +149,7 @@ namespace TmCGPTD.ViewModels
 
                     if (File.Exists(selectedFilePath))
                     {
-                        File.Delete(DatabasePath);
+                        // File.Delete(DatabasePath);
 
                         DatabasePath = selectedFilePath;
                         MainWindow mainWindow = (MainWindow)(Application.Current.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)!.MainWindow!;

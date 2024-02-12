@@ -38,7 +38,7 @@ namespace TmCGPTD.Views
 
         private void FocusSearchBox(object sender, RoutedEventArgs e)
         {
-            if (VMLocator.MainViewModel.SelectedLeftPane == "Bard")
+            if (VMLocator.MainViewModel.SelectedLeftPane == "Gemini")
             {
                 _searchBox.Focus();
             }

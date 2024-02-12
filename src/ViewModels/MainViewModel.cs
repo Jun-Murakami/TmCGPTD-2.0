@@ -142,8 +142,8 @@ namespace TmCGPTD.ViewModels
         public List<string> LeftPanes { get; } = new List<string>
         {
             "API Chat",
-            "Web Chat",
-            "Bard"
+            "ChatGPT",
+            "Gemini"
         };
 
         private string? _selectedRightPane;
@@ -295,11 +295,11 @@ namespace TmCGPTD.ViewModels
                 }
                 await _dbProcess.InserEditorLogDatabasetAsync();
 
-                if (SelectedLeftPane == "Web Chat")
+                if (SelectedLeftPane == "ChatGPT")
                 {
                     await VMLocator.WebChatViewModel.PostWebChat();
                 }
-                else if (SelectedLeftPane == "Bard")
+                else if (SelectedLeftPane == "Gemini")
                 {
                     await VMLocator.WebChatBardViewModel.PostWebChat();
                 }

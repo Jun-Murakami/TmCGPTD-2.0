@@ -26,6 +26,10 @@
         <dialogHostAvalonia:DialogHostStyles />
     </Application.Styles>
     <Application.Resources>
+		<!--
+		<CornerRadius x:Key="ControlCornerRadius">6</CornerRadius>
+		<CornerRadius x:Key="OverlayCornerRadius">6</CornerRadius>
+		-->
         <Color x:Key="SystemAccentColor">rgb(155, 138, 255)</Color>
         <Color x:Key="SystemAccentColorDark1">rgb(155, 138, 255)</Color>
         <Color x:Key="SystemAltMediumLowColor">rgb(52, 53, 65)</Color>
@@ -45,7 +49,7 @@
         <Color x:Key="MenuFlyoutItemBackgroundPointerOver">rgb(74, 75, 89)</Color>
         <Color x:Key="MenuFlyoutPresenterBorderBrush">rgb(44, 44, 54)</Color>
         <Color x:Key="ComboBoxDropDownBackground">rgb(52, 53, 65)</Color>
-        <Color x:Key="ContentDialogBackground">rgb(42, 43, 55)</Color>
+        <Color x:Key="ContentDialogBackground">rgb(23, 23, 23)</Color>
         <Color x:Key="SolidBackgroundFillColorBase">rgb(52, 53, 65)</Color>
         <Color x:Key="SolidBackgroundFillColorSecondary">rgb(52, 53, 65)</Color>
         <Color x:Key="TextControlButtonForeground">rgb(126, 128, 145)</Color>

@@ -1625,7 +1625,7 @@ namespace TmCGPTD.Models
                 string date = message.CreatedOn.ToString();
                 if (message.CreatedOn.Year < 0002)
                 {
-                    date = "Web Chat";
+                    date = "ChatGPT";
                 }
                 string role = message.Role == "assistant" ? "AI" : "You";
                 combinedMessage = $"{combinedMessage}[{date}] by {role}{br}{br}";

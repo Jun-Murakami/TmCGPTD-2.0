@@ -52,9 +52,9 @@ namespace TmCGPTD.ViewModels
 
                 script = @"const mainTag = document.querySelector('main');
                         const formTag = mainTag.querySelector('form');
-                        const button = formTag.querySelector('button');
+                        const button = formTag.querySelector('button[data-testid=""send-button""]');
                         button.click();";
-                //await _browser.EvaluateJavaScript<string>(script);
+                await _browser.EvaluateJavaScript<string>(script);
             }
             catch (Exception ex)
             {
