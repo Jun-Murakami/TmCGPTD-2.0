@@ -482,7 +482,7 @@ namespace TmCGPTD.Models
 
                     var options = new Dictionary<string, object>
                 {
-                    { "model", "gpt-4-1106-preview" },
+                    { "model", "gpt-4-turbo-preview" },
                     { "messages", new List<Dictionary<string, object>>
                         {
                             new Dictionary<string, object> { { "role", "system" }, { "content", "You are a professional editor. Please summarize the following chat log in about 1000 tokens using the language in which the text is written. For a text that includes multiple conversations, the conversation set that appears at the beginning is the most important." } },
@@ -536,7 +536,7 @@ namespace TmCGPTD.Models
 
                 var options = new Dictionary<string, object>
                 {
-                    { "model", "gpt-4-1106-preview" },
+                    { "model", "gpt-4-turbo-preview" },
                     { "messages", new List<Dictionary<string, object>>
                         {
                             new Dictionary<string, object> { { "role", "system" }, { "content",
